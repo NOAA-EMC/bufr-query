@@ -14,7 +14,6 @@ list(APPEND BUFR_PUBLIC
 	include/bufr/DataObject.h
 	include/bufr/BufrDescription.h
 	include/bufr/BufrParser.h
-	include/bufr/BufrParser.h
 	include/bufr/Export.h
 	include/bufr/Filter.h
 	include/bufr/Split.h

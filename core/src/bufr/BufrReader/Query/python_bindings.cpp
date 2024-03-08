@@ -69,5 +69,5 @@ using bufr::File;
                         "field.");
     }
 //}  // namespace bufr
-//}  // namespace Ingester
+//}  // namespace bufr
 
