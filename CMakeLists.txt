@@ -11,28 +11,15 @@
 cmake_minimum_required( VERSION 3.14 )
 project( bufr VERSION 2.8.0 LANGUAGES CXX Fortran)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_FORTRAN_STANDARD 08)
-set(CMAKE_FORTRAN_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_C_EXTENSIONS OFF)
-set(CMAKE_FORTRAN_EXTENSIONS OFF)
-
-## Ecbuild integration
+## Configuration
 find_package( ecbuild QUIET )
 include( ecbuild_system NO_POLICY_SCOPE )
 ecbuild_declare_project()
 list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 set( CMAKE_DIRECTORY_LABELS ${PROJECT_NAME} )
-
-### Configuration options
-#include( ${PROJECT_NAME}_compiler_flags )
+include( ${PROJECT_NAME}_compiler_flags )
 
 ## Dependencies
-
 set(HDF5_PREFER_PARALLEL true) # CMake sometimes mistakenly finds a serial system-provided HDF5.
 find_package( OpenMP COMPONENTS C CXX Fortran )
 find_package( eckit 1.23.0 REQUIRED )
@@ -45,6 +32,7 @@ find_package( gsl-lite REQUIRED HINTS $ENV{gsl_lite_DIR} )
 find_package( udunits 2.2.0 REQUIRED )
 find_package( NetCDF REQUIRED COMPONENTS Fortran )  # No idea why oops is not importing this correctly
 find_package( Boost 1.64.0 REQUIRED )
+find_package( bufr 12.0.1 REQUIRED)
 
 
 # Python-finding settings
@@ -52,7 +40,6 @@ set(Python3_FIND_REGISTRY "LAST")
 set(Python3_FIND_FRAMEWORK "LAST")
 find_package( Python3 COMPONENTS Interpreter Development)
 find_package( pybind11 QUIET)
-find_package( bufr 12.0.1 REQUIRED)
 
 if (Python3_FOUND AND pybind11_FOUND)
   option(BUILD_PYTHON_BINDINGS "Build Python bindings using pybind11?" ON)
@@ -64,18 +51,18 @@ add_feature_info(Python BUILD_PYTHON_BINDINGS "Build Python bindings using pybin
 
 ## Sources
 add_subdirectory( core )
-#add_subdirectory( test )
-add_subdirectory( tools )
 
 if (BUILD_PYTHON_BINDINGS)
   add_subdirectory( python )
 endif()
 
+add_subdirectory( tools )
+add_subdirectory( test )
 
 ## Tests
 ecbuild_add_test( TARGET ${PROJECT_NAME}_coding_norms
                   TYPE SCRIPT
-                  COMMAND ${PROJECT_NAME}_cpplint.py
+                  COMMAND ${PROJECT_NAME}_cpp_lint.py
                   ARGS --quiet --recursive ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/test
                   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin )
 set_tests_properties( ${PROJECT_NAME}_coding_norms PROPERTIES TIMEOUT 90 )
