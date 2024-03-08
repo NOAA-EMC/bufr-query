@@ -146,16 +146,6 @@ foreach(FILENAME ${test_input} ${test_output} ${test_data})
     ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME} )
 endforeach(FILENAME)
 
-
-add_library(ioda_test INTERFACE)
-set(BUILD_DIR_TEST_INCLUDE_PATH ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/test/include)
-add_custom_target(ioda_test_headers ALL COMMAND ${CMAKE_COMMAND} -E make_directory "${BUILD_DIR_TEST_INCLUDE_PATH}/${PROJECT_NAME}"
-                                    COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR} ${BUILD_DIR_TEST_INCLUDE_PATH}/${PROJECT_NAME}/test)
-add_dependencies(ioda_test ioda_test_headers)
-target_include_directories(ioda_test INTERFACE $<BUILD_INTERFACE:${BUILD_DIR_TEST_INCLUDE_PATH}>)
-target_link_libraries(ioda_test INTERFACE ioda)
-
-
 ecbuild_add_test( TARGET  test_bufr_filtering
                   TYPE    SCRIPT
                   COMMAND bash
