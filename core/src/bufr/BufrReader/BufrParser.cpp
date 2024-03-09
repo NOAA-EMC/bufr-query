@@ -18,7 +18,7 @@
 #include "bufr/Export.h"
 #include "bufr/Split.h"
 #include "eckit/exception/Exceptions.h"
-#include "oops/util/Logger.h"
+#include "../Log.h"
 
 namespace bufr {
 
@@ -29,7 +29,7 @@ namespace bufr {
       file_(File(obsfile, tablepath))
     {
       // print message
-      oops::Log::info() << "BufrParser: Parsing file " << obsfile << std::endl;
+      log::info() << "BufrParser: Parsing file " << obsfile << std::endl;
     }
 
     BufrParser::BufrParser(const std::string& obsfile,
@@ -39,7 +39,7 @@ namespace bufr {
       file_(File(obsfile, tablepath))
     {
       // print message
-      oops::Log::info() << "BufrParser: Parsing file " << obsfile << std::endl;
+      log::info() << "BufrParser: Parsing file " << obsfile << std::endl;
     }
 
     BufrParser::BufrParser(const std::string& obsfile,
@@ -48,7 +48,7 @@ namespace bufr {
       description_(BufrDescription(mappingPath)),
       file_(File(obsfile, tablepath))
     {
-      oops::Log::info() << "BufrParser: Parsing file " << obsfile << std::endl;
+      log::info() << "BufrParser: Parsing file " << obsfile << std::endl;
     }
 
     BufrParser::~BufrParser()
@@ -70,10 +70,10 @@ namespace bufr {
             }
         }
 
-        oops::Log::info() << "Executing Queries" << std::endl;
+        log::info() << "Executing Queries" << std::endl;
         const auto resultSet = file_.execute(querySet, maxMsgsToParse);
 
-        oops::Log::info() << "Building Bufr Data" << std::endl;
+        log::info() << "Building Bufr Data" << std::endl;
         auto srcData = BufrDataMap();
         for (const auto& var : description_.getExport().getVariables())
         {
@@ -84,13 +84,13 @@ namespace bufr {
             }
         }
 
-        oops::Log::info()  << "Exporting Data" << std::endl;
+        log::info()  << "Exporting Data" << std::endl;
         auto exportedData = exportData(srcData);
 
         auto timeElapsed = std::chrono::steady_clock::now() - startTime;
         auto timeElapsedDuration = std::chrono::duration_cast<std::chrono::milliseconds>
                 (timeElapsed);
-        oops::Log::info()  << "Finished "
+        log::info()  << "Finished "
                            << "[" << timeElapsedDuration.count() / 1000.0 << "s]"
                            << std::endl;
 
@@ -138,7 +138,7 @@ namespace bufr {
 
                 std::string ovar;
                 ovar = var->getExportName();
-                oops::Log::debug() << "Exporting variable = " << ovar << std::endl;
+                log::debug() << "Exporting variable = " << ovar << std::endl;
 
                 exportData->add(pathStr.str(),
                                 var->exportData(dataPair.second),

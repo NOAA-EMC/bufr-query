@@ -19,12 +19,9 @@
 
 #include "eckit/exception/Exceptions.h"
 
+#include "Log.h"
 #include "bufr/DataObject.h"
 #include "../../../DataObjectBuilder.h"
-
-#ifdef BUILD_IODA_BINDING
-    #include "oops/util/Logger.h"
-#endif
 
 
 namespace

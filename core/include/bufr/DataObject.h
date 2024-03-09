@@ -11,7 +11,6 @@
 #include <iostream>
 #include <vector>
 
-#include "oops/util/missingValues.h"
 #include "ioda/ObsGroup.h"
 #include "ioda/defs.h"
 #include "ioda/Variables/Variable.h"

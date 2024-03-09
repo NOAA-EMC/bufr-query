@@ -37,6 +37,7 @@ list(APPEND BUFR_PRIVATE
 	src/bufr/DataContainer.cpp
 	src/bufr/DataObject.cpp
 	src/bufr/DataObjectBuilder.h
+	src/bufr/Log.h
 	src/bufr/BufrReader/BufrDescription.cpp
 	src/bufr/BufrReader/BufrParser.cpp
 	src/bufr/BufrReader/Exports/Export.cpp

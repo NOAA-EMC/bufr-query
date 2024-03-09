@@ -7,10 +7,6 @@
 
 #include "SensorScanAngleVariable.h"
 
-#include <time.h>
-
-#include <cmath>
-#include <iomanip>
 #include <memory>
 #include <ostream>
 #include <unordered_map>
@@ -19,8 +15,6 @@
 #include "bufr/DataObject.h"
 #include "../../../DataObjectBuilder.h"
 #include "eckit/exception/Exceptions.h"
-#include "oops/util/Logger.h"
-#include "oops/util/missingValues.h"
 
 namespace
 {

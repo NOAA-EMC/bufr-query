@@ -10,8 +10,7 @@
 #include <iostream>
 #include <memory>
 
-#include "oops/util/Logger.h"
-
+#include "../../Log.h"
 #include "bufr/SubsetTable.h"
 #include "VectorMath.h"
 #include "SubsetLookupTable.h"
@@ -78,11 +77,11 @@ namespace bufr {
                 targets->push_back(target);
 
                 // Print message to inform the user of the missing targets
-                oops::Log::warning() << "Warning: Query String ";
-                oops::Log::warning() << querySet_.queriesFor(name)[0].str();
-                oops::Log::warning() << " didn't apply to subset ";
-                oops::Log::warning() << dataProvider_->getSubsetVariant().str();
-                oops::Log::warning() << std::endl;
+                log::warning() << "Warning: Query String ";
+                log::warning() << querySet_.queriesFor(name)[0].str();
+                log::warning() << " didn't apply to subset ";
+                log::warning() << dataProvider_->getSubsetVariant().str();
+                log::warning() << std::endl;
 
                 continue;
             }

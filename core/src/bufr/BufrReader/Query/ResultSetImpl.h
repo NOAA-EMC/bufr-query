@@ -14,8 +14,6 @@
 #include <utility>
 #include <vector>
 
-#include "oops/util/missingValues.h"
-
 #include "bufr/DataObject.h"
 #include "bufr/Data.h"
 #include "bufr/DataProvider.h"
