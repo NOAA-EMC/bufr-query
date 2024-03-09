@@ -1,9 +1,6 @@
 
 
 list(APPEND _deps
-            eckit
-            bufr::bufr_4
-            gsl::gsl-lite
             bufr_lib)
             
 list(APPEND _srcs
