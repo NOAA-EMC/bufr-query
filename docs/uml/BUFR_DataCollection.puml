@@ -1,0 +1,139 @@
+@startuml
+hide footbox
+skinparam dpi 150
+skinparam SequenceActorBorderThickness 2
+skinparam SequenceActorBorderColor #firebrick
+skinparam ActorBackgroundColor #lightyellow
+skinparam ParticipantBackgroundColor #lightyellow
+skinparam ParticipantBorderThickness 2
+skinparam ParticipantBorderColor #firebrick
+
+actor User
+participant QuerySet
+participant File
+participant DataProvider
+participant ResultSet #orange
+participant QueryRunner
+participant SubsetTable
+
+participant Target
+participant DataFrame
+participant DataField
+
+
+create QuerySet
+User -> QuerySet : QuerySet()
+note right
+    See diagram
+    CreateQuerySet
+end note
+
+create File
+User -> File : File(filepath)
+User -> File : execute(queryset)
+
+activate File
+
+
+create DataProvider
+File -> DataProvider : DataProvider(filename)
+
+create ResultSet
+File -> ResultSet : ResultSet()
+
+create QueryRunner
+File -> QueryRunner : QueryRunner(querySet, resultSet, dataProvider)
+
+File -> DataProvider : run(querySet, procSubset, procMsg, continue)
+activate DataProvider
+
+loop BUFR data
+    DataProvider -> DataProvider : processMessage()
+    activate DataProvider
+    deactivate DataProvider
+
+    DataProvider -> DataProvider : processSubset()
+        activate DataProvider
+
+        DataProvider -> QueryRunner : accumulate()
+        activate QueryRunner
+            QueryRunner -> QueryRunner : findTargets()
+            activate QueryRunner
+                QueryRunner -> QueryRunner : check cache for targets
+
+                loop if no targets
+                    create SubsetTable
+                    QueryRunner -> SubsetTable : SubsetTable(dataProvider)
+                    QueryRunner -> QuerySet : names()
+                    loop all names
+
+                        QueryRunner -> QuerySet : queriesFor(name)
+                        loop all queries
+                            activate QuerySet
+                                QuerySet --> QueryRunner : queries
+                            deactivate QuerySet
+                            QueryRunner -> SubsetTable : getNodeForPath(query.path)
+
+                            create Target
+                            QueryRunner -> Target : Target()
+                        end loop
+                    end loop
+                end loop
+
+            deactivate QueryRunner
+
+            QueryRunner -> QueryRunner : collectData()
+            activate QueryRunner
+                create NodeLookupTable
+                QueryRunner -> NodeLookupTable : NodeLookupTable(targets)
+                activate NodeLookupTable
+                    NodeLookupTable -> NodeLookupTable : makeLookupTable(targets)
+                    NodeLookupTable -> DataProvider : get node data
+                deactivate NodeLookupTable
+
+
+                QueryRunner -> ResultSet : nextDataFrame()
+                activate ResultSet
+                    create DataFrame
+                    ResultSet -> DataFrame : DataFrame()
+                    create DataField
+                    DataFrame -> DataField : DataField()
+                    ResultSet --> QueryRunner : dataframe
+                deactivate ResultSet
+
+                loop all target fields
+                    QueryRunner -> DataFrame : fieldAtIdx(idx)
+                    activate DataFrame
+                        DataFrame --> QueryRunner : datafield
+                    deactivate DataFrame
+
+                    QueryRunner -> NodeLookupTable : operator[nodeId].counts
+                    QueryRunner -> DataField : set counts for path (nodeId, counts)
+
+                    QueryRunner -> NodeLookupTable : operator[nodeId].data
+                    QueryRunner -> DataField : setData(data)
+
+                    note left
+                        Copy data for node
+                        from the lookup table
+                    end note
+                end
+            deactivate QueryRunner
+        deactivate QueryRunner
+
+    deactivate DataProvider
+
+    DataProvider -> DataProvider : continue()
+    activate DataProvider
+    deactivate DataProvider
+
+deactivate DataProvider
+end
+
+deactivate DataProvider
+
+File --> User : resultSet
+
+deactivate File
+
+@enduml

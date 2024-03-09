@@ -1,0 +1,85 @@
+@startuml
+hide empty methods
+skinparam dpi 100
+
+object Main
+
+
+class DataObject<T>
+{
+  
+}
+
+class DataContainer
+{
+  
+}
+note left: Organizes data into categories
+
+
+package BufrReader <<Folder>>
+{
+  package Query <<Folder>> 
+  {
+    class File
+    {
+    }
+  }
+
+  class BufrParser
+  {
+    +BufrParser(conf)
+    +parse() : DataContainer
+  }
+
+  class BufrDescription
+  {
+  }
+
+  package Exports <<Folder>>
+  {
+    package Splits
+    {
+    }
+
+    package Filters
+    {
+    }
+
+    package Variables
+    {
+      package Transforms
+      {
+      }
+    }
+  }
+}
+
+package IodaEncoder as Encoder <<Folder>>
+{
+
+  class IodaEncoder
+  {
+    +IodaEncoder(conf)
+    +encode(DataContainer, bool)
+  }
+
+  class IodaDescription
+  {
+  }
+}
+
+
+Main --> BufrParser
+Main --> IodaEncoder
+DataContainer <-- Main
+
+File <-- BufrParser
+BufrDescription <-* BufrParser
+IodaDescription <-* IodaEncoder
+BufrParser ..> Exports
+
+DataContainer *-> "*" DataObject
+
+@enduml
+
