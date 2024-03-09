@@ -1,5 +1,6 @@
 
 include(GNUInstallDirs)
+include(Targets)
 
 # Location of .pycodestyle for norm checking within IODA-converters
 set( BUFR_PYLINT_CFG_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
@@ -31,18 +32,19 @@ target_link_libraries(bufr_python PUBLIC bufr_lib)
 target_link_libraries(bufr_python PUBLIC Eigen3::Eigen)
 set(pyver python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
 
+AddPyLib(bufr_python bufr ${pyver})
 
 if(APPLE)
 	set_target_properties(bufr_python PROPERTIES
 		BUILD_RPATH_USE_ORIGIN TRUE
 		BUILD_WITH_INSTALL_RPATH TRUE
-		INSTALL_RPATH "@loader_path/../../../"
+		INSTALL_RPATH "@loader_path/../../"
 		)
 else()
 	set_target_properties(bufr_python PROPERTIES
 		BUILD_RPATH_USE_ORIGIN TRUE # $ORIGIN
 		BUILD_WITH_INSTALL_RPATH TRUE
-		INSTALL_RPATH "\$ORIGIN/../../../"
+		INSTALL_RPATH "\$ORIGIN/../../"
 		)
 endif()
 
@@ -51,14 +53,3 @@ add_custom_command(TARGET bufr_python
 									 COMMAND ${CMAKE_COMMAND} -E copy_directory
 	                 				 ${CMAKE_CURRENT_SOURCE_DIR}/bufr
 													 $<TARGET_FILE_DIR:bufr_python>/bufr)
-
-#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bufr
-#				DESTINATION ${CMAKE_INSTALL_LIBDIR}/${pyver}/bufr/
-#        COMPONENT Python
-#				FILES_MATCHING PATTERN "*.py"
-#	)
-#
-#install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/bufr/__init__.py
-#				DESTINATION ${CMAKE_INSTALL_LIBDIR}/${pyver}/bufr/
-#        COMPONENT Python
-#	)

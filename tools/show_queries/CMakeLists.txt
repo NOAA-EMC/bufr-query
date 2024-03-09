@@ -1,6 +1,6 @@
 
 
-list(APPEND _bufr_deps
+list(APPEND _deps
             eckit
             bufr::bufr_4
             gsl::gsl-lite
@@ -17,4 +17,4 @@ list(APPEND _srcs
 
 ecbuild_add_executable( TARGET  show_queries.x
                         SOURCES ${_srcs}
-                        LIBS ${_bufr_deps})
+                        LIBS ${_deps})
