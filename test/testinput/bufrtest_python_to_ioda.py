@@ -8,7 +8,8 @@ import numpy as np
 import bufr
 from pyioda import ioda_obs_space as ioda_ospace
 
-def create_obs_group(input_path):
+def run():
+    input_path = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
 
     # Make the QuerySet for all the data we want
     q = bufr.QuerySet()
@@ -38,7 +39,7 @@ def create_obs_group(input_path):
             'Channel': rad.shape[1]}
 
     # Create the IODA ObsSpace
-    obsspace = ioda_ospace.ObsSpace("test.nc", mode='w', dim_dict=dims, is_memory_file=True)
+    obsspace = ioda_ospace.ObsSpace("testrun/bufrtest_python_to_ioda.nc", mode='w', dim_dict=dims)
 
     # Create the global attributes
     obsspace.write_attr('MyGlobal_str', 'My Global String Data')
@@ -69,3 +70,6 @@ def create_obs_group(input_path):
         .write_data(rad)
 
     return obsspace.obsgroup
+
+if __name__ == '__main__':
+    run()

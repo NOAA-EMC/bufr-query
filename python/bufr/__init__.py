@@ -1,2 +1,2 @@
 
-from bufr_python import *
+from .bufr_python import *
