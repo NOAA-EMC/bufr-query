@@ -3,14 +3,15 @@
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
-import pyioda
-from pyioda.ioda.Engines import bufr
+from pyioda import ioda
+import bufr
 import numpy as np
 
-# bufr = pyioda.ioda.Engines.bufr
 
 def test_basic_query():
-    DATA_PATH = 'Data/testinput_tier_1/gdas.t00z.1bhrs4.tm00.bufr_d'
+    DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
+
+    print('***** ' + str(dir(bufr)) + ' *****')
 
     # Make the QuerySet for all the data we want
     q = bufr.QuerySet()
@@ -29,9 +30,6 @@ def test_basic_query():
     with bufr.File(DATA_PATH) as f:
         r = f.execute(q)
 
-    import inspect
-
-    print(pyioda.__file__)
 
     # Use the ResultSet returned to get numpy arrays of the data
     print(type(r.get('latitude')))
@@ -50,7 +48,7 @@ def test_basic_query():
 
 
 def test_string_field():
-    DATA_PATH = 'Data/testinput_tier_1/gdas.t12z.adpupa.tm00.bufr_d'
+    DATA_PATH = 'testinput/data/gdas.t12z.adpupa.tm00.bufr_d'
 
     # Make the QuerySet for all the data we want
     q = bufr.QuerySet()
@@ -68,7 +66,7 @@ def test_string_field():
 
 
 def test_long_str_field():
-    DATA_PATH ='Data/testinput_tier_1/gdas.t06z.snocvr.tm00.bufr_d'
+    DATA_PATH ='testinput/data/gdas.t06z.snocvr.tm00.bufr_d'
 
     # Make the QuerySet for all the data we want
     q = bufr.QuerySet()
@@ -87,7 +85,7 @@ def test_long_str_field():
     assert (np.all(lid[0:7].mask == [False, True, True, True, True, True, False]))
 
 def test_type_override():
-    DATA_PATH = 'Data/testinput_tier_1/gdas.t00z.1bhrs4.tm00.bufr_d'
+    DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
 
     # Make the QuerySet for all the data we want
     q = bufr.QuerySet()
@@ -123,8 +121,8 @@ def test_invalid_query():
 
 
 def test_highlevel_replace():
-    DATA_PATH = 'Data/testinput_tier_1/gdas.t00z.1bhrs4.tm00.bufr_d'
-    YAML_PATH = 'testinput/iodatest_bufr_hrs_basic_mapping.yaml'
+    DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
+    YAML_PATH = 'testinput/bufrtest_hrs_basic_mapping.yaml'
 
     container = bufr.Parser(DATA_PATH, YAML_PATH).parse()
 
@@ -139,8 +137,8 @@ def test_highlevel_replace():
     assert np.allclose(obs_temp, data * 0.1)
 
 def test_highlevel_add():
-    DATA_PATH = 'Data/testinput_tier_1/gdas.t00z.1bhrs4.tm00.bufr_d'
-    YAML_PATH = 'testinput/iodatest_bufr_hrs_basic_mapping.yaml'
+    DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
+    YAML_PATH = 'testinput/bufrtest_hrs_basic_mapping.yaml'
 
     container = bufr.Parser(DATA_PATH, YAML_PATH).parse()
 
@@ -163,8 +161,8 @@ def test_highlevel_add():
     assert obs_temp.shape == data.shape
 
 def test_highlevel_w_category():
-    DATA_PATH = 'Data/testinput_tier_1/gdas.t12z.1bamua.tm00.bufr_d'
-    YAML_PATH = 'testinput/iodatest_bufr_amua_ta_mapping.yaml'
+    DATA_PATH = 'testinput/data/gdas.t12z.1bamua.tm00.bufr_d'
+    YAML_PATH = 'testinput/bufrtest_amua_ta_mapping.yaml'
 
     container = bufr.Parser(DATA_PATH, YAML_PATH).parse()
 
@@ -186,8 +184,8 @@ def test_highlevel_w_category():
                        obs_group.vars.open('ObsValue/brightnessTemperature').readVector.float())
 
 def test_highlevel_cache():
-    DATA_PATH = 'Data/testinput_tier_1/gdas.t12z.1bamua.tm00.bufr_d'
-    YAML_PATH = 'testinput/iodatest_bufr_amua_ta_mapping.yaml'
+    DATA_PATH = 'testinput/data/gdas.t12z.1bamua.tm00.bufr_d'
+    YAML_PATH = 'testinput/bufrtest_amua_ta_mapping.yaml'
 
     if not bufr.DataCache.has(DATA_PATH, YAML_PATH):
         dat = bufr.Parser(DATA_PATH, YAML_PATH).parse()

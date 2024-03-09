@@ -3,7 +3,7 @@
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
-from pyioda.ioda.Engines import bufr
+import bufr
 
 def test_field_val():
     DATA_PATH = 'Data/testinput_tier_1/gdas.t00z.1bhrs4.tm00.bufr_d'

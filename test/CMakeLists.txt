@@ -574,7 +574,7 @@ ecbuild_add_test( TARGET  test_bufr_show_queries_help
                   ARGS    -h)
 
 
-if (${Python3_FOUND})
+if (${BUILD_PYTHON_BINDINGS})
 
   ecbuild_add_test( TARGET  test_bufr_fieldname_validation
                     TYPE    SCRIPT
@@ -593,7 +593,7 @@ if (${Python3_FOUND})
                     COMMAND bash
                     ARGS    ${CMAKE_BINARY_DIR}/bin/bufr_comp.sh
                             netcdf
-                            "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/bufrtest_python_to_ioda.yaml"
+                            "python3 testinput/bufrtest_python_to_ioda.py"
                             bufrtest_python_to_ioda.nc
                     ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}:$ENV{PYTHONPATH})
 
