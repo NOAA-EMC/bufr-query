@@ -18,7 +18,7 @@ void setupIodaEncoder(py::module& m);
 void setupDataContainer(py::module& m);
 void setupDataCache(py::module& m);
 
-void setupBufr(py::module& m)
+PYBIND11_MODULE(bufr_python, m)
 {
   m.doc() = "Python bindings for the bufr library";
 
