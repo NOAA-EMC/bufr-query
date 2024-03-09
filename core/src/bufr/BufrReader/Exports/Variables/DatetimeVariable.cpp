@@ -15,10 +15,10 @@
 #include <unordered_map>
 #include <vector>
 
+#include "../../../Log.h"
 #include "../../../DataObjectBuilder.h"
 #include "eckit/exception/Exceptions.h"
-#include "oops/util/Logger.h"
-#include "oops/util/missingValues.h"
+
 
 #include "bufr/DataObject.h"
 
@@ -125,7 +125,7 @@ namespace bufr {
         // Be careful with mktime as it can be very slow.
         auto thisTime = std::mktime(&tm);
         if (thisTime < 0) {
-          oops::Log::warning() << "Caution, date suspicious date (year, month, day): " << year << ", "
+          log::warning() << "Caution, date suspicious date (year, month, day): " << year << ", "
                                << month << ", " << day << std::endl;
         }
 

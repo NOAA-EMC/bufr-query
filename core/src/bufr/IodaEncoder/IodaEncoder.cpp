@@ -12,11 +12,12 @@
 #include <sstream>
 #include <string>
 
+#include "../Log.h"
 #include "bufr/DataObject.h"
 #include "eckit/exception/Exceptions.h"
 #include "ioda/Layout.h"
 #include "ioda/Misc/DimensionScales.h"
-#include "oops/util/Logger.h"
+
 
 namespace bufr {
     static const char* LocationName = "Location";
@@ -102,18 +103,18 @@ namespace bufr {
             // When we find that the primary index is zero we need to skip this category
             if (dataObjectGroupBy->getDims()[0] == 0)
             {
-                oops::Log::warning() << "  Category (";
+                log::warning() << "  Category (";
                 for (auto category : categories)
                 {
-                    oops::Log::warning() << category;
+                    log::warning() << category;
 
                     if (category != categories.back())
                     {
-                        oops::Log::warning() << ", ";
+                        log::warning() << ", ";
                     }
                 }
 
-                oops::Log::warning() << ") was not found in file." << std::endl;
+                log::warning() << ") was not found in file." << std::endl;
             }
 
             // Create the root Location dimension for this category

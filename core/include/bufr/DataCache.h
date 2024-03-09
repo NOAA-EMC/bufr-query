@@ -10,8 +10,6 @@
 #include <vector>
 #include <string>
 
-#include "oops/util/Logger.h"
-
 #include "bufr/DataContainer.h"
 
 #pragma once
@@ -32,7 +30,7 @@ namespace bufr {
       {
         if (!cache_.empty())
         {
-          oops::Log::info() << "DataCache destructor called with non-empty cache.";
+//          log::info() << "DataCache destructor called with non-empty cache.";
         }
       }
 
@@ -107,8 +105,8 @@ namespace bufr {
                         cache[key].cachedCategories.end(), category)
               == cache[key].cachedCategories.end())
           {
-                oops::Log::info() << "DataCache::markFinished called with category that " \
-                                     "is not cached.";
+//                log::info() << "DataCache::markFinished called with category that " \
+//                                     "is not cached.";
                 return;
           }
 

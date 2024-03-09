@@ -12,12 +12,14 @@
 #include <unordered_map>
 #include <vector>
 
+#include "../../../Log.h"
 #include "../../../DataObjectBuilder.h"
+
 #include "bufr/DataObject.h"
 #include "DatetimeVariable.h"
 #include "Transforms/atms/atms_spatial_average_interface.h"
 #include "eckit/exception/Exceptions.h"
-#include "oops/util/Logger.h"
+
 
 namespace
 {
@@ -60,8 +62,8 @@ namespace bufr {
         // Get dimensions
         if (radObj->getDims().size() != 2)
         {
-           oops::Log::info()  << "Observation dimension should be 2 " << std::endl;
-           oops::Log::error() << "Incorrect observation dimension : " << radObj->getDims().size()
+           log::info()  << "Observation dimension should be 2 " << std::endl;
+           log::error() << "Incorrect observation dimension : " << radObj->getDims().size()
                                                                        << std::endl;
         }
         int nobs = (radObj->getDims())[0];
