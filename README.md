@@ -1,4 +1,4 @@
-# Bufr Library
+# Bufr Query
 
 BUFR Library can be used too read NCEP and WMO formated BUFR files using a simple interface that
 does not require the user to know the details of the BUFR format.
