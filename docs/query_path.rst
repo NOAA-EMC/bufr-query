@@ -49,7 +49,7 @@ empty (thats a different problem).
 Query Identification
 --------------------
 
-Print Queries
+Show Queries
 ~~~~~~~~~~~~~
 
 The recommended way to identify queries you might want from a BUFR file is to use the **show_queries.x**
