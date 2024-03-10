@@ -7,13 +7,15 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'bufr-query'
-copyright = '(C) Copyright 2024 NOAA/NWS/NCEP/EMC'
+copyright = '2024 NOAA/NWS/NCEP/EMC'
 author = ''
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = []
+extensions = ['sphinx.ext.mathjax',
+              'sphinx.ext.todo',
+              'sphinx.ext.autodoc']
 
 templates_path = ['_templates']
 exclude_patterns = ['.DS_Store']
