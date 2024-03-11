@@ -15,7 +15,8 @@ author = ''
 
 extensions = ['sphinx.ext.mathjax',
               'sphinx.ext.todo',
-              'sphinx.ext.autodoc']
+              'sphinx.ext.autodoc',
+              'sphinx.ext.autosectionlabel']
 
 templates_path = ['_templates']
 exclude_patterns = ['.DS_Store']

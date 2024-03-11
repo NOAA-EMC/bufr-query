@@ -232,7 +232,7 @@ The QuerySet is a list of queries that you want to execute on the BUFR file. To 
 create an instance of the QuerySet class and then add queries to it using the `add` method. Each
 item in the QuerySet consists of a name and the corresponding query path. The name is used to
 retrieve the data from the ResultSet. It can be anything you want! The path can be any query path
-described in :ref:`BUFR Query Path`.
+described in :ref:`Query Path`.
 
 If you are only interested in specific subsets within the BUFR file you can instantiate the QuerySet
 with a list of the Subsets you want. For example:
