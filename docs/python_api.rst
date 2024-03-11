@@ -1,5 +1,5 @@
 .. _bufr-python-api:
-:tocdepth: 2
+:tocdepth: 3
 
 Python
 ======

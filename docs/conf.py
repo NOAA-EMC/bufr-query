@@ -22,9 +22,9 @@ exclude_patterns = ['.DS_Store']
 
 root_doc = 'index'
 
-
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'default'
 html_static_path = ['_static']
+html_sidebars = {'**': ['globaltoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html']}
