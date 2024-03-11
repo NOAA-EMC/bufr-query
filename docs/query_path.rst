@@ -1,7 +1,7 @@
 .. _bufr-query-path:
 
-BUFR Query Path
-===============
+Query Path
+==========
 
 Queries are used to uniquely identify specific elements in a BUFR file (the Targets). This ability to select specific
 elements is what gives this component the ability to work.

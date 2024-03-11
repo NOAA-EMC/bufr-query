@@ -1,7 +1,7 @@
 .. _bufr-software-architecture:
 
-BUFR Details
-============
+Software Design
+===============
 
 .. image:: uml/BUFR_BigPicture.png
     :width: 75%

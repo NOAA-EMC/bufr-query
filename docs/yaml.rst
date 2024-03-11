@@ -1,7 +1,7 @@
 .. _bufr-yaml:
 
-BUFR Mapping YAML File
-======================
+Mapping YAML File
+=================
 
 The YAML mapping tells the BUFR component fields to read from the BUFR file, and how
 to encode those fields into an IODA ObsGroup object. To do that it defines 2 sections: `bufr` and
