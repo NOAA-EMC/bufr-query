@@ -26,7 +26,7 @@ work will be done in native code. Here is a simple example in the form of a "scr
 
 As opposed to dealing with the low level components (bufr.QuerySet, bufr.File, bufr.ResultSet) directly the example
 makes use of the bufr.Parser, bufr.DataContainer, and bufr.IodaEncoder components. The
-:ref:`BUFR Mapping YAML File` defines the queries and mapping to the resulting ObsGroup object in its **bufr** and
+:ref:`Mapping YAML File` defines the queries and mapping to the resulting ObsGroup object in its **bufr** and
 **ioda** sections.
 
 The basic steps involved are:
