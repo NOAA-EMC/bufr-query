@@ -1,7 +1,7 @@
-BUFR
-====
+BUFR Query
+==========
 
-The BUFR library provides a simple interface to read BUFR files using queries. The queries
+BUFR Query is a library that provides a simple interface to read BUFR files using queries. The queries
 are basically just the path string to the element you want.
 
 Simple example
