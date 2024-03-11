@@ -34,7 +34,7 @@ handled in the Query component. In order to make this component work, a special 
 that give access to the underlying data structures in the BUFR file.
 
 The core idea of the Query component is to give access to specific data fields via user provided query strings
-:ref:`BUFR Query Path`. NCEPLIB-bufr has no such concept so the Query component does all that work (hence the need for
+:ref:`Query Path`. NCEPLIB-bufr has no such concept so the Query component does all that work (hence the need for
 the intrusive access into the NCEPLIB-bufr data structures). The process of taking a user provided query string and
 turning it into a Query is shown in the following sequence diagram:
 
