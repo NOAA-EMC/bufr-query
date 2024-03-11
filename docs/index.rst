@@ -18,7 +18,7 @@ Contents
 --------
 
 .. toctree::
-   :maxdepth: 1
+    :maxdepth: 2
 
   query_path
   yaml
