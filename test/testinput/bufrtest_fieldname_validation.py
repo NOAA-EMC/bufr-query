@@ -6,7 +6,7 @@
 import bufr
 
 def test_field_val():
-    DATA_PATH = 'Data/testinput_tier_1/gdas.t00z.1bhrs4.tm00.bufr_d'
+    DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
 
     # Make the QuerySet for all the data we want
     q = bufr.QuerySet()
@@ -24,7 +24,7 @@ def test_field_val():
     assert False, "Didn't throw exception for invalid field name."
 
 def test_groupby_field_val():
-    DATA_PATH = 'Data/testinput_tier_1/gdas.t00z.1bhrs4.tm00.bufr_d'
+    DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
 
     # Make the QuerySet for all the data we want
     q = bufr.QuerySet()

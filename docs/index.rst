@@ -24,6 +24,3 @@ Contents
   yaml
   python_api
   software_architecture
-
-
-

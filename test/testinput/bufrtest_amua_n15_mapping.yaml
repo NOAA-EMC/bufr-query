@@ -76,9 +76,6 @@ bufr:
             _207: n16
 
 ioda:
-  backend: netcdf
-  obsdataout: "./testrun/gdas.t12z.amsua_{splits/satId}.tm00.nc"
-
   dimensions:
     - name: Channel
       source: variables/sensorChannelNumber
