@@ -28,6 +28,34 @@ namespace bufr
 {
 //    typedef ObjectFactory<Parser, const eckit::LocalConfiguration&> ParseFactory;
 
+    std::string makeFilename(const std::string& prototype, const SubCategory& categories)
+    {
+        if (categories.empty())
+        {
+            return prototype;
+        }
+
+        // take a string formatted like ex: abc/gdas.{{ category }}.nc and replace {{ category }}
+        // with the category string. The category string is the concatenation of the subcategories
+        // with an underscore.
+
+        std::string filename = prototype;
+        std::string category = "";
+        for (const auto& subCat : categories)
+        {
+            category += subCat + "_";
+        }
+        category.pop_back();
+
+        size_t startPos = filename.find("{{");
+        size_t endPos = filename.find("}}") + 2;
+        if (startPos != std::string::npos)
+        {
+            filename.replace(startPos, endPos-startPos, category);
+        }
+        return filename;
+    }
+
     void parse(const std::string& obsFile,
                const std::string& mappingFile,
                const std::string& outputFile,
@@ -44,18 +72,22 @@ namespace bufr
 
             auto dataMap = IodaEncoder(yaml->getSubConfiguration("ioda")).encode(data);
 
-            ioda::Engines::BackendCreationParameters backendParams;
-            backendParams.fileName = outputFile;
-            backendParams.openMode = ioda::Engines::BackendOpenModes::Read_Write;
-            backendParams.createMode = ioda::Engines::BackendCreateModes::Truncate_If_Exists;
-            backendParams.action = ioda::Engines::BackendFileActions::Create;
-            backendParams.flush = true;
+            for (const auto& obs : dataMap)
+            {
+                ioda::Engines::BackendCreationParameters backendParams;
+                backendParams.fileName = makeFilename(outputFile, obs.first);
+                backendParams.openMode = ioda::Engines::BackendOpenModes::Read_Write;
+                backendParams.createMode = ioda::Engines::BackendCreateModes::Truncate_If_Exists;
+                backendParams.action = ioda::Engines::BackendFileActions::Create;
+                backendParams.flush = true;
 
-            auto rootGroup = ioda::Engines::constructBackend(ioda::Engines::BackendNames::Hdf5File,
-                                                         backendParams);
+                auto rootGroup = ioda::Engines::constructBackend(
+                    ioda::Engines::BackendNames::Hdf5File,
+                    backendParams);
 
-            const auto& obsGroup = dataMap.begin()->second;
-            ioda::copyGroup(obsGroup, rootGroup);
+                const auto &obsGroup = obs.second;
+                ioda::copyGroup(obsGroup, rootGroup);
+            }
         }
         else
         {

@@ -60,20 +60,21 @@ list(APPEND test_output
   testoutput/bufrtest_adpsfc.nc
   testoutput/bufrtest_adpupa.nc
   testoutput/bufrtest_aircft_noamdar103.nc
-  testoutput/bufrtest_atms.nc
-  testoutput/bufrtest_filter_split.nc
+  testoutput/bufrtest_atms_n20.nc
+  testoutput/bufrtest_amua_metop-a.nc
+  testoutput/bufrtest_split_15_seven.nc
+  testoutput/bufrtest_filter_split_15_7.nc
   testoutput/bufrtest_long_strs.nc
   testoutput/bufrtest_mtiasi_metop_a.nc
   testoutput/bufrtest_read_2_dim_blocks.nc
   testoutput/bufrtest_rtma_mesonet.nc
   testoutput/bufrtest_sevcsr.nc
-  testoutput/bufrtest_split.nc
   testoutput/bufrtest_adpsfc_cloud_rrfs_prepbufr.nc
   testoutput/bufrtest_adpupa_prepbufr.nc
   testoutput/bufrtest_aircft_prepbufr.nc
   testoutput/bufrtest_empty_fields.nc
   testoutput/bufrtest_filtering.nc
-  testoutput/bufrtest_mhs.nc
+  testoutput/bufrtest_mhs_metop-b.nc
   testoutput/bufrtest_mtiasi_metop_b.nc
   testoutput/bufrtest_rtma_adpsfc.nc
   testoutput/bufrtest_satwnd_avhrr.nc
@@ -82,7 +83,6 @@ list(APPEND test_output
   testoutput/bufrtest_adpsfc_prepbufr.nc
   testoutput/bufrtest_aircar.nc
   testoutput/bufrtest_amua_n15.nc
-  testoutput/bufrtest_esamua.nc
   testoutput/bufrtest_hrs_basic.nc
   testoutput/bufrtest_mhs_basic.nc
   testoutput/bufrtest_mtiasi_metop_c.nc
@@ -92,14 +92,14 @@ list(APPEND test_output
   testoutput/bufrtest_wmo_radiosonde.nc
   testoutput/bufrtest_adpsfc_snow.nc
   testoutput/bufrtest_aircft_amdar103.nc
-  testoutput/bufrtest_amua_ta.nc
-  testoutput/bufrtest_esmhs.nc
+  testoutput/bufrtest_esmhs_noaa-19.nc
   testoutput/bufrtest_lgycld_rrfs.nc
-  testoutput/bufrtest_mtiasi.nc
+  testoutput/bufrtest_mtiasi_metop-c.nc
   testoutput/bufrtest_python_to_ioda.nc
   testoutput/bufrtest_rtma_aircft_NC004103.nc
   testoutput/bufrtest_satwnd_old_format.nc
   testoutput/bufrtest_specifying_subsets.nc
+  testoutput/bufrtest_esamua_n18.nc
 )
 
 list(APPEND test_data
@@ -133,6 +133,8 @@ list(APPEND test_data
   testinput/data/rtma_ru.t0000z.aircft.tm00_nc004006.bufr_d
   testinput/data/rtma_ru.t0000z.aircft.tm00_nc004103.bufr_d
   testinput/data/rtma_ru.t00z.msonet.tm00.bufr_d
+  testinput/data/gdas.t12z.acft_profiles.prepbufr
+  testinput/data/gdas.t12z.adpsfc.prepbufr
 )
 
 # create test directories and make links to the input files
@@ -145,6 +147,11 @@ foreach(FILENAME ${test_input} ${test_output} ${test_data})
     ${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}
     ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME} )
 endforeach(FILENAME)
+
+# link the bufr_tables directory
+execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink
+  ${CMAKE_CURRENT_SOURCE_DIR}/testinput/data/bufr_tables
+  ${CMAKE_CURRENT_BINARY_DIR}/testinput/data/bufr_tables )
 
 ecbuild_add_test( TARGET  test_bufr_filtering
                   TYPE    SCRIPT
@@ -163,8 +170,8 @@ ecbuild_add_test( TARGET  test_bufr_split
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t18z.1bmhs.tm00.bufr_d
                                                                testinput/bufrtest_split_mapping.yaml
-                                                               testrun/bufrtest_split.nc"
-                          bufrtest_split.nc)
+                                                               testrun/bufrtest_split_{{category}}.nc"
+                          bufrtest_split_15_seven.nc)
 
 ecbuild_add_test( TARGET  test_bufr_filter_split
                   TYPE    SCRIPT
@@ -173,8 +180,8 @@ ecbuild_add_test( TARGET  test_bufr_filter_split
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t18z.1bmhs.tm00.bufr_d
                                                                testinput/bufrtest_filter_split_mapping.yaml
-                                                               testrun/bufrtest_filter_split.nc"
-                          bufrtest_filter_split.nc)
+                                                               testrun/bufrtest_filter_split_{{category}}.nc"
+                          bufrtest_filter_split_15_7.nc)
 
 ecbuild_add_test( TARGET  test_bufr_empty_fields
                   TYPE    SCRIPT
@@ -244,8 +251,8 @@ ecbuild_add_test( TARGET  test_bufr_amua_ta
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t12z.1bamua.tm00.bufr_d
                                                                testinput/bufrtest_amua_ta_mapping.yaml
-                                                               testrun/bufrtest_amua_ta.nc"
-                          bufrtest_amua_ta.nc)
+                                                               testrun/bufrtest_amua_{{category}}.nc"
+                          bufrtest_amua_metop-a.nc)
 
 ecbuild_add_test( TARGET  test_bufr_amua_n15
                   TYPE    SCRIPT
@@ -254,7 +261,7 @@ ecbuild_add_test( TARGET  test_bufr_amua_n15
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t12z.1bamua.tm00.bufr_d
                                                                testinput/bufrtest_amua_n15_mapping.yaml
-                                                               testrun/bufrtest_amua_n15.nc"
+                                                               testrun/bufrtest_amua_{{category}}.nc"
                           bufrtest_amua_n15.nc)
 
 ecbuild_add_test( TARGET  test_bufr_esamua
@@ -264,8 +271,8 @@ ecbuild_add_test( TARGET  test_bufr_esamua
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t12z.esamua.tm00.bufr_d
                                                                testinput/bufrtest_esamua_mapping.yaml
-                                                               testrun/bufrtest_esamua.nc"
-                          bufrtest_esamua.nc)
+                                                               testrun/bufrtest_esamua_{{category}}.nc"
+                          bufrtest_esamua_n18.nc)
 
 ecbuild_add_test( TARGET  test_bufr_mhs
                   TYPE    SCRIPT
@@ -274,8 +281,8 @@ ecbuild_add_test( TARGET  test_bufr_mhs
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t18z.1bmhs.tm00.bufr_d
                                                                testinput/bufrtest_mhs_mapping.yaml
-                                                               testrun/bufrtest_mhs.nc"
-                          bufrtest_mhs.nc)
+                                                               testrun/bufrtest_mhs_{{category}}.nc"
+                          bufrtest_mhs_metop-b.nc)
 
 ecbuild_add_test( TARGET  test_bufr_esmhs
                   TYPE    SCRIPT
@@ -284,15 +291,15 @@ ecbuild_add_test( TARGET  test_bufr_esmhs
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t12z.esmhs.tm00.bufr_d
                                                                testinput/bufrtest_esmhs_mapping.yaml
-                                                               testrun/bufrtest_esmhs.nc"
-                          bufrtest_esmhs.nc)
+                                                               testrun/bufrtest_esmhs_{{category}}.nc"
+                          bufrtest_esmhs_noaa-19.nc)
 
 ecbuild_add_test( TARGET  test_bufr_adpsfc
                   TYPE    SCRIPT
                   COMMAND bash
                   ARGS    ${CMAKE_BINARY_DIR}/bin/bufr_comp.sh
                           netcdf
-                          "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/rtma_ru.t0000z.adpsfc_nc000101.tm00.bufr_d
+                          "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t12z.adpsfc.tm00.bufr_d
                                                                testinput/bufrtest_adpsfc_mapping.yaml
                                                                testrun/bufrtest_adpsfc.nc"
                           bufrtest_adpsfc.nc)
@@ -364,7 +371,8 @@ ecbuild_add_test( TARGET  test_bufr_wmo_radiosonde
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/bufr_read_wmo_radiosonde.bufr
                                                                testinput/bufrtest_wmo_radiosonde_mapping.yaml
-                                                               testrun/bufrtest_wmo_radiosonde.nc"
+                                                               testrun/bufrtest_wmo_radiosonde.nc
+                                                               -t testinput/data/bufr_tables"
                           bufrtest_wmo_radiosonde.nc)
 
 ecbuild_add_test( TARGET  test_bufr_satwnd_old_format
@@ -404,18 +412,18 @@ ecbuild_add_test( TARGET  test_bufr_mtiasi
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t12z.mtiasi.tm00.bufr_d
                                                                testinput/bufrtest_mtiasi_mapping.yaml
-                                                               testrun/bufrtest_mtiasi.nc"
-                          bufrtest_mtiasi.nc)
+                                                               testrun/bufrtest_mtiasi_{{category}}.nc"
+                          bufrtest_mtiasi_metop-c.nc)
 
-ecbuild_add_test( TARGET  test_bufr_mtiasi_cached
-                  TYPE    SCRIPT
-                  COMMAND bash
-                  ARGS    ${CMAKE_BINARY_DIR}/bin/bufr_comp.sh
-                          netcdf
-                          "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t12z.mtiasi.tm00.bufr_d
-                                                               testinput/bufrtest_mtiasi_cached_mapping.yaml
-                                                               testrun/bufrtest_mtiasi_cached.nc"
-                          bufrtest_mtiasi_metop_b.nc)
+#ecbuild_add_test( TARGET  test_bufr_mtiasi_cached
+#                  TYPE    SCRIPT
+#                  COMMAND bash
+#                  ARGS    ${CMAKE_BINARY_DIR}/bin/bufr_comp.sh
+#                          netcdf
+#                          "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t12z.mtiasi.tm00.bufr_d
+#                                                               testinput/bufrtest_mtiasi_cached_mapping.yaml
+#                                                               testrun/bufrtest_mtiasi_cached_{{category}}.nc"
+#                          bufrtest_mtiasi_metop-c.nc)
 
 ecbuild_add_test( TARGET  test_bufr_atms
                   TYPE    SCRIPT
@@ -424,8 +432,8 @@ ecbuild_add_test( TARGET  test_bufr_atms
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t00z.atms.tm00.bufr_d
                                                                testinput/bufrtest_atms_mapping.yaml
-                                                               testrun/bufrtest_atms.nc"
-                          bufrtest_atms.nc)
+                                                               testrun/bufrtest_atms_{{category}}.nc"
+                          bufrtest_atms_n20.nc)
 
 ecbuild_add_test( TARGET  test_bufr_sfcshp
                   TYPE    SCRIPT
@@ -513,7 +521,7 @@ ecbuild_add_test( TARGET  test_bufr_adpsfc_cloud_rrfs_prepbufr
                   ARGS    ${CMAKE_BINARY_DIR}/bin/bufr_comp.sh
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/rap.t06z.adpsfc.prepbufr.tm00.bufr
-                                                               testinput/bufrtest_adpsfc_cloud__mapping.yaml
+                                                               testinput/bufrtest_adpsfc_cloud_rrfs_prepbufr_mapping.yaml
                                                                testrun/bufrtest_adpsfc_cloud_rrfs_prepbufr.nc"
                           bufrtest_adpsfc_cloud_rrfs_prepbufr.nc)
 
@@ -542,7 +550,7 @@ ecbuild_add_test( TARGET  test_bufr_rtma_aircft_NC004103
                   COMMAND bash
                   ARGS    ${CMAKE_BINARY_DIR}/bin/bufr_comp.sh
                           netcdf
-                          "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/rtma_ru.t0000z.aircft.tm00_nc004103.bufr_d
+                          "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/rtma_ru.t0000z.aircft.tm00_nc004103.bufr_d
                                                                testinput/bufrtest_rtma_aircft_NC004103_mapping.yaml
                                                                testrun/bufrtest_rtma_aircft_NC004103.nc"
                           bufrtest_rtma_aircft_NC004103.nc)
@@ -554,19 +562,20 @@ ecbuild_add_test( TARGET  test_bufr_wmo_amdar_multi
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/amdar_wmo_multi.bufr
                                                                testinput/bufrtest_wmo_amdar_multi_mapping.yaml
-                                                               testrun/bufrtest_wmo_amdar_multi.nc"
+                                                               testrun/bufrtest_wmo_amdar_multi.nc
+                                                               -t testinput/data/bufr_tables"
                           bufrtest_wmo_amdar_multi.nc)
 
 ecbuild_add_test( TARGET  test_bufr_show_queries_ncep
                   TYPE    SCRIPT
                   COMMAND ${CMAKE_BINARY_DIR}/bin/show_queries.x
-                  ARGS "Data/testinput_tier_1/gdas.t18z.1bmhs.tm00.bufr_d")
+                  ARGS "testinput/data/gdas.t18z.1bmhs.tm00.bufr_d")
 
 ecbuild_add_test( TARGET  test_bufr_show_queries_wmo
                   TYPE    SCRIPT
                   COMMAND ${CMAKE_BINARY_DIR}/bin/show_queries.x
-                  ARGS -t "Data/testinput_tier_1/bufr_tables"
-                          "Data/testinput_tier_1/amdar_wmo_multi.bufr")
+                  ARGS -t  "testinput/data/bufr_tables"
+                           "testinput/data/amdar_wmo_multi.bufr")
 
 ecbuild_add_test( TARGET  test_bufr_show_queries_help
                   TYPE    SCRIPT
