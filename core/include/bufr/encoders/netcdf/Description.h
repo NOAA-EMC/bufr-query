@@ -10,15 +10,16 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <netcdf>
 
 #include "eckit/config/LocalConfiguration.h"
-#include "ioda/Engines/EngineUtils.h"
-#include "ioda/Group.h"
+#include "bufr/QueryParser.h"
 
-#include "QueryParser.h"
-
+namespace nc = netCDF;
 
 namespace bufr {
+namespace encoders {
+namespace netcdf {
     struct Range
     {
         float start;
@@ -41,14 +42,14 @@ namespace bufr {
         std::string units;
         std::shared_ptr<std::string> coordinates;  // Optional
         std::shared_ptr<Range> range;  // Optional
-        std::vector<ioda::Dimensions_t> chunks;  // Optional
+//        std::vector<ioda::Dimensions_t> chunks;  // Optional
         int compressionLevel;  // Optional
     };
 
     struct GlobalDescriptionBase
     {
         std::string name;
-        virtual void addTo(ioda::Group& group) = 0;
+        virtual void addTo(nc::NcFile& file) = 0;
         virtual ~GlobalDescriptionBase() = default;
     };
 
@@ -63,29 +64,73 @@ namespace bufr {
     {
         T value;
 
-        void addTo(ioda::Group& group) final
+        nc::NcType getNcType()
         {
-            _addTo(group);
+            if (std::is_same<T, float>::value)
+            {
+                return nc::NcType::nc_FLOAT;
+            }
+            else if (std::is_same<T, double>::value)
+            {
+                return nc::NcType::nc_DOUBLE;
+            }
+            else if (std::is_same<T, uint32_t>::value)
+            {
+                return nc::NcType::nc_UINT;
+            }
+            else if (std::is_same<T, uint64_t>::value)
+            {
+                return nc::NcType::nc_UINT64;
+            }
+            else if (std::is_same<T, int32_t>::value)
+            {
+                return nc::NcType::nc_INT;
+            }
+            else if (std::is_same<T, int64_t>::value)
+            {
+                return nc::NcType::nc_INT64;
+            }
+            else if (std::is_same<T, std::string>::value)
+            {
+                return nc::NcType::nc_CHAR;
+            }
+            else
+            {
+                throw eckit::BadParameter("Unsupported global attribute type");
+            }
+        }
+
+        void addTo(nc::NcFile& file) final
+        {
+            _addTo(file);
         }
 
      private:
         // T is something other than a std::vector
         template<typename U = void>
-        void _addTo(ioda::Group& group,
+        void _addTo(nc::NcFile& file,
                     typename std::enable_if<!is_vector<T>::value, U>::type* = nullptr)
         {
-            ioda::Attribute attr = group.atts.create<T>(name, {1});
-            attr.write<T>({value});
+            file.putAtt(name, getNcType(), value);
         }
 
         // T is a vector
         template<typename U = void>
-        void _addTo(ioda::Group& group,
+        void _addTo(nc::NcFile& file,
                     typename std::enable_if<is_vector<T>::value, U>::type* = nullptr)
         {
-            ioda::Attribute attr = group.atts.create<typename T::value_type>(name, \
-                                   {static_cast<int>(value.size())});
-            attr.write<typename T::value_type>(value);
+            file.putAtt(name, getNcType(), value.size(), value.data());
+        }
+    };
+
+    template<>
+    struct GlobalDescription<std::string> : public GlobalDescriptionBase
+    {
+        std::string value;
+
+        void addTo(nc::NcFile& file) final
+        {
+            file.putAtt(name, value);
         }
     };
 
@@ -94,12 +139,12 @@ namespace bufr {
     typedef std::vector<std::shared_ptr<GlobalDescriptionBase>> GlobalDescriptions;
 
     /// \brief Describes how to write data to IODA.
-    class IodaDescription
+    class Description
     {
      public:
-        IodaDescription() = default;
-        explicit IodaDescription(const std::string& yamlFile);
-        explicit IodaDescription(const eckit::Configuration& conf);
+        Description() = default;
+        explicit Description(const std::string& yamlFile);
+        explicit Description(const eckit::Configuration& conf);
 
         /// \brief Add Dimension defenition
         void addDimension(const DimensionDescription& dim);
@@ -144,4 +189,6 @@ namespace bufr {
 
         void init(const eckit::Configuration& conf);
     };
+}  // namespace netcdf
+}  // namespace encoders
 }  // namespace bufr

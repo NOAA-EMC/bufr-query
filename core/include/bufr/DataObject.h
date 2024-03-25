@@ -10,13 +10,13 @@
 #include <memory>
 #include <iostream>
 #include <vector>
+#include <netcdf>
 
-#include "ioda/ObsGroup.h"
-#include "ioda/defs.h"
-#include "ioda/Variables/Variable.h"
-
+#include "encoders/ElementWriter.h"
 #include "QueryParser.h"
 #include "Data.h"
+
+namespace nc = netCDF;
 
 
 namespace bufr {
@@ -28,28 +28,40 @@ namespace bufr {
   struct DimensionDataBase
   {
     virtual ~DimensionDataBase() = default;
+    virtual size_t size() = 0;
 
-    std::shared_ptr<ioda::NewDimensionScale_Base> dimScale;
+    virtual void write(const nc::NcVar var) = 0;
 
-    virtual void write(ioda::Variable& var) = 0;
+//    virtual void write(std::function<void(encoders::ElementWriter&)> writer) = 0;
+
+//    template<typename U>
+//    virtual void write(const encoders::ElementWriter<U>& writer) = 0;
   };
 
   template<typename T>
   struct DimensionData : public DimensionDataBase
   {
+    std::string name;
     std::vector<T> data;
 
     DimensionData() = delete;
 
     virtual ~DimensionData() = default;
 
-    explicit DimensionData(size_t size) : data(std::vector<T>(size, _default()))
+    explicit DimensionData(const std::string& dimname, size_t size) :
+        name(dimname),
+        data(std::vector<T>(size, _default()))
     {
     }
 
-    void write(ioda::Variable& var)
+    size_t size() final
     {
-      var.write(data);
+        return data.size();
+    }
+
+    void write(const nc::NcVar var)
+    {
+        var.putVar(data.data());
     }
 
   private:
@@ -123,12 +135,11 @@ namespace bufr {
       /// \param dimensions List of Variables to use as the dimensions for this new variable
       /// \param chunks List of integers specifying the chunking dimensions
       /// \param compressionLevel The GZip compression level to use, must be 0-9
-      virtual ioda::Variable createVariable(
-        ioda::ObsGroup& obsGroup,
-        const std::string& name,
-        const std::vector<ioda::Variable>& dimensions,
-        const std::vector<ioda::Dimensions_t>& chunks,
-        int compressionLevel) const = 0;
+      virtual nc::NcVar createVariable(nc::NcGroup& group,
+                                       const std::string& name,
+                                       const std::vector<nc::NcVar>& dimensions,
+                                       const std::vector<nc::NcVar>& chunks,
+                                       int compressionLevel) const = 0;
 
       /// \brief Makes a new dimension scale using this data object as the source
       /// \param name The name of the dimension variable.
@@ -164,8 +175,7 @@ namespace bufr {
       std::shared_ptr<DimensionDataBase> createEmptyDimension(const std::string& name,
                                                               std::size_t dimIdx) const
       {
-        auto dimData = std::make_shared<DimensionData<int>>(getDims()[dimIdx]);
-        dimData->dimScale = ioda::NewDimensionScale<int>(name, getDims()[dimIdx]);
+        auto dimData = std::make_shared<DimensionData<int>>(name, getDims()[dimIdx]);
         return dimData;
       }
 
@@ -193,7 +203,7 @@ namespace bufr {
       std::vector<Query> dimPaths_;
   };
 
-  template <class T>
+  template <typename T>
   class DataObject : public DataObjectBase
   {
     public:
@@ -354,16 +364,16 @@ namespace bufr {
       /// \param dimensions List of Variables to use as the dimensions for this new variable
       /// \param chunks List of integers specifying the chunking dimensions
       /// \param compressionLevel The GZip compression level to use, must be 0-9
-      ioda::Variable createVariable(ioda::ObsGroup& obsGroup,
-                                    const std::string& name,
-                                    const std::vector<ioda::Variable>& dimensions,
-                                    const std::vector<ioda::Dimensions_t>& chunks,
-                                    int compressionLevel) const final
+      virtual nc::NcVar createVariable(nc::NcGroup& group,
+                                       const std::string& name,
+                                       const std::vector<nc::NcVar>& dimensions,
+                                       const std::vector<nc::NcVar>& chunks,
+                                       int compressionLevel) const final
       {
-        auto params = makeCreationParams(chunks, compressionLevel);
-        auto var = obsGroup.vars.createWithScales<T>(name, dimensions, params);
-        var.write(data_);
-        return var;
+//        auto params = makeCreationParams(chunks, compressionLevel);
+//        auto var = obsGroup.vars.createWithScales<T>(name, dimensions, params);
+//        var.write(data_);
+//        return var;
       };
 
       /// \brief Makes a new dimension scale using this data object as the source
@@ -372,8 +382,7 @@ namespace bufr {
       std::shared_ptr<DimensionDataBase> createDimensionFromData(const std::string& name,
                                                                  std::size_t dimIdx) const final
       {
-        auto dimData = std::make_shared<DimensionData<T>>(getDims()[dimIdx]);
-        dimData->dimScale = ioda::NewDimensionScale<T>(name, getDims()[dimIdx]);
+        auto dimData = std::make_shared<DimensionData<T>>(name, getDims()[dimIdx]);
 
         if (data_.empty())
         {
@@ -455,22 +464,22 @@ namespace bufr {
     private:
       std::vector<T> data_;
 
-      /// \brief Make the variable creation parameters.
-      /// \param chunks The chunk sizes
-      /// \param compressionLevel The compression level
-      /// \return The variable creation patterns.
-      ioda::VariableCreationParameters makeCreationParams(
-        const std::vector<ioda::Dimensions_t>& chunks,
-        int compressionLevel) const
-      {
-        ioda::VariableCreationParameters params;
-        params.chunk = true;
-        params.chunks = chunks;
-        params.compressWithGZIP(compressionLevel);
-        params.setFillValue<T>(missingValue());
-
-        return params;
-      }
+//      /// \brief Make the variable creation parameters.
+//      /// \param chunks The chunk sizes
+//      /// \param compressionLevel The compression level
+//      /// \return The variable creation patterns.
+//      ioda::VariableCreationParameters makeCreationParams(
+//        const std::vector<ioda::Dimensions_t>& chunks,
+//        int compressionLevel) const
+//      {
+//        ioda::VariableCreationParameters params;
+//        params.chunk = true;
+//        params.chunks = chunks;
+//        params.compressWithGZIP(compressionLevel);
+//        params.setFillValue<T>(missingValue());
+//
+//        return params;
+//      }
   };
 
   template<>
@@ -616,16 +625,16 @@ namespace bufr {
       /// \param dimensions List of Variables to use as the dimensions for this new variable
       /// \param chunks List of integers specifying the chunking dimensions
       /// \param compressionLevel The GZip compression level to use, must be 0-9
-      ioda::Variable createVariable(ioda::ObsGroup& obsGroup,
-                                    const std::string& name,
-                                    const std::vector<ioda::Variable>& dimensions,
-                                    const std::vector<ioda::Dimensions_t>& chunks,
-                                    int compressionLevel) const final
+      virtual nc::NcVar createVariable(nc::NcGroup& group,
+                                       const std::string& name,
+                                       const std::vector<nc::NcVar>& dimensions,
+                                       const std::vector<nc::NcVar>& chunks,
+                                       int compressionLevel) const
       {
-        auto params = makeCreationParams(chunks, compressionLevel);
-        auto var = obsGroup.vars.createWithScales<std::string>(name, dimensions, params);
-        var.write(data_);
-        return var;
+//        auto params = makeCreationParams(chunks, compressionLevel);
+//        auto var = obsGroup.vars.createWithScales<std::string>(name, dimensions, params);
+//        var.write(data_);
+//        return var;
       };
 
       /// \brief Makes a new dimension scale using this data object as the source
@@ -634,8 +643,7 @@ namespace bufr {
       std::shared_ptr<DimensionDataBase> createDimensionFromData(const std::string& name,
                                                                  std::size_t dimIdx) const final
       {
-        auto dimData = std::make_shared<DimensionData<std::string>>(getDims()[dimIdx]);
-        dimData->dimScale = ioda::NewDimensionScale<std::string>(name, getDims()[dimIdx]);
+        auto dimData = std::make_shared<DimensionData<std::string>>(name, getDims()[dimIdx]);
 
         std::copy(data_.begin(),
                   data_.begin() + dimData->data.size(),
@@ -712,21 +720,21 @@ namespace bufr {
     private:
       std::vector<std::string> data_;
 
-      /// \brief Make the variable creation parameters.
-      /// \param chunks The chunk sizes
-      /// \param compressionLevel The compression level
-      /// \return The variable creation patterns.
-      ioda::VariableCreationParameters makeCreationParams(
-        const std::vector<ioda::Dimensions_t>& chunks,
-        int compressionLevel) const
-      {
-        ioda::VariableCreationParameters params;
-        params.chunk = true;
-        params.chunks = chunks;
-        params.compressWithGZIP(compressionLevel);
-        params.setFillValue<std::string>("");
-
-        return params;
-      }
+//      /// \brief Make the variable creation parameters.
+//      /// \param chunks The chunk sizes
+//      /// \param compressionLevel The compression level
+//      /// \return The variable creation patterns.
+//      ioda::VariableCreationParameters makeCreationParams(
+//        const std::vector<ioda::Dimensions_t>& chunks,
+//        int compressionLevel) const
+//      {
+//        ioda::VariableCreationParameters params;
+//        params.chunk = true;
+//        params.chunks = chunks;
+//        params.compressWithGZIP(compressionLevel);
+//        params.setFillValue<std::string>("");
+//
+//        return params;
+//      }
   };
 }  // namespace bufr

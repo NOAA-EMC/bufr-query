@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "Eigen/Dense"
 #include "eckit/config/LocalConfiguration.h"
 
 #include "File.h"

@@ -14,18 +14,17 @@
 #include "eckit/filesystem/PathName.h"
 
 #include "bufr/BufrParser.h"
-#include "bufr/IodaDescription.h"
-#include "bufr/IodaEncoder.h"
+#include "bufr/encoders/netcdf/Description.h"
+#include "bufr/encoders/netcdf/Encoder.h"
 
-#include "ioda/Group.h"
-#include "ioda/Engines/EngineUtils.h"
-#include "ioda/ObsGroup.h"
-#include "ioda/Layout.h"
-#include "ioda/Copying.h"
-#include "ioda/Misc/DimensionScales.h"
+//#include "ioda/Group.h"
+//#include "ioda/Engines/EngineUtils.h"
+//#include "ioda/ObsGroup.h"
+//#include "ioda/Layout.h"
+//#include "ioda/Copying.h"
+//#include "ioda/Misc/DimensionScales.h"
 
-namespace bufr
-{
+namespace bufr {
 //    typedef ObjectFactory<Parser, const eckit::LocalConfiguration&> ParseFactory;
 
     std::string makeFilename(const std::string& prototype, const SubCategory& categories)
@@ -70,23 +69,26 @@ namespace bufr
             auto data = BufrParser(obsFile,
                                    yaml->getSubConfiguration("bufr"), tablePath).parse(numMsgs);
 
-            auto dataMap = IodaEncoder(yaml->getSubConfiguration("ioda")).encode(data);
+            auto backend = encoders::netcdf::Encoder::Backend(false, outputFile);
+
+            auto dataMap =
+                encoders::netcdf::Encoder(yaml->getSubConfiguration("ioda")).encode(data, backend);
 
             for (const auto& obs : dataMap)
             {
-                ioda::Engines::BackendCreationParameters backendParams;
-                backendParams.fileName = makeFilename(outputFile, obs.first);
-                backendParams.openMode = ioda::Engines::BackendOpenModes::Read_Write;
-                backendParams.createMode = ioda::Engines::BackendCreateModes::Truncate_If_Exists;
-                backendParams.action = ioda::Engines::BackendFileActions::Create;
-                backendParams.flush = true;
-
-                auto rootGroup = ioda::Engines::constructBackend(
-                    ioda::Engines::BackendNames::Hdf5File,
-                    backendParams);
-
-                const auto &obsGroup = obs.second;
-                ioda::copyGroup(obsGroup, rootGroup);
+//                ioda::Engines::BackendCreationParameters backendParams;
+//                backendParams.fileName = makeFilename(outputFile, obs.first);
+//                backendParams.openMode = ioda::Engines::BackendOpenModes::Read_Write;
+//                backendParams.createMode = ioda::Engines::BackendCreateModes::Truncate_If_Exists;
+//                backendParams.action = ioda::Engines::BackendFileActions::Create;
+//                backendParams.flush = true;
+//
+//                auto rootGroup = ioda::Engines::constructBackend(
+//                    ioda::Engines::BackendNames::Hdf5File,
+//                    backendParams);
+//
+//                const auto &obsGroup = obs.second;
+//                ioda::copyGroup(obsGroup, rootGroup);
             }
         }
         else
@@ -137,35 +139,30 @@ int main(int argc, char **argv)
             if (static_cast<std::size_t> (argc) > argIdx + 1)
             {
                 numMsgs = atoi(argv[argIdx + 1]);
-            }
-            else
+            } else
             {
                 showHelp();
                 return 0;
             }
 
             argIdx += 2;
-        }
-        else if (strcmp(argv[argIdx], "-h") == 0)
+        } else if (strcmp(argv[argIdx], "-h") == 0)
         {
             showHelp();
             return 0;
-        }
-        else if (strcmp(argv[argIdx], "-t") == 0)
+        } else if (strcmp(argv[argIdx], "-t") == 0)
         {
             if (static_cast<std::size_t> (argc) > argIdx + 1)
             {
                 tablePath = std::string(argv[argIdx + 1]);
-            }
-            else
+            } else
             {
                 showHelp();
                 return 0;
             }
 
             argIdx += 2;
-        }
-        else
+        } else
         {
             switch (reqArgIdx)
             {
@@ -192,5 +189,4 @@ int main(int argc, char **argv)
     bufr::parse(obsFile, mappingFile, outputFile, tablePath, numMsgs);
 
     return 0;
-}
-
+}  // namespace bufr

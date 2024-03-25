@@ -16,10 +16,10 @@
 #include <unordered_map>
 #include <vector>
 
+#include "eckit/exception/Exceptions.h"
 #include "bufr/DataObject.h"
 #include "../../../DataObjectBuilder.h"
-#include "eckit/exception/Exceptions.h"
-#include "Log.h"
+#include "../../../Log.h"
 
 namespace
 {

@@ -11,19 +11,19 @@
 #include <vector>
 #include <string>
 
-#include "bufr/IodaDescription.h"
+//#include "bufr/IodaDescription.h"
 
 namespace py = pybind11;
 
-using bufr::IodaDescription;
+//using bufr::Description;
 
 void setupIodaDescription(py::module& m)
 {
-  py::class_<IodaDescription>(m, "IodaDescription")
-   .def(py::init<const std::string&>())
-   .def("add_variable", &IodaDescription::py_addVariable,
-        py::arg("name"),
-        py::arg("source"),
-        py::arg("units"),
-        py::arg("longName") = "", "");
+//  py::class_<Description>(m, "IodaDescription")
+//   .def(py::init<const std::string&>())
+//   .def("add_variable", &Description::py_addVariable,
+//        py::arg("name"),
+//        py::arg("source"),
+//        py::arg("units"),
+//        py::arg("longName") = "", "");
 }
