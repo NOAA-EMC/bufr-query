@@ -23,14 +23,11 @@ include( ${PROJECT_NAME}_compiler_flags )
 set(HDF5_PREFER_PARALLEL true) # CMake sometimes mistakenly finds a serial system-provided HDF5.
 find_package( OpenMP COMPONENTS C CXX Fortran )
 find_package( eckit 1.23.0 REQUIRED )
-find_package( ioda REQUIRED )
-find_package( oops REQUIRED )
 find_package( Eigen3 REQUIRED NO_MODULE HINTS
               $ENV{Eigen3_ROOT} $ENV{EIGEN3_ROOT} $ENV{Eigen_ROOT} $ENV{EIGEN_ROOT}
               $ENV{Eigen3_PATH} $ENV{EIGEN3_PATH} $ENV{Eigen_PATH} $ENV{EIGEN_PATH} )
 find_package( gsl-lite REQUIRED HINTS $ENV{gsl_lite_DIR} )
-find_package( udunits 2.2.0 REQUIRED )
-find_package( NetCDF REQUIRED COMPONENTS Fortran )  # No idea why oops is not importing this correctly
+find_package( NetCDF REQUIRED COMPONENTS CXX Fortran)  # No idea why oops is not importing this correctly
 find_package( Boost 1.64.0 REQUIRED )
 find_package( bufr 12.0.1 REQUIRED)
 
