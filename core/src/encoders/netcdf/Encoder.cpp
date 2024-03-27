@@ -62,12 +62,12 @@ namespace netcdf {
     {
     }
 
-    std::map<SubCategory, nc::NcFile>
+    std::map<SubCategory, std::shared_ptr<nc::NcFile>>
     Encoder::encode(const std::shared_ptr<DataContainer> &dataContainer,
                     const Encoder::Backend &backend,
                     bool append)
     {
-        std::map<SubCategory, nc::NcFile> obsGroups;
+        std::map<SubCategory, std::shared_ptr<nc::NcFile>> obsGroups;
 
         // Get the named dimensions
         NamedPathDims namedLocDims;
@@ -227,20 +227,26 @@ namespace netcdf {
 
             auto fileName = makeStrWithSubstitions(backend.path, substitutions);
 
-            int fileFlags = NC_CLOBBER | NC_WRITE;
+            int fileFlags = NC_CLOBBER | NC_WRITE | NC_NETCDF4;
             if (backend.isMemoryFile)
             {
                 fileFlags = fileFlags | NC_DISKLESS;
             }
 
-            auto file = nc::NcFile();
-            file.create(fileName, fileFlags);
+            auto file = std::make_shared<nc::NcFile>();
+            file->create(fileName, fileFlags);
+
+            // Create the Globals
+            for (auto &global: description_.getGlobals())
+            {
+                global->addTo(*file);
+            }
 
             // Add Dimensions
             for (auto dimPair: dimMap)
             {
-                const auto& dim = file.addDim(dimPair.first, dimPair.second->size());
-                const auto& var = file.addVar(dimPair.first, nc::NcType::nc_INT, dim);
+                const auto& dim = file->addDim(dimPair.first, dimPair.second->size());
+                file->addVar(dimPair.first, nc::NcType::nc_INT, dim);
             }
 
             for (const auto& dimDesc : description_.getDims())
@@ -263,7 +269,7 @@ namespace netcdf {
                         }
 
                         auto dimName = dimForDimPath(dimPath, namedPathDims).name;
-                        auto dimVar = file.getVar(dimName);
+                        auto dimVar = file->getVar(dimName);
 
                         if (const auto obj = std::dynamic_pointer_cast<DataObject<size_t>>(dataObject))
                         {
@@ -273,15 +279,90 @@ namespace netcdf {
                         {
                             throw eckit::BadParameter("Dimension data type not supported.");
                         }
+
+                        dimMap[dimName]->write(dimVar);
                     }
                 }
             }
 
-            // Create the Globals
-            for (auto &global: description_.getGlobals())
+            // Write all the other Variables
+            std::set<std::string> groupNames;
+            for (const auto &varDesc: description_.getVariables())
             {
-                global->addTo(file);
+                auto[groupName, varName] = splitName(varDesc.name);
+                if (groupNames.find(groupName) == groupNames.end())
+                {
+                    file->addGroup(groupName);
+                    groupNames.insert(groupName);
+                }
+
+                auto group = file->getGroup(groupName);
+                std::vector<size_t> chunks;
+                auto dimNames = std::vector<std::string>();
+                auto dataObject = dataContainer->get(varDesc.source, categories);
+                for (size_t dimIdx = 0; dimIdx < dataObject->getDims().size(); dimIdx++)
+                {
+                    auto dimPath = dataObject->getDimPaths()[dimIdx];
+
+                    NamedPathDims namedPathDims;
+                    if (dimIdx == 0)
+                    {
+                        namedPathDims = namedLocDims;
+                    } else
+                    {
+                        namedPathDims = namedExtraDims;
+                    }
+
+                    dimNames.push_back(dimForDimPath(dimPath, namedPathDims).name);
+
+//                    auto dimVar = group.getVar(dimForDimPath(dimPath, namedPathDims).name);
+//                    if (dimIdx < varDesc.chunks.size())
+//                    {
+//                        chunks.push_back(std::min(dimVar.getChunkSizes()[0],
+//                                                  varDesc.chunks[dimIdx]));
+//                    } else
+//                    {
+//                        chunks.push_back(dimVar.getChunkSizes()[0]);
+//                    }
+                }
+
+                // Check that dateTime variable has the right dimensions
+                if (varDesc.name == "MetaData/dateTime" || varDesc.name == "MetaData/datetime")
+                {
+                    if (dimNames.size() != 1)
+                    {
+                        throw eckit::BadParameter(
+                            "IODA requires Datetime variable to be one dimensional.");
+                    }
+                }
+
+                auto var = dataObject->createVariable(group,
+                                                      varName,
+                                                      dimNames,
+                                                      chunks,
+                                                      varDesc.compressionLevel);
+
+                var.putAtt("long_name", varDesc.longName);
+                if (!varDesc.units.empty())
+                {
+                    var.putAtt("units", varDesc.units);
+                }
+
+                if (varDesc.coordinates)
+                {
+                    var.putAtt("coordinates", *varDesc.coordinates);
+                }
+
+                if (varDesc.range)
+                {
+                    std::vector<float> range = {varDesc.range->start, varDesc.range->end};
+                    var.putAtt("valid_range", getNcType<float>(), 2, range.data());
+                }
             }
+
+            obsGroups.insert({categories, file});
+
+
 
             // Create the groups
 
@@ -489,6 +570,33 @@ namespace netcdf {
         }
 
         return dimDesc;
+    }
+
+
+    std::pair<std::string, std::string> Encoder::splitName(std::string name) const
+    {
+        std::string groupName;
+        std::string varName;
+        size_t pos = name.find_first_of("/@");
+        if (pos != std::string::npos)
+        {
+            if (name[pos] == '/')
+            {
+                groupName = name.substr(0, pos);
+                varName = name.substr(pos + 1);
+            }
+            else
+            {
+                groupName = name.substr(pos + 1);
+                varName = name.substr(0, pos);
+            }
+        }
+        else
+        {
+            throw eckit::BadParameter("Variable name must contain a group name");
+        }
+
+        return std::make_pair(groupName, varName);
     }
 }  // namespace netcdf
 }  // namespace encoders

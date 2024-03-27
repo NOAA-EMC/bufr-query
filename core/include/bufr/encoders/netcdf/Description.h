@@ -7,13 +7,16 @@
 
 #pragma once
 
+#include <set>
 #include <memory>
 #include <string>
 #include <vector>
 #include <netcdf>
 
+
 #include "eckit/config/LocalConfiguration.h"
 #include "bufr/QueryParser.h"
+#include "NetcdfHelper.h"
 
 namespace nc = netCDF;
 
@@ -42,7 +45,7 @@ namespace netcdf {
         std::string units;
         std::shared_ptr<std::string> coordinates;  // Optional
         std::shared_ptr<Range> range;  // Optional
-//        std::vector<ioda::Dimensions_t> chunks;  // Optional
+        std::vector<size_t> chunks;  // Optional
         int compressionLevel;  // Optional
     };
 
@@ -64,42 +67,6 @@ namespace netcdf {
     {
         T value;
 
-        nc::NcType getNcType()
-        {
-            if (std::is_same<T, float>::value)
-            {
-                return nc::NcType::nc_FLOAT;
-            }
-            else if (std::is_same<T, double>::value)
-            {
-                return nc::NcType::nc_DOUBLE;
-            }
-            else if (std::is_same<T, uint32_t>::value)
-            {
-                return nc::NcType::nc_UINT;
-            }
-            else if (std::is_same<T, uint64_t>::value)
-            {
-                return nc::NcType::nc_UINT64;
-            }
-            else if (std::is_same<T, int32_t>::value)
-            {
-                return nc::NcType::nc_INT;
-            }
-            else if (std::is_same<T, int64_t>::value)
-            {
-                return nc::NcType::nc_INT64;
-            }
-            else if (std::is_same<T, std::string>::value)
-            {
-                return nc::NcType::nc_CHAR;
-            }
-            else
-            {
-                throw eckit::BadParameter("Unsupported global attribute type");
-            }
-        }
-
         void addTo(nc::NcFile& file) final
         {
             _addTo(file);
@@ -111,7 +78,7 @@ namespace netcdf {
         void _addTo(nc::NcFile& file,
                     typename std::enable_if<!is_vector<T>::value, U>::type* = nullptr)
         {
-            file.putAtt(name, getNcType(), value);
+            file.putAtt(name, getNcType<T>(), value);
         }
 
         // T is a vector
@@ -119,7 +86,7 @@ namespace netcdf {
         void _addTo(nc::NcFile& file,
                     typename std::enable_if<is_vector<T>::value, U>::type* = nullptr)
         {
-            file.putAtt(name, getNcType(), value.size(), value.data());
+            file.putAtt(name, getNcType<T>(), value.size(), value.data());
         }
     };
 
