@@ -12,6 +12,7 @@
 #include <vector>
 #include <netcdf>
 
+#include "encoders/netcdf/NetcdfHelper.h"
 #include "encoders/ElementWriter.h"
 #include "QueryParser.h"
 #include "Data.h"
@@ -31,7 +32,6 @@ namespace bufr {
     virtual size_t size() = 0;
 
     virtual void write(const nc::NcVar var) = 0;
-
 //    virtual void write(std::function<void(encoders::ElementWriter&)> writer) = 0;
 
 //    template<typename U>
@@ -137,8 +137,8 @@ namespace bufr {
       /// \param compressionLevel The GZip compression level to use, must be 0-9
       virtual nc::NcVar createVariable(nc::NcGroup& group,
                                        const std::string& name,
-                                       const std::vector<nc::NcVar>& dimensions,
-                                       const std::vector<nc::NcVar>& chunks,
+                                       const std::vector<std::string>& dimNames,
+                                       const std::vector<size_t>& chunks,
                                        int compressionLevel) const = 0;
 
       /// \brief Makes a new dimension scale using this data object as the source
@@ -366,14 +366,22 @@ namespace bufr {
       /// \param compressionLevel The GZip compression level to use, must be 0-9
       virtual nc::NcVar createVariable(nc::NcGroup& group,
                                        const std::string& name,
-                                       const std::vector<nc::NcVar>& dimensions,
-                                       const std::vector<nc::NcVar>& chunks,
+                                       const std::vector<std::string>& dimNames,
+                                       const std::vector<size_t>& chunks,
                                        int compressionLevel) const final
       {
 //        auto params = makeCreationParams(chunks, compressionLevel);
 //        auto var = obsGroup.vars.createWithScales<T>(name, dimensions, params);
 //        var.write(data_);
 //        return var;
+
+         auto var =  group.addVar(name, encoders::netcdf::getNcType<T>().getName(), dimNames);
+//         var.setChunking(nc::NcVar::ChunkMode::nc_CHUNKED);
+         var.putVar(data_.data());
+//         auto missing = missingValue();
+//         var.setFill(true, &missing);
+
+         return var;
       };
 
       /// \brief Makes a new dimension scale using this data object as the source
@@ -627,14 +635,18 @@ namespace bufr {
       /// \param compressionLevel The GZip compression level to use, must be 0-9
       virtual nc::NcVar createVariable(nc::NcGroup& group,
                                        const std::string& name,
-                                       const std::vector<nc::NcVar>& dimensions,
-                                       const std::vector<nc::NcVar>& chunks,
+                                       const std::vector<std::string>& dimNames,
+                                       const std::vector<size_t>& chunks,
                                        int compressionLevel) const
       {
 //        auto params = makeCreationParams(chunks, compressionLevel);
 //        auto var = obsGroup.vars.createWithScales<std::string>(name, dimensions, params);
 //        var.write(data_);
 //        return var;
+
+//          auto var =  group.addVar(name, encoders::netcdf::getNcType<std::string>(), dimensions);
+
+          return nc::NcVar();
       };
 
       /// \brief Makes a new dimension scale using this data object as the source

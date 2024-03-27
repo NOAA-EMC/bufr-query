@@ -50,9 +50,10 @@ namespace netcdf {
         /// \brief Encode the data into an ioda::ObsGroup object
         /// \param data The data container to use
         /// \param append Add data to existing file?
-        std::map<SubCategory, nc::NcFile> encode(const std::shared_ptr<DataContainer> &data,
-                                                     const Backend &backend = Backend(),
-                                                     bool append = false);
+        std::map<SubCategory, std::shared_ptr<nc::NcFile>>
+            encode(const std::shared_ptr<DataContainer> &data,
+                   const Backend &backend = Backend(),
+                   bool append = false);
 
     private:
         typedef std::map<std::vector<Query>, DimensionDescription> NamedPathDims;
@@ -83,6 +84,8 @@ namespace netcdf {
         /// \return The dimension description associated with the named dimension.
         DimensionDescription dimForDimPath(const Query &path,
                                            const NamedPathDims &pathMap) const;
+
+        std::pair<std::string, std::string> splitName(std::string name) const;
     };
 }  // namespace netcdf
 }  // namespace encoders
