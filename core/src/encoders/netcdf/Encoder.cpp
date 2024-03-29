@@ -271,7 +271,7 @@ namespace netcdf {
                         auto dimName = dimForDimPath(dimPath, namedPathDims).name;
                         auto dimVar = file->getVar(dimName);
 
-                        if (const auto obj = std::dynamic_pointer_cast<DataObject<size_t>>(dataObject))
+                        if (const auto obj = std::dynamic_pointer_cast<DataObject<int>>(dataObject))
                         {
                             dimVar.putVar(obj->getRawData().data());
                         }
