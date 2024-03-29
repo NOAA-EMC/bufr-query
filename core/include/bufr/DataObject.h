@@ -12,8 +12,6 @@
 #include <vector>
 #include <netcdf>
 
-#include "encoders/netcdf/NetcdfHelper.h"
-#include "encoders/ElementWriter.h"
 #include "QueryParser.h"
 #include "Data.h"
 
@@ -21,6 +19,20 @@ namespace nc = netCDF;
 
 
 namespace bufr {
+
+    class ObjectWriterBase
+    {
+     public:
+        ObjectWriterBase() = default;
+        virtual ~ObjectWriterBase() = default;
+    };
+
+    template<typename T>
+    class ObjectWriter : public ObjectWriterBase
+    {
+     public:
+        virtual void write(const std::vector<T>& data) = 0;
+    };
 
   struct Data;
   typedef std::vector<int> Dimensions;
@@ -31,11 +43,7 @@ namespace bufr {
     virtual ~DimensionDataBase() = default;
     virtual size_t size() = 0;
 
-    virtual void write(const nc::NcVar var) = 0;
-//    virtual void write(std::function<void(encoders::ElementWriter&)> writer) = 0;
-
-//    template<typename U>
-//    virtual void write(const encoders::ElementWriter<U>& writer) = 0;
+    virtual void write(std::shared_ptr<ObjectWriterBase> writer) = 0;
   };
 
   template<typename T>
@@ -59,9 +67,19 @@ namespace bufr {
         return data.size();
     }
 
-    void write(const nc::NcVar var)
+    void write(std::shared_ptr<ObjectWriterBase> writer) final
     {
-        var.putVar(data.data());
+        if (auto writerPtr = std::dynamic_pointer_cast<ObjectWriter<T>>(writer))
+        {
+            writerPtr->write(data);
+        }
+        else
+        {
+            std::ostringstream str;
+            str << "Can't write data of type " << typeid(T).name() << " with writer of type ";
+            str << typeid(writer).name();
+            throw eckit::BadParameter(str.str());
+        }
     }
 
   private:
@@ -129,17 +147,7 @@ namespace bufr {
       /// \param val Scalar to add to the data..
       virtual void offsetBy(double val) = 0;
 
-      /// \brief Makes an ioda::Variable and adds it to the given ioda::ObsGroup
-      /// \param obsGroup Obsgroup where to add the variable
-      /// \param name The name to associate with the variable (ex "MetaData/latitude")
-      /// \param dimensions List of Variables to use as the dimensions for this new variable
-      /// \param chunks List of integers specifying the chunking dimensions
-      /// \param compressionLevel The GZip compression level to use, must be 0-9
-      virtual nc::NcVar createVariable(nc::NcGroup& group,
-                                       const std::string& name,
-                                       const std::vector<std::string>& dimNames,
-                                       const std::vector<size_t>& chunks,
-                                       int compressionLevel) const = 0;
+      virtual void write(std::shared_ptr<ObjectWriterBase> writer) = 0;
 
       /// \brief Makes a new dimension scale using this data object as the source
       /// \param name The name of the dimension variable.
@@ -358,31 +366,20 @@ namespace bufr {
         data_ = data;
       }
 
-      /// \brief Makes an ioda::Variable and adds it to the given ioda::ObsGroup
-      /// \param obsGroup Obsgroup were to add the variable
-      /// \param name The name to associate with the variable (ex "MetaData/latitude")
-      /// \param dimensions List of Variables to use as the dimensions for this new variable
-      /// \param chunks List of integers specifying the chunking dimensions
-      /// \param compressionLevel The GZip compression level to use, must be 0-9
-      virtual nc::NcVar createVariable(nc::NcGroup& group,
-                                       const std::string& name,
-                                       const std::vector<std::string>& dimNames,
-                                       const std::vector<size_t>& chunks,
-                                       int compressionLevel) const final
+      void write(std::shared_ptr<ObjectWriterBase> writer) final
       {
-//        auto params = makeCreationParams(chunks, compressionLevel);
-//        auto var = obsGroup.vars.createWithScales<T>(name, dimensions, params);
-//        var.write(data_);
-//        return var;
-
-         auto var =  group.addVar(name, encoders::netcdf::getNcType<T>().getName(), dimNames);
-//         var.setChunking(nc::NcVar::ChunkMode::nc_CHUNKED);
-         var.putVar(data_.data());
-//         auto missing = missingValue();
-//         var.setFill(true, &missing);
-
-         return var;
-      };
+          if (auto writerPtr = std::dynamic_pointer_cast<ObjectWriter<T>>(writer))
+          {
+              writerPtr->write(data_);
+          }
+          else
+          {
+              std::ostringstream str;
+              str << "Can't write data of type " << typeid(T).name() << " with writer of type ";
+              str << typeid(writer).name();
+              throw eckit::BadParameter(str.str());
+          }
+      }
 
       /// \brief Makes a new dimension scale using this data object as the source
       /// \param name The name of the dimension variable.
@@ -471,23 +468,6 @@ namespace bufr {
 
     private:
       std::vector<T> data_;
-
-//      /// \brief Make the variable creation parameters.
-//      /// \param chunks The chunk sizes
-//      /// \param compressionLevel The compression level
-//      /// \return The variable creation patterns.
-//      ioda::VariableCreationParameters makeCreationParams(
-//        const std::vector<ioda::Dimensions_t>& chunks,
-//        int compressionLevel) const
-//      {
-//        ioda::VariableCreationParameters params;
-//        params.chunk = true;
-//        params.chunks = chunks;
-//        params.compressWithGZIP(compressionLevel);
-//        params.setFillValue<T>(missingValue());
-//
-//        return params;
-//      }
   };
 
   template<>
@@ -627,27 +607,20 @@ namespace bufr {
         data_ = data;
       }
 
-      /// \brief Makes an ioda::Variable and adds it to the given ioda::ObsGroup
-      /// \param obsGroup Obsgroup were to add the variable
-      /// \param name The name to associate with the variable (ex "MetaData/latitude")
-      /// \param dimensions List of Variables to use as the dimensions for this new variable
-      /// \param chunks List of integers specifying the chunking dimensions
-      /// \param compressionLevel The GZip compression level to use, must be 0-9
-      virtual nc::NcVar createVariable(nc::NcGroup& group,
-                                       const std::string& name,
-                                       const std::vector<std::string>& dimNames,
-                                       const std::vector<size_t>& chunks,
-                                       int compressionLevel) const
+      void write(std::shared_ptr<ObjectWriterBase> writer) final
       {
-//        auto params = makeCreationParams(chunks, compressionLevel);
-//        auto var = obsGroup.vars.createWithScales<std::string>(name, dimensions, params);
-//        var.write(data_);
-//        return var;
-
-//          auto var =  group.addVar(name, encoders::netcdf::getNcType<std::string>(), dimensions);
-
-          return nc::NcVar();
-      };
+          if (auto writerPtr = std::dynamic_pointer_cast<ObjectWriter<std::string>>(writer))
+          {
+              writerPtr->write(data_);
+          }
+          else
+          {
+              std::ostringstream str;
+              str << "Can't write data of type " << typeid(std::string).name() << " with writer of type ";
+              str << typeid(writer).name();
+              throw eckit::BadParameter(str.str());
+          }
+      }
 
       /// \brief Makes a new dimension scale using this data object as the source
       /// \param name The name of the dimension variable.
@@ -731,22 +704,5 @@ namespace bufr {
 
     private:
       std::vector<std::string> data_;
-
-//      /// \brief Make the variable creation parameters.
-//      /// \param chunks The chunk sizes
-//      /// \param compressionLevel The compression level
-//      /// \return The variable creation patterns.
-//      ioda::VariableCreationParameters makeCreationParams(
-//        const std::vector<ioda::Dimensions_t>& chunks,
-//        int compressionLevel) const
-//      {
-//        ioda::VariableCreationParameters params;
-//        params.chunk = true;
-//        params.chunks = chunks;
-//        params.compressWithGZIP(compressionLevel);
-//        params.setFillValue<std::string>("");
-//
-//        return params;
-//      }
   };
 }  // namespace bufr

@@ -14,12 +14,10 @@
 
 #include <netcdf>
 
-//#include "../ElementWriter.h"
+
 #include "../../bufr/Log.h"
 #include "bufr/DataObject.h"
 #include "eckit/exception/Exceptions.h"
-//#include "ioda/Layout.h"
-//#include "ioda/Misc/DimensionScales.h"
 
 namespace nc = netCDF;
 namespace log = bufr::log;
@@ -27,25 +25,84 @@ namespace log = bufr::log;
 
 namespace bufr {
 namespace encoders {
-
-//    template<typename T>
-//    class VarWriter : public ElementWriter
-//    {
-//     public:
-//        VarWriter(nc::NcGroup& group) : _group(group) {}
-//
-//        void write(const std::vector<T>& data)
-//        {
-//            group.putVar(data);
-//        }
-//
-//     private:
-//        nc::NcGroup& _group;
-//    };
-
 namespace netcdf {
+
+    template <typename T>
+    class VarWriter : public ObjectWriter<T>
+    {
+    public:
+        VarWriter() = delete;
+        VarWriter(nc::NcVar& var) : var_(var) {}
+
+        void write(const std::vector<T>& data) final
+        {
+            var_.putVar(data.data());
+        }
+
+    private:
+        nc::NcVar& var_;
+    };
+
+    template <typename T>
+    nc::NcVar createVar(std::shared_ptr<DataObject<T>>& obj,
+                        nc::NcGroup& group,
+                        const std::string& name,
+                        const std::vector<std::string>& dimNames)
+    {
+        auto var = group.addVar(name, encoders::netcdf::getNcType<T>().getName(), dimNames);
+        auto varWriter = std::make_shared<VarWriter<T>>(var);
+        obj->write(varWriter);
+
+        return var;
+    }
+
+    nc::NcVar createVarFromObj(std::shared_ptr<DataObjectBase> object,
+                        nc::NcGroup& group,
+                        const std::string& name,
+                        const std::vector<std::string>& dimNames)
+    {
+        nc::NcVar var;
+        if (auto fltobj = std::dynamic_pointer_cast<DataObject<float>>(object))
+        {
+            var = createVar(fltobj, group, name, dimNames);
+        }
+        else if (auto dblobj = std::dynamic_pointer_cast<DataObject<double>>(object))
+        {
+            var = createVar(dblobj, group, name, dimNames);
+        }
+        else if (auto intobj = std::dynamic_pointer_cast<DataObject<int32_t >>(object))
+        {
+            var = createVar(intobj, group, name, dimNames);
+        }
+        else if (auto uintobj = std::dynamic_pointer_cast<DataObject<uint32_t>>(object))
+        {
+            var = createVar(uintobj, group, name, dimNames);
+        }
+        else if (auto int64obj = std::dynamic_pointer_cast<DataObject<int64_t>>(object))
+        {
+            var = createVar(int64obj, group, name, dimNames);
+        }
+        else if (auto uint64obj = std::dynamic_pointer_cast<DataObject<uint64_t>>(object))
+        {
+            var = createVar(uint64obj, group, name, dimNames);
+        }
+        else if (auto strobj = std::dynamic_pointer_cast<DataObject<std::string>>(object))
+        {
+            var = createVar(strobj, group, name, dimNames);
+        }
+        else
+        {
+            throw eckit::BadParameter("Unsupported type for NetCDF.");
+        }
+
+        return var;
+    }
+
+
+
     static const char* LocationName = "Location";
     static const char* DefualtDimName = "dim";
+
 
     Encoder::Encoder(const std::string &yamlPath) :
         description_(Description(yamlPath))
@@ -280,7 +337,7 @@ namespace netcdf {
                             throw eckit::BadParameter("Dimension data type not supported.");
                         }
 
-                        dimMap[dimName]->write(dimVar);
+                        dimMap[dimName]->write(std::make_shared<VarWriter<int>>(dimVar));
                     }
                 }
             }
@@ -336,11 +393,7 @@ namespace netcdf {
                     }
                 }
 
-                auto var = dataObject->createVariable(group,
-                                                      varName,
-                                                      dimNames,
-                                                      chunks,
-                                                      varDesc.compressionLevel);
+                auto var = createVarFromObj(dataObject, group, varName, dimNames);
 
                 var.putAtt("long_name", varDesc.longName);
                 if (!varDesc.units.empty())
