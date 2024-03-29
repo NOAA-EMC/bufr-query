@@ -86,7 +86,7 @@ namespace netcdf {
         void _addTo(nc::NcFile& file,
                     typename std::enable_if<is_vector<T>::value, U>::type* = nullptr)
         {
-            file.putAtt(name, getNcType<T>(), value.size(), value.data());
+            file.putAtt(name, getNcType<typename T::value_type>(), value.size(), value.data());
         }
     };
 
