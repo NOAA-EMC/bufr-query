@@ -35,6 +35,21 @@ namespace netcdf {
     template<> inline nc::NcType getNcType<std::string>() { return nc::NcType::nc_STRING; }
     template<> inline nc::NcType getNcType<char>() { return nc::NcType::nc_CHAR; }
 
+
+    template<typename T>
+    inline void addAttribute(nc::NcVar& var, const std::string& name, const T& value)
+    {
+        var.putAtt(name, getNcType<T>(), value);
+    }
+
+    template<>
+    inline void addAttribute<std::string>(nc::NcVar& var,
+                                          const std::string& name,
+                                          const std::string& value)
+    {
+        var.putAtt(name, value);
+    }
+
 }  // namespace netcdf
 }  // namespace encoders
 }  // namespace bufr

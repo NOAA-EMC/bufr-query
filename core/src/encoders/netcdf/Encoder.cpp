@@ -47,11 +47,24 @@ namespace netcdf {
     nc::NcVar createVar(std::shared_ptr<DataObject<T>>& obj,
                         nc::NcGroup& group,
                         const std::string& name,
-                        const std::vector<std::string>& dimNames)
+                        const std::vector<std::string>& dimNames,
+                        std::vector<size_t>& chunks,
+                        const int compressionLevel)
     {
         auto var = group.addVar(name, encoders::netcdf::getNcType<T>().getName(), dimNames);
-        auto varWriter = std::make_shared<VarWriter<T>>(var);
-        obj->write(varWriter);
+
+        if (!chunks.empty())
+        {
+            var.setChunking(nc::NcVar::ChunkMode::nc_CHUNKED, chunks);
+        }
+
+        if (compressionLevel > 0)
+        {
+            var.setCompression(true, true, compressionLevel);
+        }
+
+        addAttribute(var, "_FillValue", obj->missingValue());
+        obj->write(std::make_shared<VarWriter<T>>(var));
 
         return var;
     }
@@ -59,36 +72,38 @@ namespace netcdf {
     nc::NcVar createVarFromObj(std::shared_ptr<DataObjectBase> object,
                         nc::NcGroup& group,
                         const std::string& name,
-                        const std::vector<std::string>& dimNames)
+                        const std::vector<std::string>& dimNames,
+                        std::vector<size_t>& chunks,
+                        const int compressionLevel)
     {
         nc::NcVar var;
         if (auto fltobj = std::dynamic_pointer_cast<DataObject<float>>(object))
         {
-            var = createVar(fltobj, group, name, dimNames);
+            var = createVar(fltobj, group, name, dimNames, chunks, compressionLevel);
         }
         else if (auto dblobj = std::dynamic_pointer_cast<DataObject<double>>(object))
         {
-            var = createVar(dblobj, group, name, dimNames);
+            var = createVar(dblobj, group, name, dimNames, chunks, compressionLevel);
         }
         else if (auto intobj = std::dynamic_pointer_cast<DataObject<int32_t >>(object))
         {
-            var = createVar(intobj, group, name, dimNames);
+            var = createVar(intobj, group, name, dimNames, chunks, compressionLevel);
         }
         else if (auto uintobj = std::dynamic_pointer_cast<DataObject<uint32_t>>(object))
         {
-            var = createVar(uintobj, group, name, dimNames);
+            var = createVar(uintobj, group, name, dimNames, chunks, compressionLevel);
         }
         else if (auto int64obj = std::dynamic_pointer_cast<DataObject<int64_t>>(object))
         {
-            var = createVar(int64obj, group, name, dimNames);
+            var = createVar(int64obj, group, name, dimNames, chunks, compressionLevel);
         }
         else if (auto uint64obj = std::dynamic_pointer_cast<DataObject<uint64_t>>(object))
         {
-            var = createVar(uint64obj, group, name, dimNames);
+            var = createVar(uint64obj, group, name, dimNames, chunks, compressionLevel);
         }
         else if (auto strobj = std::dynamic_pointer_cast<DataObject<std::string>>(object))
         {
-            var = createVar(strobj, group, name, dimNames);
+            var = createVar(strobj, group, name, dimNames, chunks, compressionLevel);
         }
         else
         {
@@ -354,7 +369,7 @@ namespace netcdf {
                 }
 
                 auto group = file->getGroup(groupName);
-                std::vector<size_t> chunks;
+                std::vector<size_t> chunks = {};
                 auto dimNames = std::vector<std::string>();
                 auto dataObject = dataContainer->get(varDesc.source, categories);
                 for (size_t dimIdx = 0; dimIdx < dataObject->getDims().size(); dimIdx++)
@@ -372,15 +387,11 @@ namespace netcdf {
 
                     dimNames.push_back(dimForDimPath(dimPath, namedPathDims).name);
 
-//                    auto dimVar = group.getVar(dimForDimPath(dimPath, namedPathDims).name);
-//                    if (dimIdx < varDesc.chunks.size())
-//                    {
-//                        chunks.push_back(std::min(dimVar.getChunkSizes()[0],
-//                                                  varDesc.chunks[dimIdx]));
-//                    } else
-//                    {
-//                        chunks.push_back(dimVar.getChunkSizes()[0]);
-//                    }
+                    auto dimVar = group.getVar(dimForDimPath(dimPath, namedPathDims).name);
+                    if (dimIdx < varDesc.chunks.size())
+                    {
+                        chunks.push_back(varDesc.chunks[dimIdx]);
+                    }
                 }
 
                 // Check that dateTime variable has the right dimensions
@@ -393,7 +404,12 @@ namespace netcdf {
                     }
                 }
 
-                auto var = createVarFromObj(dataObject, group, varName, dimNames);
+                auto var = createVarFromObj(dataObject,
+                                            group,
+                                            varName,
+                                            dimNames,
+                                            chunks,
+                                            varDesc.compressionLevel);
 
                 var.putAtt("long_name", varDesc.longName);
                 if (!varDesc.units.empty())
