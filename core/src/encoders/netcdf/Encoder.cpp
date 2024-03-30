@@ -26,6 +26,8 @@ namespace log = bufr::log;
 namespace bufr {
 namespace encoders {
 namespace netcdf {
+    static const char* LocationName = "Location";
+    static const char* DefualtDimName = "dim";
 
     template <typename T>
     class VarWriter : public ObjectWriter<T>
@@ -113,12 +115,6 @@ namespace netcdf {
         return var;
     }
 
-
-
-    static const char* LocationName = "Location";
-    static const char* DefualtDimName = "dim";
-
-
     Encoder::Encoder(const std::string &yamlPath) :
         description_(Description(yamlPath))
     {
@@ -186,8 +182,6 @@ namespace netcdf {
             }
         }
 
-//        auto backendParams = ioda::Engines::BackendCreationParameters();
-//
         // Got through each unique category
         for (const auto &categories: dataContainer->allSubCategories())
         {
@@ -430,122 +424,6 @@ namespace netcdf {
             }
 
             obsGroups.insert({categories, file});
-
-
-
-            // Create the groups
-
-
-
-//
-//            auto policy = ioda::detail::DataLayoutPolicy::Policies::ObsGroup;
-//            auto layoutPolicy = ioda::detail::DataLayoutPolicy::generate(policy);
-//            auto obsGroup = ioda::ObsGroup::generate(rootGroup, allDims, layoutPolicy);
-
-//            auto group = nc::NcGroup();
-
-//
-//            // Create Globals
-//            for (auto &global: description_.getGlobals())
-//            {
-//                global->addTo(rootGroup);
-//            }
-//
-//            // Write the Dimension Variables
-//            for (const auto &dimDesc: description_.getDims())
-//            {
-//                if (!dimDesc.source.empty())
-//                {
-//                    auto dataObject = dataContainer->get(dimDesc.source, categories);
-//                    for (size_t dimIdx = 0; dimIdx < dataObject->getDims().size(); dimIdx++)
-//                    {
-//                        auto dimPath = dataObject->getDimPaths()[dimIdx];
-//
-//                        NamedPathDims namedPathDims;
-//                        if (dimIdx == 0)
-//                        {
-//                            namedPathDims = namedLocDims;
-//                        } else
-//                        {
-//                            namedPathDims = namedExtraDims;
-//                        }
-//
-//                        auto dimName = dimForDimPath(dimPath, namedPathDims).name;
-//                        auto dimVar = obsGroup.vars[dimName];
-//                        dimMap[dimName]->write(dimVar);
-//                    }
-//                }
-//            }
-//
-//            // Write all the other Variables
-//            for (const auto &varDesc: description_.getVariables())
-//            {
-//                std::vector<ioda::Dimensions_t> chunks;
-//                auto dimensions = std::vector<ioda::Variable>();
-//                auto dataObject = dataContainer->get(varDesc.source, categories);
-//                for (size_t dimIdx = 0; dimIdx < dataObject->getDims().size(); dimIdx++)
-//                {
-//                    auto dimPath = dataObject->getDimPaths()[dimIdx];
-//
-//                    NamedPathDims namedPathDims;
-//                    if (dimIdx == 0)
-//                    {
-//                        namedPathDims = namedLocDims;
-//                    } else
-//                    {
-//                        namedPathDims = namedExtraDims;
-//                    }
-//
-//                    auto dimVar = obsGroup.vars[dimForDimPath(dimPath, namedPathDims).name];
-//                    dimensions.push_back(dimVar);
-//
-//                    if (dimIdx < varDesc.chunks.size())
-//                    {
-//                        chunks.push_back(std::min(dimVar.getChunkSizes()[0],
-//                                                  varDesc.chunks[dimIdx]));
-//                    } else
-//                    {
-//                        chunks.push_back(dimVar.getChunkSizes()[0]);
-//                    }
-//                }
-//
-//                // Check that dateTime variable has the right dimensions
-//                if (varDesc.name == "MetaData/dateTime" || varDesc.name == "MetaData/datetime")
-//                {
-//                    if (dimensions.size() != 1)
-//                    {
-//                        throw eckit::BadParameter(
-//                            "IODA requires Datetime variable to be one dimensional.");
-//                    }
-//                }
-//
-//                auto var = dataObject->createVariable(obsGroup,
-//                                                      varDesc.name,
-//                                                      dimensions,
-//                                                      chunks,
-//                                                      varDesc.compressionLevel);
-//
-//                var.atts.add<std::string>("long_name", {varDesc.longName}, {1});
-//
-//                if (!varDesc.units.empty())
-//                {
-//                    var.atts.add<std::string>("units", {varDesc.units}, {1});
-//                }
-//
-//                if (varDesc.coordinates)
-//                {
-//                    var.atts.add<std::string>("coordinates", {*varDesc.coordinates}, {1});
-//                }
-//
-//                if (varDesc.range)
-//                {
-//                    var.atts.add<float>("valid_range",
-//                                        {varDesc.range->start, varDesc.range->end},
-//                                        {2});
-//                }
-//            }
-//
-//            obsGroups.insert({categories, obsGroup});
         }
 
         return obsGroups;
