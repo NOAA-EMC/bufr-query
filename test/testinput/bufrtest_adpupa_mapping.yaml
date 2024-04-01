@@ -4,54 +4,55 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    group_by_variable: pressure
-    variables:
-      # MetaData
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-      stationIdentification:
-        query: "*/RPID"
-      latitude:
-        query: "*/CLAT"
-      longitude:
-        query: "*/CLON"
-      stationElevation:
-        query: "*/SELV"
+  group_by_variable: pressure
+  variables:
+    # MetaData
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+    stationIdentification:
+      query: "*/RPID"
+    latitude:
+      query: "*/CLAT"
+    longitude:
+      query: "*/CLON"
+    stationElevation:
+      query: "*/SELV"
 
-      # ObsValue
-      pressure:
-        query: "*/UARLV/PRLC"
-      airTemperature:
-        query: "*/UARLV/UATMP/TMDB"
-      dewpointTemperature:
-        query: "*/UARLV/UATMP/TMDP"
-      windDirection:
-        query: "*/UARLV/UAWND/WDIR"
-      windSpeed:
-        query: "*/UARLV/UAWND/WSPD"
+    # ObsValue
+    pressure:
+      query: "*/UARLV/PRLC"
+    airTemperature:
+      query: "*/UARLV/UATMP/TMDB"
+    dewpointTemperature:
+      query: "*/UARLV/UATMP/TMDP"
+    windDirection:
+      query: "*/UARLV/UAWND/WDIR"
+    windSpeed:
+      query: "*/UARLV/UAWND/WSPD"
 
-      # QualityMarker
-      stationElevationQM:
-        query: "*/QCEVR"
-      pressureQM:
-        query: "*/UARLV/QMPR"
-      airTemperatureQM:
-        query: "*/UARLV/UATMP/QMAT"
-      dewpointTemperatureQM:
-        query: "*/UARLV/UATMP/QMDD"
-      windSpeedQM:
-        query: "*/UARLV/UAWND/QMWN"
-      waterTemperatureQM:
-        query: "*/UASDG/QMST"
+    # QualityMarker
+    stationElevationQM:
+      query: "*/QCEVR"
+    pressureQM:
+      query: "*/UARLV/QMPR"
+    airTemperatureQM:
+      query: "*/UARLV/UATMP/QMAT"
+    dewpointTemperatureQM:
+      query: "*/UARLV/UATMP/QMDD"
+    windSpeedQM:
+      query: "*/UARLV/UAWND/QMWN"
+    waterTemperatureQM:
+      query: "*/UASDG/QMST"
 
 
-ioda:
+encoder:
+  type: netcdf
+
   dimensions:
     - name: RadiosondeReportLevelData
       path: "*/UARLV"

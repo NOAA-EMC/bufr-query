@@ -21,9 +21,10 @@ list (APPEND PYTHON_SRCS DataObjectFunctions.h
 												py_query_set.cpp
 												py_file.cpp
 												py_parser.cpp
-												py_ioda_description.cpp
-												py_ioda_encoder.cpp
-												py_data_cache.cpp)
+												py_data_cache.cpp
+												py_netcdf_description.cpp
+												py_netcdf_encoder.cpp
+												)
 
 # We cannot call ecbuild_add_library here since it conflicts with pybind11_add_module.
 pybind11_add_module(bufr_python ${PYTHON_SRCS})

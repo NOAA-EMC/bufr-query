@@ -64,15 +64,16 @@ namespace bufr {
         std::unique_ptr<eckit::YAMLConfiguration>
             yaml(new eckit::YAMLConfiguration(eckit::PathName(mappingFile)));
 
-        if (yaml->has("ioda"))
+        if (yaml->has("encoder"))
         {
             auto data = BufrParser(obsFile,
                                    yaml->getSubConfiguration("bufr"), tablePath).parse(numMsgs);
 
             auto backend = encoders::netcdf::Encoder::Backend(false, outputFile);
 
+            auto encoderConf = yaml->getSubConfiguration("encoder");
             auto dataMap =
-                encoders::netcdf::Encoder(yaml->getSubConfiguration("ioda")).encode(data, backend);
+                encoders::netcdf::Encoder(encoderConf).encode(data, backend);
 
             for (const auto& obs : dataMap)
             {

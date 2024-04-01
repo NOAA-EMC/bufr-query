@@ -3,8 +3,8 @@
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
-from pyioda import ioda
 import bufr
+from bufr.encoders import netcdf
 import numpy as np
 
 
@@ -129,7 +129,7 @@ def test_highlevel_replace():
     data = container.get('variables/brightnessTemp')
     container.replace('variables/brightnessTemp', data * 0.1)
 
-    obsgroup = next(iter(bufr.IodaEncoder(YAML_PATH).encode(container).values()))
+    obsgroup = next(iter(netcdf.Encoder(YAML_PATH).encode(container).values()))
 
     obs_temp = obsgroup.vars.open("ObsValue/brightnessTemperature").readNPArray.float()
 
@@ -146,13 +146,13 @@ def test_highlevel_add():
     paths = container.getPaths('variables/brightnessTemp')
     container.add('variables/brightnessTemp_new', data, paths)
 
-    iodaDescription = bufr.IodaDescription(YAML_PATH)
-    iodaDescription.add_variable(name='ObsValue/new_brightnessTemperature',
+    description = netcdf.Description(YAML_PATH)
+    description.add_variable(name='ObsValue/new_brightnessTemperature',
                                  source='variables/brightnessTemp_new',
                                  units='K',
                                  longName='New Brightness Temperature')
 
-    obsgroup = next(iter(bufr.IodaEncoder(iodaDescription).encode(container).values()))
+    obsgroup = next(iter(netcdf.Encoder(netcdf.Description).encode(container).values()))
 
     obs_orig = obsgroup.vars.open("ObsValue/brightnessTemperature").readNPArray.float()
     obs_temp = obsgroup.vars.open("ObsValue/new_brightnessTemperature").readNPArray.float()
@@ -172,13 +172,13 @@ def test_highlevel_w_category():
         paths = container.getPaths('variables/antennaTemperature', category)
         container.add('variables/antennaTemperature1', data, paths, category)
 
-    iodaDescription = bufr.IodaDescription(YAML_PATH)
-    iodaDescription.add_variable(name='ObsValue/brightnessTemperature_new',
+    netcdf.Description = netcdf.Description(YAML_PATH)
+    netcdf.Description.add_variable(name='ObsValue/brightnessTemperature_new',
                                  source='variables/antennaTemperature1',
                                  units='K')
 
     # get the obsgroup for the first category
-    obs_group = next(iter(bufr.IodaEncoder(iodaDescription).encode(container).values()))
+    obs_group = next(iter(netcdf.Encoder(netcdf.Description).encode(container).values()))
 
     assert np.allclose(obs_group.vars.open('ObsValue/brightnessTemperature_new').readVector.float(),
                        obs_group.vars.open('ObsValue/brightnessTemperature').readVector.float())

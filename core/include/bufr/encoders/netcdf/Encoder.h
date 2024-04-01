@@ -10,10 +10,6 @@
 #include <memory>
 
 #include "eckit/config/LocalConfiguration.h"
-//#include "ioda/Group.h"
-//#include "ioda/Engines/EngineUtils.h"
-//#include "ioda/ObsGroup.h"
-
 #include <netcdf>
 
 #include "bufr/DataContainer.h"
@@ -25,7 +21,7 @@ namespace nc = netCDF;
 namespace bufr {
 namespace encoders {
 namespace netcdf {
-    /// \brief Uses IodaDescription and parsed data to create IODA data.
+    /// \brief Uses netcdf::Description and parsed data to create NetCDF data.
     class Encoder
     {
     public:
@@ -47,7 +43,7 @@ namespace netcdf {
 
         explicit Encoder(const eckit::Configuration &conf);
 
-        /// \brief Encode the data into an ioda::ObsGroup object
+        /// \brief Encode the data into an netcdf NcFile object
         /// \param data The data container to use
         /// \param append Add data to existing file?
         std::map<SubCategory, std::shared_ptr<nc::NcFile>>

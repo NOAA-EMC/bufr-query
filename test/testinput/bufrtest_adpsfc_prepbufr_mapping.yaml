@@ -4,143 +4,144 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    variables:
-      timestamp:
-        timeoffset:
-          timeOffset: "*/RPT"
-          transforms:
-            - scale: 3600
-          referenceTime: "2020-11-01T12:00:00Z"
-      longitude:
-        query: "*/XOB"
-      latitude:
-        query: "*/YOB"
-      # MetaData
-      obsTimeMinusCycleTime:
-        query: "*/DHR"
-      prepbufrDataLevelCategory:
-        query: "*/CAT"
-      prepbufrReportType:
-        query: "*/TYP"
-      dumpReportType:
-        query: "*/T29"
-      stationIdentification:
-        query: "*/SID"
-      stationElevation:
-        query: "*/ELV"
-        type: float
-      waterTemperatureMethod:
-        query: "*/SST_INFO/MSST"
+  variables:
+    timestamp:
+      timeoffset:
+        timeOffset: "*/RPT"
+        transforms:
+          - scale: 3600
+        referenceTime: "2020-11-01T12:00:00Z"
+    longitude:
+      query: "*/XOB"
+    latitude:
+      query: "*/YOB"
+    # MetaData
+    obsTimeMinusCycleTime:
+      query: "*/DHR"
+    prepbufrDataLevelCategory:
+      query: "*/CAT"
+    prepbufrReportType:
+      query: "*/TYP"
+    dumpReportType:
+      query: "*/T29"
+    stationIdentification:
+      query: "*/SID"
+    stationElevation:
+      query: "*/ELV"
+      type: float
+    waterTemperatureMethod:
+      query: "*/SST_INFO/MSST"
 
-      # ObsValue
-      heightOfObservation:
-        query: "*/Z___INFO/Z__EVENT/ZOB"
-        type: float
-      pressure:
-        query: "*/P___INFO/P__EVENT/POB"
-        transforms:
-          - scale: 100
-      pressureReducedToMeanSeaLevel:
-        query: "*/PMSL_SEQ/PMO"
-        transforms:
-          - scale: 100
-      airTemperature:
-        query: "*/T___INFO/T__EVENT/TOB"
-        transforms:
-          - offset: 273.15
-      dewpointTemperature:
-        query: "*/Q___INFO/TDO"
-        transforms:
-          - offset: 273.15
-      specificHumidity:
-        type: float
-        query: "*/Q___INFO/Q__EVENT/QOB"
-        transforms:
-          - scale: 0.000001
-      windEastward:
-        query: "*/W___INFO/W__EVENT/UOB"
-      windNorthward:
-        query: "*/W___INFO/W__EVENT/VOB"
+    # ObsValue
+    heightOfObservation:
+      query: "*/Z___INFO/Z__EVENT/ZOB"
+      type: float
+    pressure:
+      query: "*/P___INFO/P__EVENT/POB"
+      transforms:
+        - scale: 100
+    pressureReducedToMeanSeaLevel:
+      query: "*/PMSL_SEQ/PMO"
+      transforms:
+        - scale: 100
+    airTemperature:
+      query: "*/T___INFO/T__EVENT/TOB"
+      transforms:
+        - offset: 273.15
+    dewpointTemperature:
+      query: "*/Q___INFO/TDO"
+      transforms:
+        - offset: 273.15
+    specificHumidity:
+      type: float
+      query: "*/Q___INFO/Q__EVENT/QOB"
+      transforms:
+        - scale: 0.000001
+    windEastward:
+      query: "*/W___INFO/W__EVENT/UOB"
+    windNorthward:
+      query: "*/W___INFO/W__EVENT/VOB"
 
-      # ObsValue - ocean
-      waterTemperature:
-        query: "*/SST_INFO/SSTEVENT/SST1"
-      heightOfWaves:
-        query: "*/WAVE_SEQ/HOWV"
-        type: float
-      depthBelowWaterSurface:
-        query: "*/SST_INFO/DBSS_SEQ/DBSS"
-        type: float
-      # ObsValue - cloud, cloud ceiling, visibility, gust wind, min/max temperature, weather
-      # note: cloud ceiling is a derivative of HOCB, the height of cloud base
-      cloudCoverTotal:
-        query: "*/CLOU2SEQ/TOCC"
-        type: float
-        transforms:
-          - scale: 0.01
-      cloudAmountDescription:
-        query: "*/CLOUDSEQ/CLAM"
-      cloudCeiling:
-        query: "*/CLOU3SEQ/CEILING"
-        type: float
-      heightAboveSurfaceOfBaseOfLowestCloud:
-        query: "*/CLOU2SEQ/HBLCS"
-      heightOfBaseOfCloud:
-        query: "*/CLOUDSEQ/HOCB"
-        type: float
-      verticalSignificanceSurfaceObservations:
-        query: "*/CLOUDSEQ/VSSO"
-      verticalVisibility:
-        query: "*/VISB1SEQ/VTVI_SEQ/VTVI"
-        type: float
-      horizontalVisibility:
-        query: "*/VISB1SEQ/HOVI"
-        type: float
-      minimumTemperature:
-        query: "*/TMXMNSEQ/MITM"
-      maximumTemperature:
-        query: "*/TMXMNSEQ/MXTM"
-      maximumWindGustSpeed:
-        query: "*/GUST1SEQ/MXGS"
-      presentWeather:
-        query: "*/PREWXSEQ/PRWE"
+    # ObsValue - ocean
+    waterTemperature:
+      query: "*/SST_INFO/SSTEVENT/SST1"
+    heightOfWaves:
+      query: "*/WAVE_SEQ/HOWV"
+      type: float
+    depthBelowWaterSurface:
+      query: "*/SST_INFO/DBSS_SEQ/DBSS"
+      type: float
+    # ObsValue - cloud, cloud ceiling, visibility, gust wind, min/max temperature, weather
+    # note: cloud ceiling is a derivative of HOCB, the height of cloud base
+    cloudCoverTotal:
+      query: "*/CLOU2SEQ/TOCC"
+      type: float
+      transforms:
+        - scale: 0.01
+    cloudAmountDescription:
+      query: "*/CLOUDSEQ/CLAM"
+    cloudCeiling:
+      query: "*/CLOU3SEQ/CEILING"
+      type: float
+    heightAboveSurfaceOfBaseOfLowestCloud:
+      query: "*/CLOU2SEQ/HBLCS"
+    heightOfBaseOfCloud:
+      query: "*/CLOUDSEQ/HOCB"
+      type: float
+    verticalSignificanceSurfaceObservations:
+      query: "*/CLOUDSEQ/VSSO"
+    verticalVisibility:
+      query: "*/VISB1SEQ/VTVI_SEQ/VTVI"
+      type: float
+    horizontalVisibility:
+      query: "*/VISB1SEQ/HOVI"
+      type: float
+    minimumTemperature:
+      query: "*/TMXMNSEQ/MITM"
+    maximumTemperature:
+      query: "*/TMXMNSEQ/MXTM"
+    maximumWindGustSpeed:
+      query: "*/GUST1SEQ/MXGS"
+    presentWeather:
+      query: "*/PREWXSEQ/PRWE"
 
-      # QualityMarker
-      heightQualityMarker:
-        query: "*/Z___INFO/Z__EVENT/ZQM"
-      pressureQualityMarker:
-        query: "*/P___INFO/P__EVENT/PQM"
-      pressureReducedToMeanSeaLevelQualityMarker:
-        query: "*/PMSL_SEQ/PMQ"
-      airTemperatureQualityMarker:
-        query: "*/T___INFO/T__EVENT/TQM"
-      specificHumidityQualityMarker:
-        query: "*/Q___INFO/Q__EVENT/QQM"
-      waterTemperatureQualityMarker:
-        query: "*/SST_INFO/SSTEVENT/SSTQM"
-      windEastwardQualityMarker:
-        query: "*/W___INFO/W__EVENT/WQM"
-      windNorthwardQualityMarker:
-        query: "*/W___INFO/W__EVENT/WQM"
+    # QualityMarker
+    heightQualityMarker:
+      query: "*/Z___INFO/Z__EVENT/ZQM"
+    pressureQualityMarker:
+      query: "*/P___INFO/P__EVENT/PQM"
+    pressureReducedToMeanSeaLevelQualityMarker:
+      query: "*/PMSL_SEQ/PMQ"
+    airTemperatureQualityMarker:
+      query: "*/T___INFO/T__EVENT/TQM"
+    specificHumidityQualityMarker:
+      query: "*/Q___INFO/Q__EVENT/QQM"
+    waterTemperatureQualityMarker:
+      query: "*/SST_INFO/SSTEVENT/SSTQM"
+    windEastwardQualityMarker:
+      query: "*/W___INFO/W__EVENT/WQM"
+    windNorthwardQualityMarker:
+      query: "*/W___INFO/W__EVENT/WQM"
 
-      # ObsError
-      pressureError:
-        query: "*/P___INFO/P__BACKG/POE"
-        transforms:
-          - scale: 100
-      airTemperatureError:
-        query: "*/T___INFO/T__BACKG/TOE"
-      relativeHumidityError:
-        query: "*/Q___INFO/Q__BACKG/QOE"
-        transforms:
-          - scale: 0.1
-      waterTemperatureError:
-        query: "*/SST_INFO/SSTBACKG/SSTOE"
-      windSpeedError:
-        query: "*/W___INFO/W__BACKG/WOE"
+    # ObsError
+    pressureError:
+      query: "*/P___INFO/P__BACKG/POE"
+      transforms:
+        - scale: 100
+    airTemperatureError:
+      query: "*/T___INFO/T__BACKG/TOE"
+    relativeHumidityError:
+      query: "*/Q___INFO/Q__BACKG/QOE"
+      transforms:
+        - scale: 0.1
+    waterTemperatureError:
+      query: "*/SST_INFO/SSTBACKG/SSTOE"
+    windSpeedError:
+      query: "*/W___INFO/W__BACKG/WOE"
 
-ioda:
+encoder:
+  type: netcdf
+
   dimensions:
     - name: CloudSequence
       path: "*/CLOUDSEQ"

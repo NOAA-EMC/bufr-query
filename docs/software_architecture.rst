@@ -8,9 +8,9 @@ Software Design
     :align: center
     :alt: Big Picture
 
-From the highest level the BUFR IODA backend component is composed of 2 main packages BufrReader and IodaEncoder. The
+From the highest level the BUFR IODA backend component is composed of 2 main packages BufrReader and Encoder. The
 BufrReader is responsible for taking a BufrDescription (provided in the form of a YAML file) and using it to read
-raw BUFR data into a DataContainer object. This DataContainer object is then used by the IodaEncoder (together
+raw BUFR data into a DataContainer object. This DataContainer object is then used by the IaEncoder (together
 with a IodaDescription) to encode an IODA ObsGroup object.
 
 The BufrParser class has some ability to manipulate the data in order to create usable data sets. For example, it

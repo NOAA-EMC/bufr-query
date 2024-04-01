@@ -4,80 +4,81 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    variables:
-      # MetaData
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
+  variables:
+    # MetaData
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
 
-      latitude:
-        query: "*/CLATH"
+    latitude:
+      query: "*/CLATH"
 
-      longitude:
-        query: "*/CLONH"
+    longitude:
+      query: "*/CLONH"
 
-      satelliteIdentifier:
-        query: "*/SAID"
+    satelliteIdentifier:
+      query: "*/SAID"
 
-      satelliteAntennaCorrectionsVersionNumber:
-        query: "*/SACV"
+    satelliteAntennaCorrectionsVersionNumber:
+      query: "*/SACV"
 
-      orbitNumber:
-        query: "*/ORBN"
+    orbitNumber:
+      query: "*/ORBN"
 
-      scanLineNumber:
-        query: "*/SLNM"
+    scanLineNumber:
+      query: "*/SLNM"
 
-      fieldOfViewNumber:
-        query: "*/FOVN"
+    fieldOfViewNumber:
+      query: "*/FOVN"
 
-      heightOfStation:
-        query: "*/SELV"
+    heightOfStation:
+      query: "*/SELV"
 
-      solarZenithAngle:
-        query: "*/SOZA"
+    solarZenithAngle:
+      query: "*/SOZA"
 
-      solarAzimuthAngle:
-        query: "*/SOLAZI"
+    solarAzimuthAngle:
+      query: "*/SOLAZI"
 
-      sensorZenithAngle:
-        query: "*/SAZA"
+    sensorZenithAngle:
+      query: "*/SAZA"
 
-      sensorAzimuthAngle:
-        query: "*/BEARAZ"
+    sensorAzimuthAngle:
+      query: "*/BEARAZ"
 
+    sensorScanAngle:
       sensorScanAngle:
-        sensorScanAngle:
-          fieldOfViewNumber: "*/FOVN"
-          scanStart: -48.333
-          scanStep: 3.333
-          sensor: amsua
+        fieldOfViewNumber: "*/FOVN"
+        scanStart: -48.333
+        scanStep: 3.333
+        sensor: amsua
 
-      sensorChannelNumber:
-        query: "*/ATCHV/INCN"
+    sensorChannelNumber:
+      query: "*/ATCHV/INCN"
 
-      # ObsValue
-      brightnessTemperature:
-        query: "*/ATCHV/TMBRST"
+    # ObsValue
+    brightnessTemperature:
+      query: "*/ATCHV/TMBRST"
 
-    splits:
-      satId:
-        category:
-          variable: satelliteIdentifier
-          map:
-            _3: metop-b
-            _4: metop-a
-            _5: metop-c
-            #               _206: n15
-            _209: n18
-            _223: n19
+  splits:
+    satId:
+      category:
+        variable: satelliteIdentifier
+        map:
+          _3: metop-b
+          _4: metop-a
+          _5: metop-c
+          #               _206: n15
+          _209: n18
+          _223: n19
 
-ioda:
+encoder:
+  type: netcdf
+
   dimensions:
     - name: Channel
       source: variables/sensorChannelNumber

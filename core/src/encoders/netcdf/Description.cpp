@@ -7,8 +7,6 @@
 
 #include "bufr/encoders/netcdf/Description.h"
 
-#include <boost/algorithm/string.hpp>
-
 #include "eckit/exception/Exceptions.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/filesystem/PathName.h"
@@ -65,7 +63,7 @@ namespace netcdf
     Description::Description(const std::string &yamlFile) : outputPathTemplate_("")
     {
         auto conf = eckit::YAMLConfiguration(eckit::PathName(yamlFile));
-        init(conf.getSubConfiguration("ioda"));
+        init(conf.getSubConfiguration("netcdf"));
     }
 
     Description::Description(const eckit::Configuration &conf) : outputPathTemplate_("")
@@ -86,7 +84,7 @@ namespace netcdf
             if (dimConfs.size() == 0)
             {
                 std::stringstream errStr;
-                errStr << "ioda::dimensions must contain a list of dimensions!";
+                errStr << "netcdf dimensions must contain a list of dimensions!";
                 throw eckit::BadParameter(errStr.str());
             }
 
@@ -108,7 +106,7 @@ namespace netcdf
                 } else
                 {
                     throw eckit::BadParameter(
-                        R"(ioda::dimensions section must have either "path" or "paths".)");
+                        R"(netcdf dimensions section must have either "path" or "paths".)");
                 }
 
                 if (dimConf.has(ConfKeys::Dimension::Source))
@@ -124,7 +122,7 @@ namespace netcdf
         if (varConfs.size() == 0)
         {
             std::stringstream errStr;
-            errStr << "ioda::variables must contain a list of variables!";
+            errStr << "netcdf variables must contain a list of variables!";
             throw eckit::BadParameter(errStr.str());
         }
 
