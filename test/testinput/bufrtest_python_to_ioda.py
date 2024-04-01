@@ -38,7 +38,7 @@ def run():
     dims = {'Location': rad.shape[0],
             'Channel': rad.shape[1]}
 
-    # Create the IODA ObsSpace
+    # Create the netcdf ObsSpace
     obsspace = ioda_ospace.ObsSpace("testrun/bufrtest_python_to_ioda.nc", mode='w', dim_dict=dims)
 
     # Create the global attributes

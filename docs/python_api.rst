@@ -7,7 +7,7 @@ Python
 High Level API
 --------------
 
-The high level API allows you to make use of YAML files to define the queries and ioda ObsGroup mappings. This makes it
+The high level API allows you to make use of YAML files to define the queries and encoded mappings. This makes it
 convenient to use in conjunction with the "script" interface on ioda when you discover that special processing is needed
 to get the data into the correct format. In general this interface will also be faster, as the bulk of the
 work will be done in native code. Here is a simple example in the form of a "script" backend script:
@@ -17,7 +17,7 @@ work will be done in native code. Here is a simple example in the form of a "scr
   import bufr
 
   def create_obs_group(input_path, category):
-    YAML_PATH = "./testinput/iodatest_bufr_basic.yaml"
+    YAML_PATH = "./testinput/bufrtest_bufr_basic.yaml"
     container = bufr.Parser(input_path, YAML_PATH).parse()
 
     encoder = bufr.IodaEncoder(YAML_PATH)

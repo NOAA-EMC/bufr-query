@@ -4,29 +4,30 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-      latitude:
-        query: "*/CLATH"
-      longitude:
-        query: "*/CLONH"
-      air_temperature:
-        query: "*/TDWPRAOB/TMDB"
-      dewpoint_temperature:
-        query: "*/TDWPRAOB/TMDP"
-      wind_direction:
-        query: "*/TDWPRAOB/WDIR"
-      wind_speed:
-        query: "*/TDWPRAOB/WSPD"
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+    latitude:
+      query: "*/CLATH"
+    longitude:
+      query: "*/CLONH"
+    air_temperature:
+      query: "*/TDWPRAOB/TMDB"
+    dewpoint_temperature:
+      query: "*/TDWPRAOB/TMDP"
+    wind_direction:
+      query: "*/TDWPRAOB/WDIR"
+    wind_speed:
+      query: "*/TDWPRAOB/WSPD"
 
-ioda:
+encoder:
+  type: netcdf
+
   dimensions:
     - name: Level
       path: "*/TDWPRAOB"

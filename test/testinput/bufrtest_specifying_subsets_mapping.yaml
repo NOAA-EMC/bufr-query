@@ -4,33 +4,34 @@
 # # # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 #
 bufr:
-  exports:
-    subsets:
-      - NC004001
-      - NC004002
-      - NC004003
-      - NC004006
-      - NC004009
-      - NC004010
-      - NC004011
+  subsets:
+    - NC004001
+    - NC004002
+    - NC004003
+    - NC004006
+    - NC004009
+    - NC004010
+    - NC004011
 
-    #MetaData
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-      latitude:
-        query: "[*/CLATH, */CLAT]"
-      longitude:
-        query: "[*/CLONH, */CLON]"
-      airTemperature:
-        query: "*/ADRBLSEQ/TMDB"
+  #MetaData
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+    latitude:
+      query: "[*/CLATH, */CLAT]"
+    longitude:
+      query: "[*/CLONH, */CLON]"
+    airTemperature:
+      query: "*/ADRBLSEQ/TMDB"
 
-ioda:
+encoder:
+  type: netcdf
+
   #MetaData
   variables:
     - name: "MetaData/dateTime"

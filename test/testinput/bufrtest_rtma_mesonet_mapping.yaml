@@ -4,79 +4,81 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    subsets:
-      - NC255002
-    variables:
-      # MetaData
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-      stationIdentification:
-        query: "*/RPID"
-      latitude:
-        query: "*/CLATH"
-      longitude:
-        query: "*/CLONH"
-      stationElevation:
-        query: "*/SELV"
-      height:
-        query: "*/HSMSL"
-      dataProviderRestricted:
-        query: "*/RSRD"
-      dataRestrictedExpiration:
-        query: "*/EXPRSRD"
+  subsets:
+    - NC255002
+
+  variables:
+    # MetaData
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+    stationIdentification:
+      query: "*/RPID"
+    latitude:
+      query: "*/CLATH"
+    longitude:
+      query: "*/CLONH"
+    stationElevation:
+      query: "*/SELV"
+    height:
+      query: "*/HSMSL"
+    dataProviderRestricted:
+      query: "*/RSRD"
+    dataRestrictedExpiration:
+      query: "*/EXPRSRD"
 
 
-      # ObsValue/Pressure
-      pressure:
-        query: "*/MNPRESSQ/PRES"
-      altimeterSetting:
-        query: "*/MNALSESQ/ALSE"
-      snowWaterEquivalentRate:
-        query: "*/MNREQVSQ/REQV"
+    # ObsValue/Pressure
+    pressure:
+      query: "*/MNPRESSQ/PRES"
+    altimeterSetting:
+      query: "*/MNALSESQ/ALSE"
+    snowWaterEquivalentRate:
+      query: "*/MNREQVSQ/REQV"
 
-      # ObsValue/Temperature
-      airTemperature:
-        query: "*/MNTMDBSQ/TMDB"
-      dewPointTemperature:
-        query: "*/MNTMDPSQ/TMDP"
+    # ObsValue/Temperature
+    airTemperature:
+      query: "*/MNTMDBSQ/TMDB"
+    dewPointTemperature:
+      query: "*/MNTMDPSQ/TMDP"
 
-      # ObsValue/Wind
-      windDirection:
-        query: "*/MNWDIRSQ/WDIR"
-      windSpeed:
-        query: "*/MNWSPDSQ/WSPD"
-      maximumWindGustDirection:
-        query: "*/MNGUSTSQ/MXGD"
-      maximumWindGustSpeed:
-        query: "*/MNGUSTSQ/MXGS"
+    # ObsValue/Wind
+    windDirection:
+      query: "*/MNWDIRSQ/WDIR"
+    windSpeed:
+      query: "*/MNWSPDSQ/WSPD"
+    maximumWindGustDirection:
+      query: "*/MNGUSTSQ/MXGD"
+    maximumWindGustSpeed:
+      query: "*/MNGUSTSQ/MXGS"
 
-      # ObsValue/Humidity
-      totalPrecipitation:
-        query: "*/TOPC"
+    # ObsValue/Humidity
+    totalPrecipitation:
+      query: "*/TOPC"
 
-      # ObsValue/Visibility
-      horizontalVisibility:
-        query: "*/MNHOVISQ/HOVI"
-
-
-      # QualityMarker
-      pressureQM:
-        query: "*/QMPR"
-      airTemperatureQM:
-        query: "*/QMAT"
-      dewPointTemperatureQM:
-        query: "*/QMDD"
-      windSpeedQM:
-        query: "*/QMWN"
+    # ObsValue/Visibility
+    horizontalVisibility:
+      query: "*/MNHOVISQ/HOVI"
 
 
-ioda:
+    # QualityMarker
+    pressureQM:
+      query: "*/QMPR"
+    airTemperatureQM:
+      query: "*/QMAT"
+    dewPointTemperatureQM:
+      query: "*/QMDD"
+    windSpeedQM:
+      query: "*/QMWN"
+
+
+encoder:
+  type: netcdf
+
   variables:
     # MetaData
     - name: "MetaData/dateTime"

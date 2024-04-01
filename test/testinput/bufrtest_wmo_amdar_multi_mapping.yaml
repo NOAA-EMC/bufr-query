@@ -4,49 +4,50 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-          second: "*/SECO"
-      latitude:
-        query: "*/CLATH"
-      longitude:
-        query: "*/CLONH"
-      pressureAltitude:
-        query: "[*/FLVLST, */AMDARNOL/FLVLST]"
-        type: float
-      aircraftRegistrationNum:
-        query: "*/ACRN"
-      aircraftFlightNum:
-        query: "*/ACID"
-      aircraftTailNum:
-        query: "*/ACTN"
-      observationSequenceNum:
-        query: "*/OSQN"
-      aircraftFlightPhase:
-        query: "*/DPOF"
-      aircraftTrueAirspeed:
-        query: "*/TASP"
-      aircraftHeading:
-        query: "*/ACTH"
-      aircraftRollAngleQuality:
-        query: "[*/ROLQ, */AMDARNOL/ROLQ]"
-      temperatureAir:
-        query: "[*/TMDB, */AMDARNOL/TMDB, */TMDBST]"
-      waterVaporMixingRatio:
-        query: "*/MIXR"
-      windDirection:
-        query: "[*/WDIR, */AMDARNOL/WDIR]"
-      windSpeed:
-        query: "[*/WSPD, */AMDARNOL/WSPD]"
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+        second: "*/SECO"
+    latitude:
+      query: "*/CLATH"
+    longitude:
+      query: "*/CLONH"
+    pressureAltitude:
+      query: "[*/FLVLST, */AMDARNOL/FLVLST]"
+      type: float
+    aircraftRegistrationNum:
+      query: "*/ACRN"
+    aircraftFlightNum:
+      query: "*/ACID"
+    aircraftTailNum:
+      query: "*/ACTN"
+    observationSequenceNum:
+      query: "*/OSQN"
+    aircraftFlightPhase:
+      query: "*/DPOF"
+    aircraftTrueAirspeed:
+      query: "*/TASP"
+    aircraftHeading:
+      query: "*/ACTH"
+    aircraftRollAngleQuality:
+      query: "[*/ROLQ, */AMDARNOL/ROLQ]"
+    temperatureAir:
+      query: "[*/TMDB, */AMDARNOL/TMDB, */TMDBST]"
+    waterVaporMixingRatio:
+      query: "*/MIXR"
+    windDirection:
+      query: "[*/WDIR, */AMDARNOL/WDIR]"
+    windSpeed:
+      query: "[*/WSPD, */AMDARNOL/WSPD]"
 
-ioda:
+encoder:
+  type: netcdf
+
   dimensions:
     - name: AmdarSequence
       path: "*/AMDARNOL"

@@ -5,97 +5,98 @@
 #
 
 bufr:
-  exports:
-    variables:
-      # MetaData
-      timestamp:
-        datetime:
-          year: "*/YEAR[1]"
-          month: "*/MNTH[1]"
-          day: "*/DAYS[1]"
-          hour: "*/HOUR[1]"
-          minute: "*/MINU[1]"
-      latitude:
-        query: "[*/CLAT, */CLATH]"
-      longitude:
-        query: "[*/CLON, */CLONH]"
-      stationIdentification:
-        query: "*/RPID"
-      stationElevation:
-        query: "[*/SELV, */HSMSL]"
-      waterTemperatureMethod:
-        query: "*/MSST"
+  variables:
+    # MetaData
+    timestamp:
+      datetime:
+        year: "*/YEAR[1]"
+        month: "*/MNTH[1]"
+        day: "*/DAYS[1]"
+        hour: "*/HOUR[1]"
+        minute: "*/MINU[1]"
+    latitude:
+      query: "[*/CLAT, */CLATH]"
+    longitude:
+      query: "[*/CLON, */CLONH]"
+    stationIdentification:
+      query: "*/RPID"
+    stationElevation:
+      query: "[*/SELV, */HSMSL]"
+    waterTemperatureMethod:
+      query: "*/MSST"
 
-      # ObsValue
-      pressure:
-        query: "*/PRES"
-        type: float
-      pressureReducedToMeanSeaLevel:
-        query: "*/PMSL"
-        type: float
-      altimeterSetting:
-        query: "*/ALSE"
-        type: float
-      airTemperature:
-        query: "*/TMDB"
-      dewpointTemperature:
-        query: "*/TMDP"
-      windDirection:
-        query: "*/WDIR"
-        type: float
-      windSpeed:
-        query: "*/WSPD"
-        type: float
+    # ObsValue
+    pressure:
+      query: "*/PRES"
+      type: float
+    pressureReducedToMeanSeaLevel:
+      query: "*/PMSL"
+      type: float
+    altimeterSetting:
+      query: "*/ALSE"
+      type: float
+    airTemperature:
+      query: "*/TMDB"
+    dewpointTemperature:
+      query: "*/TMDP"
+    windDirection:
+      query: "*/WDIR"
+      type: float
+    windSpeed:
+      query: "*/WSPD"
+      type: float
 
-      # ObsValue - ocean
-      # DBSS (depth below water surface) not found
-      waterTemperature:
-        query: "*/SST1"
-      heightOfWaves:
-        query: "*/WAVSQ1/HOWV"
+    # ObsValue - ocean
+    # DBSS (depth below water surface) not found
+    waterTemperature:
+      query: "*/SST1"
+    heightOfWaves:
+      query: "*/WAVSQ1/HOWV"
 
-      # ObsValue - cloud, visibility, gust wind, min/max temperature, weather
-      # CEILING (cloud ceiling) not found
-      cloudCoverTotal:
-        query: "*/TOCC"
-        type: float
-        transforms:
-          - scale: 0.01
-      cloudAmountDescription:
-        query: "[*/CLDSQ1/CLAM, */MTRCLD/CLAM, NC000100/CLAM, NC000101/CLAM, NC000102/CLAM]"
-      heightAboveSurfaceOfBaseOfLowestCloud:
-        query: "*/HBLCS"
-      heightOfBaseOfCloud:
-        query: "[*/CLDSQ1/HOCB, */MTRCLD/HOCB, NC000100/HOCB, NC000101/HOCB, NC000102/HOCB]"
-        type: float
-      verticalSignificanceSurfaceObservations:
-        query: "[*/CLDSQ1/VSSO, */MTRCLD/VSSO, NC000100/VSSO[1], NC000101/VSSO[1], NC000102/VSSO[1]]"
-      verticalVisibility:
-        query: "[*/RPSEC3/VTVI, */VTVI]"
-        type: float
-      horizontalVisibility:
-        query: "*/HOVI"
-        type: float
-      minimumTemperature:
-        query: "[*/TMPSQ3/MITM, */MTTPSQ/MITM, NC000100/BSYEXTM/MITM[1], NC000101/BSYEXTM/MITM[1], NC000102/BSYEXTM/MITM[1]]"
-      maximumTemperature:
-        query: "[*/TMPSQ3/MXTM, */MTTPSQ/MXTM, */BSYEXTM/MXTM]"
-      maximumWindGustSpeed:
-        query: "[*/WNDSQ2/MXGS, */MTGUST/MXGS, */BSYWND2/MXGS]"
-      presentWeather:
-        query: "[*/PPWSQ1/PRWE, */MTRPRW/PRWE, */PWEATHER/PRWE]"
+    # ObsValue - cloud, visibility, gust wind, min/max temperature, weather
+    # CEILING (cloud ceiling) not found
+    cloudCoverTotal:
+      query: "*/TOCC"
+      type: float
+      transforms:
+        - scale: 0.01
+    cloudAmountDescription:
+      query: "[*/CLDSQ1/CLAM, */MTRCLD/CLAM, NC000100/CLAM, NC000101/CLAM, NC000102/CLAM]"
+    heightAboveSurfaceOfBaseOfLowestCloud:
+      query: "*/HBLCS"
+    heightOfBaseOfCloud:
+      query: "[*/CLDSQ1/HOCB, */MTRCLD/HOCB, NC000100/HOCB, NC000101/HOCB, NC000102/HOCB]"
+      type: float
+    verticalSignificanceSurfaceObservations:
+      query: "[*/CLDSQ1/VSSO, */MTRCLD/VSSO, NC000100/VSSO[1], NC000101/VSSO[1], NC000102/VSSO[1]]"
+    verticalVisibility:
+      query: "[*/RPSEC3/VTVI, */VTVI]"
+      type: float
+    horizontalVisibility:
+      query: "*/HOVI"
+      type: float
+    minimumTemperature:
+      query: "[*/TMPSQ3/MITM, */MTTPSQ/MITM, NC000100/BSYEXTM/MITM[1], NC000101/BSYEXTM/MITM[1], NC000102/BSYEXTM/MITM[1]]"
+    maximumTemperature:
+      query: "[*/TMPSQ3/MXTM, */MTTPSQ/MXTM, */BSYEXTM/MXTM]"
+    maximumWindGustSpeed:
+      query: "[*/WNDSQ2/MXGS, */MTGUST/MXGS, */BSYWND2/MXGS]"
+    presentWeather:
+      query: "[*/PPWSQ1/PRWE, */MTRPRW/PRWE, */PWEATHER/PRWE]"
 
-      # QualityMarker
-      airTemperatureQM:
-        query: "*/QMAT"
-      dewpointTemperatureQM:
-        query: "*/QMDD"
-      pressureQM:
-        query: "*/QMPR"
-      windQM:
-        query: "*/QMWN"
+    # QualityMarker
+    airTemperatureQM:
+      query: "*/QMAT"
+    dewpointTemperatureQM:
+      query: "*/QMDD"
+    pressureQM:
+      query: "*/QMPR"
+    windQM:
+      query: "*/QMWN"
 
-ioda:
+encoder:
+  type: netcdf
+
   dimensions:
     - name: CloudSequence
       path: "*/CLDSQ1"

@@ -105,7 +105,7 @@ namespace netcdf {
     typedef std::vector<VariableDescription> VariableDescriptions;
     typedef std::vector<std::shared_ptr<GlobalDescriptionBase>> GlobalDescriptions;
 
-    /// \brief Describes how to write data to IODA.
+    /// \brief Describes how to write data to NetCDF.
     class Description
     {
      public:

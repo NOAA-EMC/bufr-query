@@ -4,27 +4,29 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    group_by_variable: depth
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-      longitude:
-        query: "*/CLON"
-      latitude:
-        query: "*/CLAT"
-      depth:
-        query: "*/DTSCUR/DBSS"
-      temp:
-        query: "*/DTSCUR/STMP"
-      saln:
-        query: "*/DTSCUR/SALN"
-ioda:
+  group_by_variable: depth
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+    longitude:
+      query: "*/CLON"
+    latitude:
+      query: "*/CLAT"
+    depth:
+      query: "*/DTSCUR/DBSS"
+    temp:
+      query: "*/DTSCUR/STMP"
+    saln:
+      query: "*/DTSCUR/SALN"
+
+encoder:
+  type: netcdf
+
   variables:
     - name: "MetaData/dateTime"
       source: variables/timestamp

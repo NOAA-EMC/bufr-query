@@ -4,72 +4,73 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    variables:
-      # MetaData
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-          second: "*/SECO"
+  variables:
+    # MetaData
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+        second: "*/SECO"
 
-      latitude:
-        query: "*/CLATH"
+    latitude:
+      query: "*/CLATH"
 
-      longitude:
-        query: "*/CLONH"
+    longitude:
+      query: "*/CLONH"
 
-      satelliteIdentifier:
-        query: "*/SAID"
+    satelliteIdentifier:
+      query: "*/SAID"
 
-      satelliteInstrument:
-        query: "*/SIID"
+    satelliteInstrument:
+      query: "*/SIID"
 
-      fieldOfViewNumber:
-        query: "*/FOVN"
+    fieldOfViewNumber:
+      query: "*/FOVN"
 
-      heightOfStation:
-        query: "*/HMSL"
+    heightOfStation:
+      query: "*/HMSL"
 
-      solarZenithAngle:
-        query: "*/SOZA"
+    solarZenithAngle:
+      query: "*/SOZA"
 
-      solarAzimuthAngle:
-        query: "*/SOLAZI"
+    solarAzimuthAngle:
+      query: "*/SOLAZI"
 
-      sensorZenithAngle:
-        query: "*/SAZA"
+    sensorZenithAngle:
+      query: "*/SAZA"
 
-      sensorAzimuthAngle:
-        query: "*/BEARAZ"
+    sensorAzimuthAngle:
+      query: "*/BEARAZ"
 
+    sensorScanAngle:
       sensorScanAngle:
-        sensorScanAngle:
-          fieldOfViewNumber: "*/FOVN"
-          scanStart: -52.725
-          scanStep: 1.110
-          sensor: atms
+        fieldOfViewNumber: "*/FOVN"
+        scanStart: -52.725
+        scanStep: 1.110
+        sensor: atms
 
-      sensorChannelNumber:
-        query: "*/ATMSCH/CHNM"
+    sensorChannelNumber:
+      query: "*/ATMSCH/CHNM"
 
-      # ObsValue
-      # Brightness Temperature
-      brightnessTemperature:
-        query: "*/ATMSCH/TMBR"
+    # ObsValue
+    # Brightness Temperature
+    brightnessTemperature:
+      query: "*/ATMSCH/TMBR"
 
-    splits:
-      satId:
-        category:
-          variable: satelliteIdentifier
-          map:
-            _224: npp
-            _225: n20
+  splits:
+    satId:
+      category:
+        variable: satelliteIdentifier
+        map:
+          _224: npp
+          _225: n20
 
-ioda:
+encoder:
+  type: netcdf
+
   dimensions:
     - name: Channel
       source: variables/sensorChannelNumber
