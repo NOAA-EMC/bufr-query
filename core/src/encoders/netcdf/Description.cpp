@@ -157,18 +157,18 @@ namespace netcdf
                 variable.range = range;
             }
 
-//            variable.chunks = {};
-//            if (varConf.has(ConfKeys::Variable::Chunks))
-//            {
-//                auto chunks = std::vector<ioda::Dimensions_t>();
-//
-//                for (const auto &chunkStr: varConf.getStringVector(ConfKeys::Variable::Chunks))
-//                {
-//                    chunks.push_back(std::stoi(chunkStr));
-//                }
-//
-//                variable.chunks = chunks;
-//            }
+            variable.chunks = {};
+            if (varConf.has(ConfKeys::Variable::Chunks))
+            {
+                auto chunks = std::vector<size_t>();
+
+                for (const auto &chunkStr: varConf.getStringVector(ConfKeys::Variable::Chunks))
+                {
+                    chunks.push_back(std::stoi(chunkStr));
+                }
+
+                variable.chunks = chunks;
+            }
 
             variable.compressionLevel = 6;
             if (varConf.has(ConfKeys::Variable::CompressionLevel))
@@ -254,7 +254,7 @@ namespace netcdf
         variable.units = unit;
         variable.longName = longName;
         variable.compressionLevel = 6;
-//        variable.chunks = {};
+        variable.chunks = {};
         addVariable(variable);
     }
 
