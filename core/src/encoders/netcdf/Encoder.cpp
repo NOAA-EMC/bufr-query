@@ -312,7 +312,8 @@ namespace netcdf {
             for (auto dimPair: dimMap)
             {
                 const auto& dim = file->addDim(dimPair.first, dimPair.second->size());
-                file->addVar(dimPair.first, nc::NcType::nc_INT, dim);
+                auto dimVar = file->addVar(dimPair.first, nc::NcType::nc_INT, dim);
+                addAttribute(dimVar, "_FillValue", DataObject<int>::missingValue());
             }
 
             for (const auto& dimDesc : description_.getDims())
