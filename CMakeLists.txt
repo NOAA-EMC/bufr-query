@@ -25,7 +25,7 @@ find_package( Eigen3 REQUIRED NO_MODULE HINTS
               $ENV{Eigen3_ROOT} $ENV{EIGEN3_ROOT} $ENV{Eigen_ROOT} $ENV{EIGEN_ROOT}
               $ENV{Eigen3_PATH} $ENV{EIGEN3_PATH} $ENV{Eigen_PATH} $ENV{EIGEN_PATH} )
 find_package( gsl-lite REQUIRED HINTS $ENV{gsl_lite_DIR} )
-find_package( NetCDF REQUIRED COMPONENTS CXX Fortran)  # No idea why oops is not importing this correctly
+find_package( NetCDF REQUIRED COMPONENTS CXX)
 find_package( bufr 12.0.1 REQUIRED)
 
 
