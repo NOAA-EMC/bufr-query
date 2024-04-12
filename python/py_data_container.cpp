@@ -84,7 +84,7 @@ void setupDataContainer(py::module& m)
         py::arg("name"),
         py::arg("category") = std::vector<std::string>(),
         "Get the value of the variable object as numpy array. ")
-   .def("getPaths", &DataContainer::getPaths,
+   .def("get_paths", &DataContainer::getPaths,
         py::arg("name"),
         py::arg("category") = std::vector<std::string>(),
         "Get path names for a field.")
@@ -122,7 +122,11 @@ void setupDataContainer(py::module& m)
         py::arg("data"),
         py::arg("category") = std::vector<std::string>(),
         "Replace the variable with the given name.")
-   .def("getCategoryMap", &DataContainer::getCategoryMap, "Get the map.")
-   .def("allSubCategories", &DataContainer::allSubCategories,
-        "Get the sub categories for the satellite.");
+   .def("get_category_map", &DataContainer::getCategoryMap, "Get the map.")
+   .def("all_sub_categories", &DataContainer::allSubCategories,
+        "Get the sub categories for the satellite.")
+   .def("list", &DataContainer::getFieldNames, "Get the field names.")
+   .def("append", &DataContainer::append,
+        py::arg("other"),
+        "Append contents of another container. Must have the same category map and fields.");
 }
