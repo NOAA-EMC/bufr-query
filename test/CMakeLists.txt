@@ -170,7 +170,7 @@ ecbuild_add_test( TARGET  test_bufr_split
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t18z.1bmhs.tm00.bufr_d
                                                                testinput/bufrtest_split_mapping.yaml
-                                                               testrun/bufrtest_split_{{category}}.nc"
+                                                               testrun/bufrtest_split_.{splits/hour}_{splits/minute}.nc"
                           bufrtest_split_15_seven.nc)
 
 ecbuild_add_test( TARGET  test_bufr_filter_split
@@ -180,7 +180,7 @@ ecbuild_add_test( TARGET  test_bufr_filter_split
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t18z.1bmhs.tm00.bufr_d
                                                                testinput/bufrtest_filter_split_mapping.yaml
-                                                               testrun/bufrtest_filter_split_{{category}}.nc"
+                                                               testrun/bufrtest_filter_split_{splits/hour}_{splits/minute}.nc"
                           bufrtest_filter_split_15_7.nc)
 
 ecbuild_add_test( TARGET  test_bufr_empty_fields
@@ -251,7 +251,7 @@ ecbuild_add_test( TARGET  test_bufr_amua_ta
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t12z.1bamua.tm00.bufr_d
                                                                testinput/bufrtest_amua_ta_mapping.yaml
-                                                               testrun/bufrtest_amua_{{category}}.nc"
+                                                               testrun/bufrtest_amua_{splits/satId}_ta.nc"
                           bufrtest_amua_metop-a.nc)
 
 ecbuild_add_test( TARGET  test_bufr_amua_n15
@@ -261,7 +261,7 @@ ecbuild_add_test( TARGET  test_bufr_amua_n15
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t12z.1bamua.tm00.bufr_d
                                                                testinput/bufrtest_amua_n15_mapping.yaml
-                                                               testrun/bufrtest_amua_{{category}}.nc"
+                                                               testrun/bufrtest_amua_{splits/satId}.nc"
                           bufrtest_amua_n15.nc)
 
 ecbuild_add_test( TARGET  test_bufr_esamua
@@ -271,7 +271,7 @@ ecbuild_add_test( TARGET  test_bufr_esamua
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t12z.esamua.tm00.bufr_d
                                                                testinput/bufrtest_esamua_mapping.yaml
-                                                               testrun/bufrtest_esamua_{{category}}.nc"
+                                                               testrun/bufrtest_esamua_{splits/satId}.nc"
                           bufrtest_esamua_n18.nc)
 
 ecbuild_add_test( TARGET  test_bufr_mhs
@@ -281,7 +281,7 @@ ecbuild_add_test( TARGET  test_bufr_mhs
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t18z.1bmhs.tm00.bufr_d
                                                                testinput/bufrtest_mhs_mapping.yaml
-                                                               testrun/bufrtest_mhs_{{category}}.nc"
+                                                               testrun/bufrtest_mhs_{splits/satId}.nc"
                           bufrtest_mhs_metop-b.nc)
 
 ecbuild_add_test( TARGET  test_bufr_esmhs
@@ -291,7 +291,7 @@ ecbuild_add_test( TARGET  test_bufr_esmhs
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t12z.esmhs.tm00.bufr_d
                                                                testinput/bufrtest_esmhs_mapping.yaml
-                                                               testrun/bufrtest_esmhs_{{category}}.nc"
+                                                               testrun/bufrtest_esmhs_{splits/satId}.nc"
                           bufrtest_esmhs_noaa-19.nc)
 
 ecbuild_add_test( TARGET  test_bufr_adpsfc
@@ -412,7 +412,7 @@ ecbuild_add_test( TARGET  test_bufr_mtiasi
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t12z.mtiasi.tm00.bufr_d
                                                                testinput/bufrtest_mtiasi_mapping.yaml
-                                                               testrun/bufrtest_mtiasi_{{category}}.nc"
+                                                               testrun/bufrtest_mtiasi_{splits/satId}.nc"
                           bufrtest_mtiasi_metop-c.nc)
 
 #ecbuild_add_test( TARGET  test_bufr_mtiasi_cached
@@ -422,7 +422,7 @@ ecbuild_add_test( TARGET  test_bufr_mtiasi
 #                          netcdf
 #                          "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t12z.mtiasi.tm00.bufr_d
 #                                                               testinput/bufrtest_mtiasi_cached_mapping.yaml
-#                                                               testrun/bufrtest_mtiasi_cached_{{category}}.nc"
+#                                                               testrun/bufrtest_mtiasi_cached_{splits/satId}.nc"
 #                          bufrtest_mtiasi_metop-c.nc)
 
 ecbuild_add_test( TARGET  test_bufr_atms
@@ -432,7 +432,7 @@ ecbuild_add_test( TARGET  test_bufr_atms
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t00z.atms.tm00.bufr_d
                                                                testinput/bufrtest_atms_mapping.yaml
-                                                               testrun/bufrtest_atms_{{category}}.nc"
+                                                               testrun/bufrtest_atms_{splits/satId}.nc"
                           bufrtest_atms_n20.nc)
 
 ecbuild_add_test( TARGET  test_bufr_sfcshp

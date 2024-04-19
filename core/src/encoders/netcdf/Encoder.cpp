@@ -293,14 +293,9 @@ namespace netcdf {
 
             auto fileName = makeStrWithSubstitions(backend.path, substitutions);
 
-            int fileFlags = NC_CLOBBER | NC_WRITE | NC_NETCDF4;
-            if (backend.isMemoryFile)
-            {
-                fileFlags = fileFlags | NC_DISKLESS;
-            }
-
-            auto file = std::make_shared<nc::NcFile>();
-            file->create(fileName, fileFlags);
+            auto file = std::make_shared<nc::NcFile>(fileName,
+                                                     nc::NcFile::FileMode::replace,
+                                                     nc::NcFile::FileFormat::nc4);
 
             // Create the Globals
             for (auto &global: description_.getGlobals())
@@ -314,6 +309,11 @@ namespace netcdf {
                 const auto& dim = file->addDim(dimPair.first, dimPair.second->size());
                 auto dimVar = file->addVar(dimPair.first, nc::NcType::nc_INT, dim);
                 addAttribute(dimVar, "_FillValue", DataObject<int>::missingValue());
+
+                if (auto intDimData = std::dynamic_pointer_cast<DimensionData<int>>(dimPair.second))
+                {
+                  dimVar.putVar(intDimData->data.data());
+                }
             }
 
             for (const auto& dimDesc : description_.getDims())
@@ -383,9 +383,23 @@ namespace netcdf {
                     dimNames.push_back(dimForDimPath(dimPath, namedPathDims).name);
 
                     auto dimVar = group.getVar(dimForDimPath(dimPath, namedPathDims).name);
+
+                    auto dimChunk = static_cast<size_t>(dataObject->getDims()[dimIdx]);
+                    auto chunkMode = nc::NcVar::ChunkMode::nc_CHUNKED;
+                    if (!dimVar.isNull())
+                    {
+                      std::vector<size_t> varChunks;
+                      dimVar.getChunkingParameters(chunkMode, varChunks);
+                      dimChunk = varChunks[dimIdx];
+                    }
+
                     if (dimIdx < varDesc.chunks.size())
                     {
-                        chunks.push_back(varDesc.chunks[dimIdx]);
+                      chunks.push_back(std::min(dimChunk, varDesc.chunks[dimIdx]));
+                    }
+                    else
+                    {
+                      chunks.push_back(dimChunk);
                     }
                 }
 
