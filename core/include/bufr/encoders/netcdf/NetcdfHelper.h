@@ -47,9 +47,15 @@ namespace netcdf {
                                           const std::string& name,
                                           const std::string& value)
     {
+      if (name != "_FillValue")
+      {
         var.putAtt(name, value);
+      }
+      else
+      {
+        // Currently not able to set _FillValue for string attributes
+      }
     }
-
 }  // namespace netcdf
 }  // namespace encoders
 }  // namespace bufr

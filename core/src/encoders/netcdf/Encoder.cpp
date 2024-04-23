@@ -7,6 +7,7 @@
 
 #include "bufr/encoders/netcdf/Encoder.h"
 
+#include <numeric>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -45,6 +46,35 @@ namespace netcdf {
         nc::NcVar& var_;
     };
 
+    template <>
+    class VarWriter<std::string> : public ObjectWriter<std::string>
+    {
+    public:
+      VarWriter() = delete;
+      VarWriter(nc::NcVar& var) : var_(var) {}
+
+      void write(const std::vector<std::string>& data) final
+      {
+        auto startPositions = std::vector<size_t>(data.size(), 0);
+        std::vector<size_t> lengths;
+        for (const auto& str : data)
+        {
+          lengths.push_back(str.size());
+        }
+
+        auto c_strs = std::vector<const char*>(data.size());
+        for (size_t i = 0; i < data.size(); i++)
+        {
+          c_strs[i] = data[i].c_str();
+        }
+
+        var_.putVar(c_strs.data());
+      }
+
+    private:
+      nc::NcVar& var_;
+    };
+
     template <typename T>
     nc::NcVar createVar(std::shared_ptr<DataObject<T>>& obj,
                         nc::NcGroup& group,
@@ -57,12 +87,12 @@ namespace netcdf {
 
         if (!chunks.empty())
         {
-            var.setChunking(nc::NcVar::ChunkMode::nc_CHUNKED, chunks);
+          var.setChunking(nc::NcVar::ChunkMode::nc_CHUNKED, chunks);
         }
 
         if (compressionLevel > 0)
         {
-            var.setCompression(true, true, compressionLevel);
+          var.setCompression(true, true, compressionLevel);
         }
 
         addAttribute(var, "_FillValue", obj->missingValue());
@@ -105,7 +135,8 @@ namespace netcdf {
         }
         else if (auto strobj = std::dynamic_pointer_cast<DataObject<std::string>>(object))
         {
-            var = createVar(strobj, group, name, dimNames, chunks, compressionLevel);
+            // Can't compress string data
+            var = createVar(strobj, group, name, dimNames, chunks, 0);
         }
         else
         {

@@ -170,7 +170,7 @@ ecbuild_add_test( TARGET  test_bufr_split
                           netcdf
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t18z.1bmhs.tm00.bufr_d
                                                                testinput/bufrtest_split_mapping.yaml
-                                                               testrun/bufrtest_split_.{splits/hour}_{splits/minute}.nc"
+                                                               testrun/bufrtest_split_{splits/hour}_{splits/minute}.nc"
                           bufrtest_split_15_seven.nc)
 
 ecbuild_add_test( TARGET  test_bufr_filter_split
