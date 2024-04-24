@@ -225,7 +225,7 @@ namespace netcdf {
             // When we find that the primary index is zero we need to skip this category
             if (dataObjectGroupBy->getDims()[0] == 0)
             {
-                log::warning() << "  Category (";
+                log::warning() << "Category (";
                 for (auto category: categories)
                 {
                     log::warning() << category;
@@ -352,6 +352,26 @@ namespace netcdf {
                 if (!dimDesc.source.empty())
                 {
                     auto dataObject = dataContainer->get(dimDesc.source, categories);
+
+                    if (dataObject->size() == 0)
+                    {
+                        log::warning() << "Dimension source ";
+                        log::warning() << dimDesc.source;
+                        log::warning() << " has no data for category (";
+                        for (auto category: categories)
+                        {
+                          log::warning() << category;
+
+                          if (category != categories.back())
+                          {
+                            log::warning() << ", ";
+                          }
+                        }
+                        log::warning() << ")" << std::endl;
+
+                        continue;
+                    }
+
                     for (size_t dimIdx = 0; dimIdx < dataObject->getDims().size(); dimIdx++)
                     {
                         auto dimPath = dataObject->getDimPaths()[dimIdx];
