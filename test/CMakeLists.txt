@@ -61,7 +61,7 @@ list(APPEND test_output
   testoutput/bufrtest_adpupa.nc
   testoutput/bufrtest_aircft_noamdar103.nc
   testoutput/bufrtest_atms_n20.nc
-  testoutput/bufrtest_amua_metop-a.nc
+  testoutput/bufrtest_amua_metop-a_ta.nc
   testoutput/bufrtest_split_15_seven.nc
   testoutput/bufrtest_filter_split_15_7.nc
   testoutput/bufrtest_long_strs.nc
@@ -252,7 +252,7 @@ ecbuild_add_test( TARGET  test_bufr_amua_ta
                           "${CMAKE_BINARY_DIR}/bin/bufr2ioda.x testinput/data/gdas.t12z.1bamua.tm00.bufr_d
                                                                testinput/bufrtest_amua_ta_mapping.yaml
                                                                testrun/bufrtest_amua_{splits/satId}_ta.nc"
-                          bufrtest_amua_metop-a.nc)
+                          bufrtest_amua_metop-a_ta.nc)
 
 ecbuild_add_test( TARGET  test_bufr_amua_n15
                   TYPE    SCRIPT
