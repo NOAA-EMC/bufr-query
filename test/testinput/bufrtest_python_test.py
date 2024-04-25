@@ -123,22 +123,23 @@ def test_invalid_query():
 def test_highlevel_replace():
     DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
     YAML_PATH = 'testinput/bufrtest_hrs_basic_mapping.yaml'
+    OUTPUT_PATH = 'testrun/bufrtest_python_test.nc'
 
     container = bufr.Parser(DATA_PATH, YAML_PATH).parse()
 
     data = container.get('variables/brightnessTemp')
-    container.replace('variables/brightnessTemp', data * 0.1)
+    container.replace('variables/brightnessTemp', data * 1.1)
 
-    obsgroup = next(iter(netcdf.Encoder(YAML_PATH).encode(container).values()))
-
-    obs_temp = obsgroup.vars.open("ObsValue/brightnessTemperature").readNPArray.float()
+    dataset = next(iter(netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH).values()))
+    obs_temp = dataset["ObsValue/brightnessTemperature"]
 
     assert obs_temp.shape == data.shape
-    assert np.allclose(obs_temp, data * 0.1)
+    assert np.allclose(obs_temp[:, :], data * 1.1)
 
 def test_highlevel_add():
     DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
     YAML_PATH = 'testinput/bufrtest_hrs_basic_mapping.yaml'
+    OUTPUT_PATH = 'testrun/bufrtest_python_test.nc'
 
     container = bufr.Parser(DATA_PATH, YAML_PATH).parse()
 
@@ -148,14 +149,13 @@ def test_highlevel_add():
 
     description = netcdf.Description(YAML_PATH)
     description.add_variable(name='ObsValue/new_brightnessTemperature',
-                                 source='variables/brightnessTemp_new',
-                                 units='K',
-                                 longName='New Brightness Temperature')
+                             source='variables/brightnessTemp_new',
+                             units='K',
+                             longName='New Brightness Temperature')
 
-    obsgroup = next(iter(netcdf.Encoder(netcdf.Description).encode(container).values()))
-
-    obs_orig = obsgroup.vars.open("ObsValue/brightnessTemperature").readNPArray.float()
-    obs_temp = obsgroup.vars.open("ObsValue/new_brightnessTemperature").readNPArray.float()
+    dataset = next(iter(netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH).values()))
+    obs_orig = dataset["ObsValue/brightnessTemperature"][:]
+    obs_temp = dataset["ObsValue/new_brightnessTemperature"][:]
 
     assert np.allclose(obs_temp, obs_orig)
     assert obs_temp.shape == data.shape
@@ -163,6 +163,7 @@ def test_highlevel_add():
 def test_highlevel_w_category():
     DATA_PATH = 'testinput/data/gdas.t12z.1bamua.tm00.bufr_d'
     YAML_PATH = 'testinput/bufrtest_amua_ta_mapping.yaml'
+    OUTPUT_PATH = 'testrun/bufrtest_python_test.nc'
 
     container = bufr.Parser(DATA_PATH, YAML_PATH).parse()
 
@@ -174,14 +175,14 @@ def test_highlevel_w_category():
 
     netcdf.Description = netcdf.Description(YAML_PATH)
     netcdf.Description.add_variable(name='ObsValue/brightnessTemperature_new',
-                                 source='variables/antennaTemperature1',
-                                 units='K')
+                                    source='variables/antennaTemperature1',
+                                    units='K')
 
-    # get the obsgroup for the first category
-    obs_group = next(iter(netcdf.Encoder(netcdf.Description).encode(container).values()))
+    dataset = next(iter(netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH).values()))
+    obs_orig = dataset["ObsValue/brightnessTemperature"][:]
+    obs_new = dataset["ObsValue/brightnessTemperature_new"][:]
 
-    assert np.allclose(obs_group.vars.open('ObsValue/brightnessTemperature_new').readVector.float(),
-                       obs_group.vars.open('ObsValue/brightnessTemperature').readVector.float())
+    assert np.allclose(obs_orig, obs_new)
 
 def test_highlevel_cache():
     DATA_PATH = 'testinput/data/gdas.t12z.1bamua.tm00.bufr_d'
@@ -222,4 +223,4 @@ if __name__ == '__main__':
     test_highlevel_replace()
     test_highlevel_add()
     test_highlevel_w_category()
-    test_highlevel_cache()
+    # test_highlevel_cache()

@@ -17,13 +17,6 @@
 #include "bufr/encoders/netcdf/Description.h"
 #include "bufr/encoders/netcdf/Encoder.h"
 
-//#include "ioda/Group.h"
-//#include "ioda/Engines/EngineUtils.h"
-//#include "ioda/ObsGroup.h"
-//#include "ioda/Layout.h"
-//#include "ioda/Copying.h"
-//#include "ioda/Misc/DimensionScales.h"
-
 namespace bufr {
 //    typedef ObjectFactory<Parser, const eckit::LocalConfiguration&> ParseFactory;
 

@@ -7,6 +7,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/embed.h>
 
 #include <netcdf>
 
@@ -28,21 +29,37 @@ void setupNetcdfEncoder(py::module& m)
    .def(py::init<const std::string&>())
    .def(py::init<const Description&>())
    .def("encode", [](Encoder& self,
-                     const std::shared_ptr<DataContainer>& container) ->
-      std::map<py::tuple, std::shared_ptr<nc::NcFile>>
+                     const std::shared_ptr<DataContainer>& container,
+                     const std::string& path) -> std::map<py::tuple, py::object>
       {
-        auto encodedData = self.encode(container);
+        auto backend = Encoder::Backend();
+        if (!path.empty())
+        {
+          backend.isMemoryFile = false;
+          backend.path = path;
+        }
 
-        // std::vector<std::string> are not hashable in python (can't make a dict), so lets convert
-        // it to a tuple instead
-        std::map<py::tuple, std::shared_ptr<nc::NcFile>> pyEncodedData;
+        auto encodedData = self.encode(container, backend);
+        std::map<py::tuple, py::object> pyEncodedData;
+
+        // Ensure Python is initialized and import netCDF4
+        py::gil_scoped_acquire acquire;
+        py::module_ netCDF4 = py::module_::import("netCDF4");
+
         for (auto& [key, value] : encodedData)
         {
-          pyEncodedData[py::cast(key)] = value;
+          size_t pathLength;
+          char path[256];
+          nc_inq_path(value->getId(), &pathLength, path);
+          value->close();
+
+          auto dataset = netCDF4.attr("Dataset")(path);
+          pyEncodedData[py::cast(key)] = dataset;
         }
 
         return pyEncodedData;
       },
       py::arg("container"),
+      py::arg("path")="",
       "Get the class to encode the dataset");
 }
