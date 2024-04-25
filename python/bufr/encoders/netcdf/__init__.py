@@ -1,2 +1,2 @@
 
-from .bufr_python.encoders.netcdf import *
+from bufr.bufr_python.encoders.netcdf import *

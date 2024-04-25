@@ -63,7 +63,7 @@ namespace netcdf
     Description::Description(const std::string &yamlFile) : outputPathTemplate_("")
     {
         auto conf = eckit::YAMLConfiguration(eckit::PathName(yamlFile));
-        init(conf.getSubConfiguration("netcdf"));
+        init(conf.getSubConfiguration("encoder"));
     }
 
     Description::Description(const eckit::Configuration &conf) : outputPathTemplate_("")
