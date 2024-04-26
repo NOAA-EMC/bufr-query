@@ -88,9 +88,16 @@ namespace bufr {
     /// \param categoryId Subcategory (ie: vector<string>) listing.
     static std::string makeSubCategoryStr(const SubCategory& categoryId);
 
+    /// \brief Get all field names
+    std::vector<std::string> getFieldNames() const;
+
+    /// \brief Append contents of other data container to this one.
+    /// \param other DataContainer to append.
+    void append(const DataContainer& other);
+
   private:
     /// Category map given (see constructor).
-    const CategoryMap categoryMap_;
+    CategoryMap categoryMap_;
 
     /// Map of data for each possible subcategory
     DataSets dataSets_;
