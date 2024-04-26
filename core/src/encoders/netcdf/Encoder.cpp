@@ -95,7 +95,7 @@ namespace netcdf {
           var.setCompression(true, true, compressionLevel);
         }
 
-        addAttribute(var, "_FillValue", obj->missingValue());
+        addAttribute(var, _FillValue, obj->missingValue());
         obj->write(std::make_shared<VarWriter<T>>(var));
 
         return var;
@@ -180,7 +180,7 @@ namespace netcdf {
             {
                 if (dimNames.find(dim.name) != dimNames.end())
                 {
-                    throw eckit::UserError("ioda::dimensions: Duplicate dimension name: "
+                    throw eckit::UserError("dimensions: Duplicate dimension name: "
                                            + dim.name);
                 }
 
@@ -192,14 +192,14 @@ namespace netcdf {
                 {
                     if (dimPaths.find(path) != dimPaths.end())
                     {
-                        throw eckit::BadParameter("ioda::dimensions: Declared duplicate dim. path: "
+                        throw eckit::BadParameter("dimensions: Declared duplicate dim. path: "
                                                   + path.str());
                     }
 
                     if (path.str().substr(0, 1) != "*")
                     {
                         std::ostringstream errStr;
-                        errStr << "ioda::dimensions: ";
+                        errStr << "dimensions: ";
                         errStr << "Path " << path.str() << " must start with *. ";
                         errStr << "Subset specific named dimensions are not supported.";
 
@@ -322,11 +322,23 @@ namespace netcdf {
                 catIdx++;
             }
 
-            auto fileName = makeStrWithSubstitions(backend.path, substitutions);
+            auto path = backend.path;
+            if (path.empty())
+            {
+                path = makePathPrototype(substitutions);
+            }
 
-            auto file = std::make_shared<nc::NcFile>(fileName,
-                                                     nc::NcFile::FileMode::replace,
-                                                     nc::NcFile::FileFormat::nc4);
+            auto fileName = makeStrWithSubstitions(path, substitutions);
+
+            auto file = std::make_shared<nc::NcFile>();
+            if (backend.isMemoryFile)
+            {
+              file->create(fileName, NC_NETCDF4 | NC_CLOBBER | NC_DISKLESS);
+            }
+            else
+            {
+              file->create(fileName, NC_NETCDF4 | NC_CLOBBER);
+            }
 
             // Create the Globals
             for (auto &global: description_.getGlobals())
@@ -339,7 +351,7 @@ namespace netcdf {
             {
                 const auto& dim = file->addDim(dimPair.first, dimPair.second->size());
                 auto dimVar = file->addVar(dimPair.first, nc::NcType::nc_INT, dim);
-                addAttribute(dimVar, "_FillValue", DataObject<int>::missingValue());
+                addAttribute(dimVar, _FillValue, DataObject<int>::missingValue());
 
                 if (auto intDimData = std::dynamic_pointer_cast<DimensionData<int>>(dimPair.second))
                 {
@@ -496,13 +508,29 @@ namespace netcdf {
     }
 
     std::string Encoder::makeStrWithSubstitions(const std::string &prototype,
-                                                const std::map<std::string,
-                                                std::string> &subMap)
+                                                const std::map<std::string, std::string> &subMap)
     {
         auto resultStr = prototype;
         auto subIdxs = findSubIdxs(prototype);
 
         std::reverse(subIdxs.begin(), subIdxs.end());
+
+        // Make sure that the prototype string has all the required substitutions defined
+        for (const auto& sub : subMap)
+        {
+            auto key = sub.first;
+            if (std::find_if(subIdxs.begin(),
+                             subIdxs.end(),
+                             [&key](const std::pair<std::string, std::pair<int, int>> &sub)
+                             {
+                                 return sub.first == key;
+                             }) == subIdxs.end())
+            {
+                std::ostringstream errStr;
+                errStr << "Prototype path string does not contain a substitution for " << key;
+                throw eckit::BadParameter(errStr.str());
+            }
+        }
 
         for (const auto &subs: subIdxs)
         {
@@ -521,6 +549,22 @@ namespace netcdf {
         }
 
         return resultStr;
+    }
+
+    std::string Encoder::makePathPrototype(const std::map<std::string, std::string> &subMap) const
+    {
+      std::ostringstream prototype;
+      prototype << "temporary";
+      for (const auto &subs: subMap)
+      {
+        prototype << "_{" << subs.first << "}";
+      }
+
+      // add timestamp string
+      prototype << "_" << std::to_string(std::time(nullptr));
+      prototype << ".nc";
+
+      return prototype.str();
     }
 
     std::vector<std::pair<std::string, std::pair<int, int>>>

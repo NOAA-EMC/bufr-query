@@ -131,7 +131,8 @@ def test_highlevel_replace():
     container.replace('variables/brightnessTemp', data * 1.1)
 
     dataset = next(iter(netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH).values()))
-    obs_temp = dataset["ObsValue/brightnessTemperature"]
+    obs_temp = dataset["ObsValue/brightnessTemperature"][:]
+    dataset.close()
 
     assert obs_temp.shape == data.shape
     assert np.allclose(obs_temp[:, :], data * 1.1)
@@ -153,9 +154,10 @@ def test_highlevel_add():
                              units='K',
                              longName='New Brightness Temperature')
 
-    dataset = next(iter(netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH).values()))
+    dataset = next(iter(netcdf.Encoder(description).encode(container, OUTPUT_PATH).values()))
     obs_orig = dataset["ObsValue/brightnessTemperature"][:]
     obs_temp = dataset["ObsValue/new_brightnessTemperature"][:]
+    dataset.close()
 
     assert np.allclose(obs_temp, obs_orig)
     assert obs_temp.shape == data.shape
@@ -163,7 +165,7 @@ def test_highlevel_add():
 def test_highlevel_w_category():
     DATA_PATH = 'testinput/data/gdas.t12z.1bamua.tm00.bufr_d'
     YAML_PATH = 'testinput/bufrtest_amua_ta_mapping.yaml'
-    OUTPUT_PATH = 'testrun/bufrtest_python_test.nc'
+    OUTPUT_PATH = 'testrun/bufrtest_python_test_{splits/satId}.nc'
 
     container = bufr.Parser(DATA_PATH, YAML_PATH).parse()
 
@@ -173,16 +175,17 @@ def test_highlevel_w_category():
         paths = container.getPaths('variables/antennaTemperature', category)
         container.add('variables/antennaTemperature1', data, paths, category)
 
-    netcdf.Description = netcdf.Description(YAML_PATH)
-    netcdf.Description.add_variable(name='ObsValue/brightnessTemperature_new',
-                                    source='variables/antennaTemperature1',
-                                    units='K')
+    description = netcdf.Description(YAML_PATH)
+    description.add_variable(name='ObsValue/brightnessTemperature_new',
+                             source='variables/antennaTemperature1',
+                             units='K')
 
-    dataset = next(iter(netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH).values()))
-    obs_orig = dataset["ObsValue/brightnessTemperature"][:]
-    obs_new = dataset["ObsValue/brightnessTemperature_new"][:]
+    for (key, dataset) in netcdf.Encoder(description).encode(container, OUTPUT_PATH).items():
+        obs_orig = dataset["ObsValue/brightnessTemperature"][:]
+        obs_new = dataset["ObsValue/brightnessTemperature_new"][:]
+        dataset.close()
 
-    assert np.allclose(obs_orig, obs_new)
+        assert np.allclose(obs_orig, obs_new)
 
 def test_highlevel_cache():
     DATA_PATH = 'testinput/data/gdas.t12z.1bamua.tm00.bufr_d'

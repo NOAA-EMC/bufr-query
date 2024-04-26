@@ -30,7 +30,7 @@ namespace netcdf {
             bool isMemoryFile;
             std::string path;
 
-            Backend() : isMemoryFile(false), path("") {};
+            Backend() : isMemoryFile(true), path("") {};
 
             Backend(bool isInMemory, const std::string &backendPath) :
                 isMemoryFile(isInMemory),
@@ -82,6 +82,8 @@ namespace netcdf {
                                            const NamedPathDims &pathMap) const;
 
         std::pair<std::string, std::string> splitName(std::string name) const;
+
+        std::string makePathPrototype(const std::map<std::string, std::string> &subMap) const;
     };
 }  // namespace netcdf
 }  // namespace encoders
