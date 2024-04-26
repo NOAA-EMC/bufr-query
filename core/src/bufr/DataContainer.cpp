@@ -197,4 +197,50 @@ namespace bufr {
 
     return catStr.str();
   }
+
+  std::vector<std::string> DataContainer::getFieldNames() const
+  {
+    std::vector<std::string> fieldNames;
+    for (const auto& field : dataSets_.begin()->second)
+    {
+      fieldNames.push_back(field.first);
+    }
+
+    return fieldNames;
+  }
+
+  void DataContainer::append(const DataContainer& other)
+  {
+    bool isEmpty = getFieldNames().empty();
+
+    for (const auto &subCat: other.allSubCategories())
+    {
+      if (isEmpty)
+      {
+        categoryMap_ = other.categoryMap_;
+        dataSets_.insert({subCat, DataSetMap()});
+      }
+
+      for (const auto &field: other.getFieldNames())
+      {
+        if (isEmpty)
+        {
+          add(field, other.get(field, subCat)->copy(), subCat);
+        }
+        else
+        {
+          if (!hasKey(field, subCat))
+          {
+            std::ostringstream errStr;
+            errStr << "Error: encountered mismatch when combining DataContainers.";
+            errStr << " Field \"" << field << "\" category \"" << makeSubCategoryStr(subCat)
+                   << "\"";
+            throw eckit::BadParameter(errStr.str());
+          }
+
+          get(field, subCat)->append(other.get(field, subCat));
+        }
+      }
+    }
+  }
 }  // namespace bufr
