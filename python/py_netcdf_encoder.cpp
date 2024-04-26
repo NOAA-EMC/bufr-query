@@ -31,13 +31,15 @@ void setupNetcdfEncoder(py::module& m)
    .def("encode", [](Encoder& self,
                      const std::shared_ptr<DataContainer>& container,
                      const std::string& path) -> std::map<py::tuple, py::object>
-      {
-        auto backend = Encoder::Backend();
-        if (!path.empty())
+     {
+        if (path.empty())
         {
-          backend.isMemoryFile = false;
-          backend.path = path;
+          throw std::invalid_argument("Encoder path string cannot be empty!");
         }
+
+        auto backend = Encoder::Backend();
+        backend.isMemoryFile = false;
+        backend.path = path;
 
         auto encodedData = self.encode(container, backend);
         std::map<py::tuple, py::object> pyEncodedData;
@@ -46,6 +48,9 @@ void setupNetcdfEncoder(py::module& m)
         py::gil_scoped_acquire acquire;
         py::module_ netCDF4 = py::module_::import("netCDF4");
 
+        py::dict kwargs;  // Dictionary to hold keyword arguments
+        kwargs["mode"] = "r";   // Read mode, adjust as necessary
+
         for (auto& [key, value] : encodedData)
         {
           size_t pathLength;
@@ -53,13 +58,13 @@ void setupNetcdfEncoder(py::module& m)
           nc_inq_path(value->getId(), &pathLength, path);
           value->close();
 
-          auto dataset = netCDF4.attr("Dataset")(path);
+          auto dataset = netCDF4.attr("Dataset")(path, **kwargs);
           pyEncodedData[py::cast(key)] = dataset;
         }
 
         return pyEncodedData;
       },
       py::arg("container"),
-      py::arg("path")="",
+      py::arg("path"),
       "Get the class to encode the dataset");
 }
