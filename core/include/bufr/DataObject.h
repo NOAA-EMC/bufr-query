@@ -104,6 +104,10 @@ namespace bufr {
 
       bool hasSamePath(const std::shared_ptr<DataObjectBase>& dataObject);
 
+      /// \brief Make a copy of the data object.
+      /// \return copy
+      virtual std::shared_ptr<DataObjectBase> copy() const = 0;
+
       /// \brief Print the data object to a output stream.
       virtual void print(std::ostream& out) const = 0;
 
@@ -194,6 +198,7 @@ namespace bufr {
       void setQuery(const std::string& query);
       void setDimPaths(const std::vector<Query>& dimPaths);
       virtual void setData(const Data& data) = 0;
+      virtual void append(const std::shared_ptr<DataObjectBase>& data) = 0;
 
       // Getters
       std::string getFieldName() const { return fieldName_; }
@@ -216,6 +221,20 @@ namespace bufr {
   {
     public:
 
+      /// \brief Make a copy of the data object.
+      /// \return copy
+      std::shared_ptr<DataObjectBase> copy() const final
+      {
+        auto copy = std::make_shared<DataObject<T>>();
+        copy->data_ = data_;
+        copy->fieldName_ = fieldName_;
+        copy->groupByFieldName_ = groupByFieldName_;
+        copy->dims_ = dims_;
+        copy->query_ = query_;
+        copy->dimPaths_ = dimPaths_;
+        return copy;
+      }
+
       /// \brief Get the missing value for this data type.
       constexpr static T missingValue()
       {
@@ -227,7 +246,19 @@ namespace bufr {
       /// \brief Print the data object to a output stream.
       void print(std::ostream& out) const final
       {
-        out << "DataObjectImpl";
+        out << "DataObject " << fieldName_ << " " << groupByFieldName_ << " ";
+        out << "size " << data_.size() << std::endl;
+
+        // print data to output stream
+        for (size_t i = 0; i < data_.size(); i++)
+        {
+          out << data_[i] << " ";
+
+          if (i % 25 == 0)
+          {
+            out << std::endl;
+          }
+        }
       }
 
       /// \brief Get the data at the location as an integer.
@@ -368,17 +399,53 @@ namespace bufr {
 
       void write(std::shared_ptr<ObjectWriterBase> writer) final
       {
-          if (auto writerPtr = std::dynamic_pointer_cast<ObjectWriter<T>>(writer))
+        if (auto writerPtr = std::dynamic_pointer_cast<ObjectWriter<T>>(writer))
+        {
+          writerPtr->write(data_);
+        }
+        else
+        {
+          std::ostringstream str;
+          str << "Can't write data of type " << typeid(T).name() << " with writer of type ";
+          str << typeid(writer).name();
+          throw eckit::BadParameter(str.str());
+        }
+      }
+
+      /// \brief Append the data from another DataObject to this one.
+      /// \param data The data object to append.
+      void append(const std::shared_ptr<DataObjectBase>& data) final
+      {
+        auto other = std::dynamic_pointer_cast<DataObject<T>>(data);
+        if (!other)
+        {
+          std::ostringstream str;
+          str << "Cannot append data of type " << typeid(data).name();
+          throw eckit::BadParameter(str.str());
+        }
+
+        dims_[0] += other->dims_[0];
+        for (size_t i = 1; i < dims_.size(); ++i)
+        {
+          if (dims_[i] != other->dims_[i])
           {
-              writerPtr->write(data_);
+            std::ostringstream str;
+            str << "Cannot append data with different dimensions.";
+            throw eckit::BadParameter(str.str());
           }
-          else
+        }
+
+        for (const auto& path : other->dimPaths_)
+        {
+          if (std::find(dimPaths_.begin(), dimPaths_.end(), path) == dimPaths_.end())
           {
-              std::ostringstream str;
-              str << "Can't write data of type " << typeid(T).name() << " with writer of type ";
-              str << typeid(writer).name();
-              throw eckit::BadParameter(str.str());
+            std::ostringstream str;
+            str << "Cannot append data with different dimension paths.";
+            throw eckit::BadParameter(str.str());
           }
+        }
+
+        data_.insert(data_.end(), other->data_.begin(), other->data_.end());
       }
 
       /// \brief Makes a new dimension scale using this data object as the source
@@ -475,6 +542,20 @@ namespace bufr {
   {
     public:
       DataObject() = default;
+
+      /// \brief Make a copy of the data object.
+      /// \return copy
+      std::shared_ptr<DataObjectBase> copy() const final
+      {
+        auto copy = std::make_shared<DataObject<std::string>>();
+        copy->data_ = data_;
+        copy->fieldName_ = fieldName_;
+        copy->groupByFieldName_ = groupByFieldName_;
+        copy->dims_ = dims_;
+        copy->query_ = query_;
+        copy->dimPaths_ = dimPaths_;
+        return copy;
+      }
 
       static std::string missingValue()
       {
@@ -609,17 +690,53 @@ namespace bufr {
 
       void write(std::shared_ptr<ObjectWriterBase> writer) final
       {
-          if (auto writerPtr = std::dynamic_pointer_cast<ObjectWriter<std::string>>(writer))
+        if (auto writerPtr = std::dynamic_pointer_cast<ObjectWriter<std::string>>(writer))
+        {
+          writerPtr->write(data_);
+        }
+        else
+        {
+          std::ostringstream str;
+          str << "Can't write data of type " << typeid(std::string).name() << " with writer of type ";
+          str << typeid(writer).name();
+          throw eckit::BadParameter(str.str());
+        }
+      }
+
+      /// \brief Append the data from another DataObject to this one.
+      /// \param data The data object to append.
+      void append(const std::shared_ptr<DataObjectBase>& data) final
+      {
+        auto other = std::dynamic_pointer_cast<DataObject<std::string>>(data);
+        if (!other)
+        {
+          std::ostringstream str;
+          str << "Cannot append data of type " << typeid(data).name();
+          throw eckit::BadParameter(str.str());
+        }
+
+        dims_[0] += other->dims_[0];
+        for (size_t i = 1; i < dims_.size(); ++i)
+        {
+          if (dims_[i] != other->dims_[i])
           {
-              writerPtr->write(data_);
+            std::ostringstream str;
+            str << "Cannot append data with different dimensions.";
+            throw eckit::BadParameter(str.str());
           }
-          else
+        }
+
+        for (const auto& path : other->dimPaths_)
+        {
+          if (std::find(dimPaths_.begin(), dimPaths_.end(), path) == dimPaths_.end())
           {
-              std::ostringstream str;
-              str << "Can't write data of type " << typeid(std::string).name() << " with writer of type ";
-              str << typeid(writer).name();
-              throw eckit::BadParameter(str.str());
+            std::ostringstream str;
+            str << "Cannot append data with different dimension paths.";
+            throw eckit::BadParameter(str.str());
           }
+        }
+
+        data_.insert(data_.end(), other->data_.begin(), other->data_.end());
       }
 
       /// \brief Makes a new dimension scale using this data object as the source

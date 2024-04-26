@@ -145,7 +145,7 @@ def test_highlevel_add():
     container = bufr.Parser(DATA_PATH, YAML_PATH).parse()
 
     data = container.get('variables/brightnessTemp')
-    paths = container.getPaths('variables/brightnessTemp')
+    paths = container.get_paths('variables/brightnessTemp')
     container.add('variables/brightnessTemp_new', data, paths)
 
     description = netcdf.Description(YAML_PATH)
@@ -162,6 +162,25 @@ def test_highlevel_add():
     assert np.allclose(obs_temp, obs_orig)
     assert obs_temp.shape == data.shape
 
+def test_highlevel_append():
+    DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
+    YAML_PATH = 'testinput/bufrtest_hrs_basic_mapping.yaml'
+
+    container = bufr.Parser(DATA_PATH, YAML_PATH).parse()
+
+
+    new_container = bufr.DataContainer()
+    new_container.append(container)
+    new_container.append(container)
+
+    data = new_container.get('variables/brightnessTemp')
+
+    orig_data = container.get('variables/brightnessTemp')
+    orig_data = np.concatenate((orig_data, orig_data))
+
+    assert orig_data.shape == data.shape
+    assert np.allclose(orig_data, data)
+
 def test_highlevel_w_category():
     DATA_PATH = 'testinput/data/gdas.t12z.1bamua.tm00.bufr_d'
     YAML_PATH = 'testinput/bufrtest_amua_ta_mapping.yaml'
@@ -169,10 +188,10 @@ def test_highlevel_w_category():
 
     container = bufr.Parser(DATA_PATH, YAML_PATH).parse()
 
-    categories = container.allSubCategories()
+    categories = container.all_sub_categories()
     for category in categories:  # [metop-a]
         data = container.get('variables/antennaTemperature', category)
-        paths = container.getPaths('variables/antennaTemperature', category)
+        paths = container.get_paths('variables/antennaTemperature', category)
         container.add('variables/antennaTemperature1', data, paths, category)
 
     description = netcdf.Description(YAML_PATH)
@@ -193,7 +212,7 @@ def test_highlevel_cache():
 
     if not bufr.DataCache.has(DATA_PATH, YAML_PATH):
         dat = bufr.Parser(DATA_PATH, YAML_PATH).parse()
-        bufr.DataCache.add(DATA_PATH, YAML_PATH, dat.allSubCategories(), dat)
+        bufr.DataCache.add(DATA_PATH, YAML_PATH, dat.all_sub_categories(), dat)
     else:
         assert False, "Data Cache incorrect."
 
@@ -202,7 +221,7 @@ def test_highlevel_cache():
 
     container = bufr.DataCache.get(DATA_PATH, YAML_PATH)
 
-    categories = container.allSubCategories()
+    categories = container.all_sub_categories()
     for category in categories:
         cache_dat = bufr.DataCache.get(DATA_PATH, YAML_PATH)
         assert np.allclose(dat.get('variables/antennaTemperature', category),
@@ -227,3 +246,4 @@ if __name__ == '__main__':
     test_highlevel_add()
     test_highlevel_w_category()
     test_highlevel_cache()
+    test_highlevel_append()
