@@ -154,6 +154,7 @@ namespace netcdf {
         /// \brief Collection of defined globals
         GlobalDescriptions globals_;
 
+        /// \brief Initialize the object from a configuration
         void init(const eckit::Configuration& conf);
     };
 }  // namespace netcdf
