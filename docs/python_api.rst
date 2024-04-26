@@ -71,13 +71,21 @@ Here is what the DataContainer looks like:
 
           Replace the variable with the given name.
 
-      .. method:: getCategoryMap()
+      .. method:: get_category_map()
 
           Get the map of categories.
 
-      .. method:: allSubCategories()
+      .. method:: all_sub_categories()
 
           Get a list of all the subcategories.
+
+      .. method:: list()
+
+          Get the names of all the variable fields.
+
+      .. method:: append(other)
+
+          Append the other DataContainer to this one.
 
 
 So to replace a value in the DataContainer you would do something like this (assuming only 1 category):
