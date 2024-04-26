@@ -226,4 +226,4 @@ if __name__ == '__main__':
     test_highlevel_replace()
     test_highlevel_add()
     test_highlevel_w_category()
-    # test_highlevel_cache()
+    test_highlevel_cache()
