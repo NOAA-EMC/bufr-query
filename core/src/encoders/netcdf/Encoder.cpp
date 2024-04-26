@@ -263,7 +263,7 @@ namespace netcdf {
                                   dataObject->getDimPaths().back()) == dimDesc.paths.end())
                     {
                         std::stringstream errStr;
-                        errStr << "ioda::dimensions: Source field " << dimDesc.source << " in ";
+                        errStr << "netcdf::dimensions: Source field " << dimDesc.source << " in ";
                         errStr << dimDesc.name << " is not in the correct path.";
                         throw eckit::BadParameter(errStr.str());
                     }
@@ -472,7 +472,7 @@ namespace netcdf {
                     if (dimNames.size() != 1)
                     {
                         throw eckit::BadParameter(
-                            "IODA requires Datetime variable to be one dimensional.");
+                            "Datetime variable must be one dimensional.");
                     }
                 }
 
@@ -527,7 +527,8 @@ namespace netcdf {
                              }) == subIdxs.end())
             {
                 std::ostringstream errStr;
-                errStr << "Prototype path string does not contain a substitution for " << key;
+                errStr << "Prototype path string does not contain a substitution for " << key <<".";
+                errStr << " example: " << makePathPrototype(subMap);
                 throw eckit::BadParameter(errStr.str());
             }
         }
