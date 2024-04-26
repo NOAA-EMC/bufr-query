@@ -81,8 +81,12 @@ namespace netcdf {
         DimensionDescription dimForDimPath(const Query &path,
                                            const NamedPathDims &pathMap) const;
 
+        /// \brief Split the variable name into group / name components
+        /// \param name The variable name to split.
         std::pair<std::string, std::string> splitName(std::string name) const;
 
+        /// \brief Make a prototype filename for the given subcategories.
+        /// \param subMap The map of subcategories to use in the prototype.
         std::string makePathPrototype(const std::map<std::string, std::string> &subMap) const;
     };
 }  // namespace netcdf

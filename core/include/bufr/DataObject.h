@@ -151,6 +151,8 @@ namespace bufr {
       /// \param val Scalar to add to the data..
       virtual void offsetBy(double val) = 0;
 
+      /// \brief Write the data out using a writer.
+      /// \param writer The writer to use.
       virtual void write(std::shared_ptr<ObjectWriterBase> writer) = 0;
 
       /// \brief Makes a new dimension scale using this data object as the source
@@ -397,6 +399,8 @@ namespace bufr {
         data_ = data;
       }
 
+      /// \brief Write the data out using a writer.
+      /// \param writer The writer to use.
       void write(std::shared_ptr<ObjectWriterBase> writer) final
       {
         if (auto writerPtr = std::dynamic_pointer_cast<ObjectWriter<T>>(writer))
@@ -688,6 +692,8 @@ namespace bufr {
         data_ = data;
       }
 
+      /// \brief Write the data out using a writer.
+      /// \param writer The writer to use.
       void write(std::shared_ptr<ObjectWriterBase> writer) final
       {
         if (auto writerPtr = std::dynamic_pointer_cast<ObjectWriter<std::string>>(writer))
