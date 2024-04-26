@@ -65,25 +65,7 @@ namespace bufr {
             auto backend = encoders::netcdf::Encoder::Backend(false, outputFile);
 
             auto encoderConf = yaml->getSubConfiguration("encoder");
-            auto dataMap =
-                encoders::netcdf::Encoder(encoderConf).encode(data, backend);
-
-            for (const auto& obs : dataMap)
-            {
-//                ioda::Engines::BackendCreationParameters backendParams;
-//                backendParams.fileName = makeFilename(outputFile, obs.first);
-//                backendParams.openMode = ioda::Engines::BackendOpenModes::Read_Write;
-//                backendParams.createMode = ioda::Engines::BackendCreateModes::Truncate_If_Exists;
-//                backendParams.action = ioda::Engines::BackendFileActions::Create;
-//                backendParams.flush = true;
-//
-//                auto rootGroup = ioda::Engines::constructBackend(
-//                    ioda::Engines::BackendNames::Hdf5File,
-//                    backendParams);
-//
-//                const auto &obsGroup = obs.second;
-//                ioda::copyGroup(obsGroup, rootGroup);
-            }
+            encoders::netcdf::Encoder(encoderConf).encode(data, backend);
         }
         else
         {
