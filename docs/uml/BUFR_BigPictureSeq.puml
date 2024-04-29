@@ -12,7 +12,7 @@ actor Main
 participant YAMLConfiguration
 participant BufrParser
 participant DataContainer
-participant IodaEncoder
+participant Encoder
 
 activate Main
 
@@ -35,14 +35,14 @@ BufrParser -> DataContainer : DataContainer()
 return dataContainer
 deactivate BufrParser
 
-create IodaEncoder
-Main -> IodaEncoder : IodaEncoder(conf)
-Main -> IodaEncoder : encode(dataContainer)
-activate IodaEncoder
+create Encoder
+Main -> Encoder : Encoder(conf)
+Main -> Encoder : encode(dataContainer)
+activate Encoder
 note right
   See Query Getting Data sequence.
 end note
-deactivate IodaEncoder
+deactivate Encoder
 
 
 deactivate Main
