@@ -55,28 +55,30 @@ package BufrReader <<Folder>>
   }
 }
 
-package IodaEncoder as Encoder <<Folder>>
+package encoders <<Folder>>
 {
+    package netcdf <<Folder>>
+    {
+      class Encoder
+      {
+        +Encoder(conf)
+        +encode(DataContainer, outpath, bool)
+      }
 
-  class IodaEncoder
-  {
-    +IodaEncoder(conf)
-    +encode(DataContainer, bool)
-  }
-
-  class IodaDescription
-  {
-  }
+      class Description
+      {
+      }
+     }
 }
 
 
 Main --> BufrParser
-Main --> IodaEncoder
+Main --> Encoder
 DataContainer <-- Main
 
 File <-- BufrParser
 BufrDescription <-* BufrParser
-IodaDescription <-* IodaEncoder
+Description <-* Encoder
 BufrParser ..> Exports
 
 DataContainer *-> "*" DataObject
