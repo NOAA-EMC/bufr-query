@@ -11,18 +11,14 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <netcdf>
 
 
 #include "eckit/config/LocalConfiguration.h"
 #include "bufr/QueryParser.h"
-#include "NetcdfHelper.h"
 
-namespace nc = netCDF;
 
 namespace bufr {
 namespace encoders {
-namespace netcdf {
     struct Range
     {
         float start;
@@ -49,55 +45,44 @@ namespace netcdf {
         int compressionLevel;  // Optional
     };
 
-    struct GlobalDescriptionBase
+    struct GlobalWriterBase
     {
-        std::string name;
-        virtual void addTo(nc::NcFile& file) = 0;
-        virtual ~GlobalDescriptionBase() = default;
+      public:
+      GlobalWriterBase() = default;
+      virtual ~GlobalWriterBase() = default;
     };
 
     template<typename T>
-    struct is_vector : public std::false_type {};
+    struct GlobalWriter : public GlobalWriterBase
+    {
+      public:
+        GlobalWriter() = default;
+        virtual ~GlobalWriter() = default;
+        virtual void write(const std::string& name, const T& data) = 0;
+    };
 
-    template<typename T, typename A>
-    struct is_vector<std::vector<T, A>> : public std::true_type {};
+    struct GlobalDescriptionBase
+    {
+        std::string name;
+        virtual void writeTo(const std::shared_ptr<GlobalWriterBase>& writer) = 0;
+        virtual ~GlobalDescriptionBase() = default;
+    };
 
     template<typename T>
     struct GlobalDescription : public GlobalDescriptionBase
     {
         T value;
 
-        void addTo(nc::NcFile& file) final
+        void writeTo(const std::shared_ptr<GlobalWriterBase>& writer) final
         {
-            _addTo(file);
-        }
-
-     private:
-        // T is something other than a std::vector
-        template<typename U = void>
-        void _addTo(nc::NcFile& file,
-                    typename std::enable_if<!is_vector<T>::value, U>::type* = nullptr)
-        {
-            file.putAtt(name, getNcType<T>(), value);
-        }
-
-        // T is a vector
-        template<typename U = void>
-        void _addTo(nc::NcFile& file,
-                    typename std::enable_if<is_vector<T>::value, U>::type* = nullptr)
-        {
-            file.putAtt(name, getNcType<typename T::value_type>(), value.size(), value.data());
-        }
-    };
-
-    template<>
-    struct GlobalDescription<std::string> : public GlobalDescriptionBase
-    {
-        std::string value;
-
-        void addTo(nc::NcFile& file) final
-        {
-            file.putAtt(name, value);
+          if (auto writerPtr = std::dynamic_pointer_cast<GlobalWriter<T>>(writer))
+          {
+            writerPtr->write(name, value);
+          }
+          else
+          {
+            throw std::runtime_error("Invalid writer type");
+          }
         }
     };
 
@@ -157,6 +142,5 @@ namespace netcdf {
         /// \brief Initialize the object from a configuration
         void init(const eckit::Configuration& conf);
     };
-}  // namespace netcdf
 }  // namespace encoders
 }  // namespace bufr

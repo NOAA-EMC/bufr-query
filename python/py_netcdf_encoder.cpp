@@ -12,7 +12,7 @@
 #include <netcdf>
 
 #include "bufr/DataContainer.h"
-#include "bufr/encoders/netcdf/Description.h"
+#include "bufr/encoders/Description.h"
 #include "bufr/encoders/netcdf/Encoder.h"
 
 
@@ -20,8 +20,9 @@ namespace py = pybind11;
 namespace nc = netCDF;
 
 using bufr::DataContainer;
+using bufr::encoders::Description;
 using bufr::encoders::netcdf::Encoder;
-using bufr::encoders::netcdf::Description;
+
 
 void setupNetcdfEncoder(py::module& m)
 {

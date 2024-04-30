@@ -5,7 +5,7 @@
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  */
 
-#include "bufr/encoders/netcdf/Description.h"
+#include "bufr/encoders/Description.h"
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/config/YAMLConfiguration.h"
@@ -58,8 +58,6 @@ namespace
 
 namespace bufr {
 namespace encoders {
-namespace netcdf
-{
     Description::Description(const std::string &yamlFile) : outputPathTemplate_("")
     {
         auto conf = eckit::YAMLConfiguration(eckit::PathName(yamlFile));
@@ -263,7 +261,6 @@ namespace netcdf
         globals_.push_back(global);
     }
 
-}  // namespace netcdf
 }  // namespace encoders
 }  // namespace bufr
 

@@ -15,10 +15,11 @@
 
 #include <netcdf>
 
+#include "eckit/exception/Exceptions.h"
 
 #include "../../bufr/Log.h"
 #include "bufr/DataObject.h"
-#include "eckit/exception/Exceptions.h"
+#include "bufr/encoders/netcdf/NetcdfHelper.h"
 
 namespace nc = netCDF;
 namespace log = bufr::log;
@@ -29,6 +30,67 @@ namespace encoders {
 namespace netcdf {
     static const char* LocationName = "Location";
     static const char* DefualtDimName = "dim";
+
+
+    template<typename T>
+    struct is_vector : public std::false_type {};
+
+    template<typename T, typename A>
+    struct is_vector<std::vector<T, A>> : public std::true_type {};
+
+    template <typename T>
+    class NcGlobalWriter : public GlobalWriter<T>
+    {
+    public:
+      NcGlobalWriter() = delete;
+      NcGlobalWriter(nc::NcFile& file) : file_(file) {}
+
+      void write(const std::string& name, const T& data) final
+      {
+        _write(name, data);
+      }
+
+    private:
+      nc::NcFile& file_;
+
+      template<typename U = void>
+      void _write(const std::string& name,
+                  const T& data,
+                  typename std::enable_if<!is_vector<T>::value, U>::type* = nullptr)
+      {
+        file_.putAtt(name, getNcType<T>(), data);
+      }
+
+      // T is a vector
+      template<typename U = void>
+      void _write(const std::string& name,
+                  const T& data,
+                  typename std::enable_if<is_vector<T>::value, U>::type* = nullptr)
+      {
+        file_.putAtt(name, getNcType<typename T::value_type>(), data.size(), data.data());
+      }
+    };
+
+    template <>
+    class NcGlobalWriter<std::string> : public GlobalWriter<std::string>
+    {
+    public:
+      NcGlobalWriter() = delete;
+      NcGlobalWriter(nc::NcFile& file) : file_(file) {}
+
+      void write(const std::string& name, const std::string& data) final
+      {
+        _write(name, data);
+      }
+
+    private:
+      nc::NcFile& file_;
+
+      void _write(const std::string& name, const std::string& data)
+      {
+        file_.putAtt(name, data);
+      }
+    };
 
     template <typename T>
     class VarWriter : public ObjectWriter<T>
@@ -343,7 +405,29 @@ namespace netcdf {
             // Create the Globals
             for (auto &global: description_.getGlobals())
             {
-                global->addTo(*file);
+              std::shared_ptr<GlobalWriterBase> writer = nullptr;
+              if (auto intGlobal = std::dynamic_pointer_cast<GlobalDescription<int>>(global))
+              {
+                writer = std::make_shared<NcGlobalWriter<int>>(*file);
+              }
+              if (auto intGlobal = std::dynamic_pointer_cast<GlobalDescription<std::vector<int>>>(global))
+              {
+                writer = std::make_shared<NcGlobalWriter<std::vector<int>>>(*file);
+              }
+              else if (auto floatGlobal = std::dynamic_pointer_cast<GlobalDescription<float>>(global))
+              {
+                writer = std::make_shared<NcGlobalWriter<float>>(*file);
+              }
+              else if (auto floatGlobal = std::dynamic_pointer_cast<GlobalDescription<std::vector<float>>>(global))
+              {
+                writer = std::make_shared<NcGlobalWriter<std::vector<float>>>(*file);
+              }
+              else if (auto doubleGlobal = std::dynamic_pointer_cast<GlobalDescription<std::string>>(global))
+              {
+                writer = std::make_shared<NcGlobalWriter<std::string>>(*file);
+              }
+
+              global->writeTo(writer);
             }
 
             // Add Dimensions
