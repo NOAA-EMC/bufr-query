@@ -31,8 +31,8 @@ list(APPEND BUFR_PUBLIC
 )
 
 list (APPEND ENCODERS_PUBLIC
+	include/bufr/encoders/Description.h
 	include/bufr/encoders/netcdf/Encoder.h
-	include/bufr/encoders/netcdf/Description.h
 )
 
 list(APPEND BUFR_PRIVATE
@@ -101,8 +101,8 @@ list(APPEND BUFR_PRIVATE
 )
 
 list (APPEND ENCODERS_PRIVATE
+	src/encoders/Description.cpp
 	src/encoders/netcdf/Encoder.cpp
-	src/encoders/netcdf/Description.cpp
 )
 
 source_group("core//include/bufr" FILES ${BUFR_PUBLIC})

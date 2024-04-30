@@ -22,7 +22,7 @@ list (APPEND PYTHON_SRCS DataObjectFunctions.h
 												py_file.cpp
 												py_parser.cpp
 												py_data_cache.cpp
-												py_netcdf_description.cpp
+											  py_encoder_description.cpp
 												py_netcdf_encoder.cpp
 												)
 

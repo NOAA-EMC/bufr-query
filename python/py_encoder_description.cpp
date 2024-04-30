@@ -9,18 +9,14 @@
 
 #include <string>
 
-#include "bufr/encoders/netcdf/Description.h"
-#include "bufr/encoders/netcdf/Encoder.h"
+#include "bufr/encoders/Description.h"
 
 
 namespace py = pybind11;
-namespace nc = netCDF;
 
-using bufr::DataContainer;
-using bufr::encoders::netcdf::Encoder;
-using bufr::encoders::netcdf::Description;
+using bufr::encoders::Description;
 
-void setupNetcdfDescription(py::module& m)
+void setupEncoderDescription(py::module& m)
 {
   py::class_<Description>(m, "Description")
    .def(py::init<const std::string&>())

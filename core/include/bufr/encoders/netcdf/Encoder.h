@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2020 NOAA/NWS/NCEP/EMC
+ * (C) Copyright 2024 NOAA/NWS/NCEP/EMC
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -13,10 +13,10 @@
 #include <netcdf>
 
 #include "bufr/DataContainer.h"
-#include "Description.h"
+#include "bufr/encoders/Description.h"
+
 
 namespace nc = netCDF;
-
 
 namespace bufr {
 namespace encoders {

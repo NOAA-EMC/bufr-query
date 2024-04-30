@@ -148,7 +148,7 @@ def test_highlevel_add():
     paths = container.get_paths('variables/brightnessTemp')
     container.add('variables/brightnessTemp_new', data, paths)
 
-    description = netcdf.Description(YAML_PATH)
+    description = bufr.encoders.Description(YAML_PATH)
     description.add_variable(name='ObsValue/new_brightnessTemperature',
                              source='variables/brightnessTemp_new',
                              units='K',
@@ -194,7 +194,7 @@ def test_highlevel_w_category():
         paths = container.get_paths('variables/antennaTemperature', category)
         container.add('variables/antennaTemperature1', data, paths, category)
 
-    description = netcdf.Description(YAML_PATH)
+    description = bufr.encoders.Description(YAML_PATH)
     description.add_variable(name='ObsValue/brightnessTemperature_new',
                              source='variables/antennaTemperature1',
                              units='K')
