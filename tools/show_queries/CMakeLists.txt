@@ -1,7 +1,7 @@
 
 
 list(APPEND _deps
-            bufr_lib)
+            bufr_query)
             
 list(APPEND _srcs
             show_queries.cpp

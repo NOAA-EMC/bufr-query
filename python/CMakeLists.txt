@@ -29,7 +29,7 @@ list (APPEND PYTHON_SRCS DataObjectFunctions.h
 # We cannot call ecbuild_add_library here since it conflicts with pybind11_add_module.
 pybind11_add_module(bufr_python ${PYTHON_SRCS})
 
-target_link_libraries(bufr_python PUBLIC bufr_lib)
+target_link_libraries(bufr_python PUBLIC bufr_query)
 target_link_libraries(bufr_python PUBLIC Eigen3::Eigen)
 set(pyver python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
 
