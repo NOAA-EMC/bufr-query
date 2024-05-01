@@ -1,5 +1,5 @@
 LIST(APPEND _deps
-  bufr_lib
+  bufr_query
 )
 
 LIST(APPEND _srcs
