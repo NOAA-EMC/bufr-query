@@ -14,7 +14,7 @@
 #include "eckit/filesystem/PathName.h"
 
 #include "bufr/BufrParser.h"
-#include "bufr/encoders/netcdf/Description.h"
+#include "bufr/encoders/Description.h"
 #include "bufr/encoders/netcdf/Encoder.h"
 
 namespace bufr {

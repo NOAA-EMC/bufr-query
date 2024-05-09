@@ -22,8 +22,6 @@
 #include "bufr/encoders/netcdf/NetcdfHelper.h"
 
 namespace nc = netCDF;
-namespace log = bufr::log;
-
 
 namespace bufr {
 namespace encoders {
