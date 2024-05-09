@@ -39,7 +39,13 @@ namespace netcdf {
     template<typename T>
     inline void addAttribute(nc::NcVar& var, const std::string& name, const T& value)
     {
-        var.putAtt(name, getNcType<T>(), value);
+        var.putAtt(name, getNcType<T>(), static_cast<T>(value));
+    }
+
+    template<>
+    inline void addAttribute<unsigned long int>(nc::NcVar& var, const std::string& name, const unsigned long int& value)
+    {
+        var.putAtt(name, nc::NcType::nc_UINT64, static_cast<unsigned long long>(value));
     }
 
     template<>
@@ -59,3 +65,4 @@ namespace netcdf {
 }  // namespace netcdf
 }  // namespace encoders
 }  // namespace bufr
+
