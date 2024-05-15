@@ -434,11 +434,7 @@ namespace netcdf {
                 const auto& dim = file->addDim(dimPair.first, dimPair.second->size());
                 auto dimVar = file->addVar(dimPair.first, nc::NcType::nc_INT, dim);
                 addAttribute(dimVar, _FillValue, DataObject<int>::missingValue());
-
-                if (auto intDimData = std::dynamic_pointer_cast<DimensionData<int>>(dimPair.second))
-                {
-                  dimVar.putVar(intDimData->data.data());
-                }
+                dimPair.second->write(std::make_shared<VarWriter<int>>(dimVar));
             }
 
             for (const auto& dimDesc : description_.getDims())
