@@ -408,19 +408,23 @@ namespace netcdf {
               {
                 writer = std::make_shared<NcGlobalWriter<int>>(*file);
               }
-              if (auto intGlobal = std::dynamic_pointer_cast<GlobalDescription<std::vector<int>>>(global))
+              if (auto intGlobal =
+                std::dynamic_pointer_cast<GlobalDescription<std::vector<int>>>(global))
               {
                 writer = std::make_shared<NcGlobalWriter<std::vector<int>>>(*file);
               }
-              else if (auto floatGlobal = std::dynamic_pointer_cast<GlobalDescription<float>>(global))
+              else if (auto floatGlobal =
+                std::dynamic_pointer_cast<GlobalDescription<float>>(global))
               {
                 writer = std::make_shared<NcGlobalWriter<float>>(*file);
               }
-              else if (auto floatGlobal = std::dynamic_pointer_cast<GlobalDescription<std::vector<float>>>(global))
+              else if (auto floatGlobal =
+                std::dynamic_pointer_cast<GlobalDescription<std::vector<float>>>(global))
               {
                 writer = std::make_shared<NcGlobalWriter<std::vector<float>>>(*file);
               }
-              else if (auto doubleGlobal = std::dynamic_pointer_cast<GlobalDescription<std::string>>(global))
+              else if (auto doubleGlobal =
+                std::dynamic_pointer_cast<GlobalDescription<std::string>>(global))
               {
                 writer = std::make_shared<NcGlobalWriter<std::string>>(*file);
               }
