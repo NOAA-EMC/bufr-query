@@ -53,7 +53,6 @@ list( APPEND test_input
   testinput/bufrtest_wmo_amdar_multi_mapping.yaml
   testinput/bufrtest_fieldname_validation.py
   testinput/bufrtest_python_test.py
-  testinput/bufrtest_python_to_ioda.py
 )
 
 list(APPEND test_output
@@ -95,7 +94,6 @@ list(APPEND test_output
   testoutput/bufrtest_esmhs_noaa-19.nc
   testoutput/bufrtest_lgycld_rrfs.nc
   testoutput/bufrtest_mtiasi_metop-c.nc
-  testoutput/bufrtest_python_to_ioda.nc
   testoutput/bufrtest_rtma_aircft_NC004103.nc
   testoutput/bufrtest_satwnd_old_format.nc
   testoutput/bufrtest_specifying_subsets.nc
@@ -595,15 +593,6 @@ if (${BUILD_PYTHON_BINDINGS})
                     TYPE    SCRIPT
                     COMMAND python3
                     ARGS    testinput/bufrtest_python_test.py
-                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}:$ENV{PYTHONPATH})
-
-  ecbuild_add_test( TARGET  test_bufr_python_to_ioda
-                    TYPE    SCRIPT
-                    COMMAND bash
-                    ARGS    ${CMAKE_BINARY_DIR}/bin/bufr_comp.sh
-                            netcdf
-                            "python3 testinput/bufrtest_python_to_ioda.py"
-                            bufrtest_python_to_ioda.nc
                     ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}:$ENV{PYTHONPATH})
 
 endif()
