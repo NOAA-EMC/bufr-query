@@ -77,10 +77,14 @@ namespace bufr {
 
 static void showHelp()
 {
-    std::cerr << "Usage: bufr2ioda.x [-n NUM_MESSAGES] YAML_PATH"
+    std::cerr << "Usage: bufr2netcdf.x [-t TABLE_PATH]  [-n NUM_MESSAGES] SRC_FILE MAPPING_FILE"
+              << " OUT_FILE\n"
               << "Options:\n"
               << "  -h,  Show this help message\n"
-              << "  -n NUM_MESSAGES,  Number of BUFR messages to parse."
+              << "  -t TABLE_PATH,  Path to BUFR table files (use with WMO BUFR files)\n"
+              << "  -n NUM_MESSAGES,  Number of BUFR messages to parse.\n"
+              << "Example:\n"
+              << "  bufr2netcdf.x input/mhs.bufr input/mhs_mapping.yaml output/mhs.nc\n"
               << std::endl;
 }
 
