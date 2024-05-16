@@ -77,7 +77,7 @@ namespace bufr {
 
 static void showHelp()
 {
-    std::cerr << "Usage: bufr2netcdf.x [-t TABLE_PATH]  [-n NUM_MESSAGES] SRC_FILE MAPPING_FILE"
+    std::cerr << "Usage: bufr2netcdf.x [-t TABLE_PATH] [-n NUM_MESSAGES] SRC_FILE MAPPING_FILE"
               << " OUT_FILE\n"
               << "Options:\n"
               << "  -h,  Show this help message\n"
