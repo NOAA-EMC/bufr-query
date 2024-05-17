@@ -76,7 +76,7 @@ namespace bufr {
         else
         {
             std::ostringstream str;
-            str << "Can't write data of type " << typeid(T).name() << " with writer of type ";
+            str << "Cannot write data of type " << typeid(T).name() << " with writer of type ";
             str << typeid(writer).name();
             throw eckit::BadParameter(str.str());
         }
