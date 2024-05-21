@@ -54,3 +54,8 @@ add_custom_command(TARGET bufr_python
 									 COMMAND ${CMAKE_COMMAND} -E copy_directory
 	                 				 ${CMAKE_CURRENT_SOURCE_DIR}/bufr
 													 $<TARGET_FILE_DIR:bufr_python>)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bufr
+	      DESTINATION ${CMAKE_INSTALL_LIBDIR}/${pyver}
+			  COMPONENT Python
+	      FILES_MATCHING PATTERN "*.py")
