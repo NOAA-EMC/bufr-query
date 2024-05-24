@@ -135,6 +135,7 @@ target_link_libraries(bufr_query PUBLIC Eigen3::Eigen)
 target_link_libraries(bufr_query PUBLIC eckit)
 target_link_libraries(bufr_query PUBLIC bufr::bufr_4)
 target_link_libraries(bufr_query PUBLIC NetCDF::NetCDF_CXX)
+target_link_libraries(bufr_query PUBLIC MPI::MPI_CXX)
 
 
 ## Public include files

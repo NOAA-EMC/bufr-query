@@ -20,7 +20,8 @@ namespace bufr {
     void DataProvider::run(const QuerySet& querySet,
                            const std::function<void()> processSubset,
                            const std::function<void()> processMsg,
-                           const std::function<bool()> continueProcessing)
+                           const std::function<bool()> continueProcessing,
+                           size_t offset)
     {
         if (!isOpen_)
         {
@@ -36,33 +37,38 @@ namespace bufr {
         int bufrLoc;
         int il, im;  // throw away
 
+        size_t msgCnt = 0;
         bool foundBufrMsg = false;
         bool foundBufrSubset = false;
 
         while (ireadmg_f(FileUnit, subsetChars, &iddate, SubsetLen) == 0)
         {
-            foundBufrMsg = true;
-            subset_ = std::string(subsetChars);
-            subset_.erase(std::remove_if(subset_.begin(), subset_.end(), isspace), subset_.end());
+          msgCnt++;
+          if (msgCnt < offset) continue;
 
-            if (querySet.includesSubset(subset_))
-            {
-                while (ireadsb_f(FileUnit) == 0)
-                {
-                    foundBufrSubset = true;
-                    status_f(FileUnit, &bufrLoc, &il, &im);
-                    updateData(bufrLoc);
+          foundBufrMsg = true;
+          subset_ = std::string(subsetChars);
+          subset_.erase(std::remove_if(subset_.begin(), subset_.end(), isspace), subset_.end());
 
-                    processSubset();
-                    if (!continueProcessing()) break;
-                }
+          if (querySet.includesSubset(subset_))
+          {
+              while (ireadsb_f(FileUnit) == 0)
+              {
+                  foundBufrSubset = true;
+                  status_f(FileUnit, &bufrLoc, &il, &im);
+                  updateData(bufrLoc);
 
-                processMsg();
-                if (!continueProcessing()) break;
-            }
+                  processSubset();
+                  if (!continueProcessing()) break;
+              }
+
+              processMsg();
+              if (!continueProcessing()) break;
+          }
         }
 
         deleteData();
+        rewind();
 
         if (!foundBufrMsg)
         {
@@ -81,6 +87,36 @@ namespace bufr {
             errStr << "Otherwise there might be a problem with the BUFR file (no subsets).";
             throw eckit::BadValue(errStr.str());
         }
+    }
+
+    size_t DataProvider::numMessages(const QuerySet& querySet)
+    {
+      if (!isOpen_)
+      {
+        std::ostringstream errStr;
+        errStr << "Tried to call DataProvider::numMessages, but the file is not open!";
+        throw eckit::BadParameter(errStr.str());
+      }
+
+      static int SubsetLen = 9;
+      char subsetChars[SubsetLen];
+      int iddate;
+
+      size_t numMsgs = 0;
+      while (ireadmg_f(FileUnit, subsetChars, &iddate, SubsetLen) == 0)
+      {
+        subset_ = std::string(subsetChars);
+        subset_.erase(std::remove_if(subset_.begin(), subset_.end(), isspace), subset_.end());
+
+        if (querySet.includesSubset(subset_))
+        {
+          numMsgs++;
+        }
+      }
+
+      rewind();
+
+      return numMsgs;
     }
 
     void DataProvider::updateData(int bufrLoc)

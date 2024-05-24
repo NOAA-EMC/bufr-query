@@ -97,6 +97,50 @@ namespace bufr {
         return exportedData;
     }
 
+    std::shared_ptr<DataContainer> BufrParser::parseInParallel(const eckit::mpi::Comm& comm)
+    {
+      auto msgsPerTask = file_.size() / comm.size();
+      size_t startOffset = comm.rank() * msgsPerTask;
+
+      auto startTime = std::chrono::steady_clock::now();
+
+      auto querySet = QuerySet(description_.getExport().getSubsets());
+
+      for (const auto &var : description_.getExport().getVariables())
+      {
+        for (const auto &queryPair : var->getQueryList())
+        {
+          querySet.add(queryPair.name, queryPair.query);
+        }
+      }
+
+      log::info() << "MPI task: " << comm.rank() << " Executing Queries " << std::endl;
+      const auto resultSet = file_.execute(querySet, startOffset, msgsPerTask);
+
+      log::info() << "MPI task: " << comm.rank() << " Building Bufr Data" << std::endl;
+      auto srcData = BufrDataMap();
+      for (const auto& var : description_.getExport().getVariables())
+      {
+        for (const auto& queryInfo : var->getQueryList())
+        {
+          srcData[queryInfo.name] = resultSet.get(
+            queryInfo.name, queryInfo.groupByField, queryInfo.type);
+        }
+      }
+
+      log::info() << "MPI task: " << comm.rank() << " Exporting Data" << std::endl;
+      auto exportedData = exportData(srcData);
+
+      auto timeElapsed = std::chrono::steady_clock::now() - startTime;
+      auto timeElapsedDuration = std::chrono::duration_cast<std::chrono::milliseconds>
+        (timeElapsed);
+      log::info()  << "MPI task: " << comm.rank()  << " Finished "
+                   << "[" << timeElapsedDuration.count() / 1000.0 << "s]"
+                   << std::endl;
+
+      return exportedData;
+    }
+
     std::shared_ptr<DataContainer> BufrParser::exportData(const BufrDataMap &srcData) {
         auto exportDescription = description_.getExport();
 

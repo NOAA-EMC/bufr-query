@@ -31,6 +31,11 @@ namespace bufr {
         dataProvider_->open();
     }
 
+    size_t File::size(const QuerySet& querySet)
+    {
+      return dataProvider_->numMessages(querySet);
+    }
+
     void File::close()
     {
         dataProvider_->close();
@@ -41,7 +46,7 @@ namespace bufr {
         dataProvider_->rewind();
     }
 
-    ResultSet File::execute(const QuerySet &querySet, size_t next)
+    ResultSet File::execute(const QuerySet &querySet, size_t offset, size_t numMessages)
     {
         size_t msgCnt = 0;
         auto resultSet = ResultSet();
@@ -57,11 +62,11 @@ namespace bufr {
             queryRunner.accumulate();
         };
 
-        auto continueProcessing = [next, msgCnt]() -> bool
+        auto continueProcessing = [numMessages, msgCnt]() -> bool
         {
-            if (next > 0)
+            if (numMessages > 0)
             {
-               return  msgCnt < next;
+               return  msgCnt < numMessages;
             }
 
             return true;
@@ -70,8 +75,10 @@ namespace bufr {
         dataProvider_->run(querySet,
                            processSubset,
                            processMsg,
-                           continueProcessing);
+                           continueProcessing,
+                           offset);
 
         return resultSet;
     }
+
 }  // namespace bufr
