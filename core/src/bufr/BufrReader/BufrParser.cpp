@@ -11,6 +11,8 @@
 #include <iostream>
 #include <ostream>
 
+#include <unistd.h>
+
 #include "bufr/DataContainer.h"
 #include "bufr/DataObject.h"
 #include "bufr/QuerySet.h"
@@ -99,8 +101,22 @@ namespace bufr {
 
     std::shared_ptr<DataContainer> BufrParser::parseInParallel(const eckit::mpi::Comm& comm)
     {
-      auto msgsPerTask = file_.size() / comm.size();
-      size_t startOffset = comm.rank() * msgsPerTask;
+      auto msgsToParse = std::floor(file_.size() / comm.size());
+      size_t startOffset = comm.rank() * msgsToParse;
+
+      // Messages may not split evenly among tasks, so distribute the remaining messages
+      if (auto remainder = file_.size() - comm.size() * msgsToParse)
+      {
+        if (comm.rank() < remainder)
+        {
+          msgsToParse++;
+          startOffset += comm.rank();
+        }
+        else
+        {
+          startOffset += remainder;
+        }
+      }
 
       auto startTime = std::chrono::steady_clock::now();
 
@@ -114,8 +130,10 @@ namespace bufr {
         }
       }
 
-      log::info() << "MPI task: " << comm.rank() << " Executing Queries " << std::endl;
-      const auto resultSet = file_.execute(querySet, startOffset, msgsPerTask);
+      log::info() << "MPI task: " << comm.rank() << " Executing Queries for message ";
+      log::info() << startOffset << " to " << startOffset + msgsToParse << std::endl;
+
+      const auto resultSet = file_.execute(querySet, startOffset, msgsToParse);
 
       log::info() << "MPI task: " << comm.rank() << " Building Bufr Data" << std::endl;
       auto srcData = BufrDataMap();

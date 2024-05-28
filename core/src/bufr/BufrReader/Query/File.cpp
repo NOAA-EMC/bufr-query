@@ -62,7 +62,7 @@ namespace bufr {
             queryRunner.accumulate();
         };
 
-        auto continueProcessing = [numMessages, msgCnt]() -> bool
+        auto continueProcessing = [numMessages, &msgCnt]() -> bool
         {
             if (numMessages > 0)
             {

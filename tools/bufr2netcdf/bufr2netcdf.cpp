@@ -9,6 +9,8 @@
 #include <iostream>
 #include <ostream>
 
+#include "eckit/runtime/Main.h"
+#include "eckit/mpi/Comm.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
@@ -18,6 +20,16 @@
 #include "bufr/encoders/netcdf/Encoder.h"
 
 namespace bufr {
+
+  class Converter : public eckit::Main
+  {
+   public:
+    Converter() = delete;
+    Converter(int argc, char **argv) : eckit::Main(argc, argv)
+    {
+      name_ = "bufr2netcdf";
+    }
+  };
 //    typedef ObjectFactory<Parser, const eckit::LocalConfiguration&> ParseFactory;
 
     std::string makeFilename(const std::string& prototype, const SubCategory& categories)
@@ -166,7 +178,20 @@ int main(int argc, char **argv)
 
     std::cout << "outputFile: " << outputFile << std::endl;
 
-    bufr::parse(obsFile, mappingFile, outputFile, tablePath, numMsgs);
+    auto parser = bufr::BufrParser(obsFile, mappingFile, tablePath);
+
+    bool isParallel = true;
+    if (isParallel)
+    {
+      auto app = bufr::Converter(argc, argv);
+      parser.parseInParallel(eckit::mpi::comm("world"));
+
+      eckit::mpi::comm("world").barrier();
+    }
+    else
+    {
+      parser.parse();
+    }
 
     return 0;
 }  // namespace bufr

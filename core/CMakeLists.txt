@@ -132,10 +132,10 @@ ecbuild_add_library( TARGET bufr_query
 ## Linking options
 target_link_libraries(bufr_query PUBLIC gsl::gsl-lite)
 target_link_libraries(bufr_query PUBLIC Eigen3::Eigen)
-target_link_libraries(bufr_query PUBLIC eckit)
+target_link_libraries(bufr_query PUBLIC MPI::MPI_CXX)
 target_link_libraries(bufr_query PUBLIC bufr::bufr_4)
 target_link_libraries(bufr_query PUBLIC NetCDF::NetCDF_CXX)
-target_link_libraries(bufr_query PUBLIC MPI::MPI_CXX)
+target_link_libraries(bufr_query PUBLIC eckit)
 
 
 ## Public include files
@@ -144,6 +144,8 @@ target_include_directories(bufr_query PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>
 	)
+
+## Install
 
 install(DIRECTORY include/bufr
 				DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}

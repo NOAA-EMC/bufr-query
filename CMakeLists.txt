@@ -20,15 +20,15 @@ set( CMAKE_DIRECTORY_LABELS ${PROJECT_NAME} )
 include( ${PROJECT_NAME}_compiler_flags )
 
 ## Dependencies
-find_package( eckit 1.23.0 REQUIRED )
+find_package( OpenMP REQUIRED)
+find_package( MPI REQUIRED)
+find_package( eckit 1.24.4 REQUIRED COMPONENTS MPI )
 find_package( Eigen3 REQUIRED NO_MODULE HINTS
               $ENV{Eigen3_ROOT} $ENV{EIGEN3_ROOT} $ENV{Eigen_ROOT} $ENV{EIGEN_ROOT}
               $ENV{Eigen3_PATH} $ENV{EIGEN3_PATH} $ENV{Eigen_PATH} $ENV{EIGEN_PATH} )
 find_package( gsl-lite REQUIRED HINTS $ENV{gsl_lite_DIR} )
 find_package( NetCDF REQUIRED COMPONENTS CXX)
 find_package( bufr 12.0.1 REQUIRED)
-find_package( OpenMP REQUIRED COMPONENTS CXX)
-find_package( MPI REQUIRED COMPONENTS CXX)
 
 
 # Python-finding settings
