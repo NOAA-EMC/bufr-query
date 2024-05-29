@@ -131,7 +131,7 @@ namespace bufr {
       }
 
       log::info() << "MPI task: " << comm.rank() << " Executing Queries for message ";
-      log::info() << startOffset << " to " << startOffset + msgsToParse << std::endl;
+      log::info() << startOffset << " to " << startOffset + msgsToParse - 1 << std::endl;
 
       const auto resultSet = file_.execute(querySet, startOffset, msgsToParse);
 

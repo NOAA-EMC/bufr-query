@@ -81,7 +81,35 @@ namespace bufr {
         }
         else
         {
-            eckit::BadParameter("No section named \"observations\"");
+            eckit::BadParameter("No section named \"encoder\"");
+        }
+    }
+
+    void parseInParallel(const eckit::mpi::Comm& comm,
+                         const std::string& obsFile,
+                         const std::string& mappingFile,
+                         const std::string& outputFile,
+                         const std::string& tablePath = "",
+                         std::size_t numMsgs = 0)
+    {
+        std::unique_ptr<eckit::YAMLConfiguration>
+            yaml(new eckit::YAMLConfiguration(eckit::PathName(mappingFile)));
+
+        if (yaml->has("encoder"))
+        {
+          auto parser = BufrParser(obsFile, yaml->getSubConfiguration("bufr"), tablePath);
+          auto data = parser.parseInParallel(comm);
+
+          auto backend =
+            encoders::netcdf::Encoder::Backend(false,
+                                               outputFile + ".task_" + std::to_string(comm.rank()));
+
+          auto encoderConf = yaml->getSubConfiguration("encoder");
+          encoders::netcdf::Encoder(encoderConf).encode(data, backend);
+        }
+        else
+        {
+            eckit::BadParameter("No section named \"encoder\"");
         }
     }
 }  // namespace bufr
@@ -178,19 +206,20 @@ int main(int argc, char **argv)
 
     std::cout << "outputFile: " << outputFile << std::endl;
 
-    auto parser = bufr::BufrParser(obsFile, mappingFile, tablePath);
-
     bool isParallel = true;
     if (isParallel)
     {
       auto app = bufr::Converter(argc, argv);
-      parser.parseInParallel(eckit::mpi::comm("world"));
-
-      eckit::mpi::comm("world").barrier();
+      bufr::parseInParallel(eckit::mpi::comm("world"),
+                            obsFile,
+                            mappingFile,
+                            outputFile,
+                            tablePath,
+                            numMsgs);
     }
     else
     {
-      parser.parse();
+      bufr::parse(obsFile, mappingFile, outputFile, tablePath, numMsgs);
     }
 
     return 0;
