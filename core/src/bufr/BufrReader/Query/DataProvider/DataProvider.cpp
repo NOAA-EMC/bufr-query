@@ -43,8 +43,13 @@ namespace bufr {
 
         while (ireadmg_f(FileUnit, subsetChars, &iddate, SubsetLen) == 0)
         {
+          if (msgCnt < offset)
+          {
+            msgCnt++;
+            continue;
+          }
+
           msgCnt++;
-          if (msgCnt < offset) continue;
 
           foundBufrMsg = true;
           subset_ = std::string(subsetChars);

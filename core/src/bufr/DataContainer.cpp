@@ -243,4 +243,18 @@ namespace bufr {
       }
     }
   }
+
+
+  void DataContainer::mpiGather(const eckit::mpi::Comm& comm)
+  {
+    for (const auto &subCat: allSubCategories())
+    {
+      for (const auto &field: getFieldNames())
+      {
+        size_t totalSize = 0;
+        auto data = get(field, subCat);
+        data->mpiGather(comm);
+      }
+    }
+  }
 }  // namespace bufr

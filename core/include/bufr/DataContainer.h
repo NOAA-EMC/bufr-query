@@ -15,6 +15,8 @@
 #include "BufrTypes.h"
 #include "DataObject.h"
 
+#include "eckit/mpi/Comm.h"
+
 namespace bufr {
   /// List of possible category strings (for splitting data)
   typedef std::vector<std::string> SubCategory;
@@ -94,6 +96,8 @@ namespace bufr {
     /// \brief Append contents of other data container to this one.
     /// \param other DataContainer to append.
     void append(const DataContainer& other);
+
+    void mpiGather(const eckit::mpi::Comm& comm);
 
   private:
     /// Category map given (see constructor).

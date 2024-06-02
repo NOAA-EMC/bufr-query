@@ -105,18 +105,20 @@ namespace bufr {
       size_t startOffset = comm.rank() * msgsToParse;
 
       // Messages may not split evenly among tasks, so distribute the remaining messages
-      if (auto remainder = file_.size() - comm.size() * msgsToParse)
+      if (auto remander = file_.size() - comm.size() * msgsToParse)
       {
-        if (comm.rank() < remainder)
+        if (comm.rank() < remander)
         {
           msgsToParse++;
           startOffset += comm.rank();
         }
         else
         {
-          startOffset += remainder;
+          startOffset += remander;
         }
       }
+
+      std::cout << "Rank: " << comm.rank() << " " << startOffset << " " << msgsToParse << std::endl;
 
       auto startTime = std::chrono::steady_clock::now();
 

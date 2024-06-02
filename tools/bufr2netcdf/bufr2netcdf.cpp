@@ -90,27 +90,40 @@ namespace bufr {
                          const std::string& mappingFile,
                          const std::string& outputFile,
                          const std::string& tablePath = "",
-                         std::size_t numMsgs = 0)
+                         bool separateFiles = false)
     {
-        std::unique_ptr<eckit::YAMLConfiguration>
-            yaml(new eckit::YAMLConfiguration(eckit::PathName(mappingFile)));
+      std::unique_ptr<eckit::YAMLConfiguration>
+        yaml(new eckit::YAMLConfiguration(eckit::PathName(mappingFile)));
 
-        if (yaml->has("encoder"))
+      if (!yaml->has("encoder"))
+      {
+        throw eckit::BadParameter("No section named \"encoder\"");
+      }
+
+      auto parser = BufrParser(obsFile, yaml->getSubConfiguration("bufr"), tablePath);
+      auto data = parser.parseInParallel(comm);
+
+      if (separateFiles)
+      {
+        auto backend = encoders::netcdf::Encoder::Backend(false,
+                                                          outputFile + ".task_" +
+                                                          std::to_string(comm.rank()));
+
+        auto encoderConf = yaml->getSubConfiguration("encoder");
+        encoders::netcdf::Encoder(encoderConf).encode(data, backend);
+      }
+      else
+      {
+        data->mpiGather(comm);
+
+        if (comm.rank() == 0)
         {
-          auto parser = BufrParser(obsFile, yaml->getSubConfiguration("bufr"), tablePath);
-          auto data = parser.parseInParallel(comm);
-
-          auto backend =
-            encoders::netcdf::Encoder::Backend(false,
-                                               outputFile + ".task_" + std::to_string(comm.rank()));
+          auto backend = encoders::netcdf::Encoder::Backend(false, outputFile);
 
           auto encoderConf = yaml->getSubConfiguration("encoder");
           encoders::netcdf::Encoder(encoderConf).encode(data, backend);
         }
-        else
-        {
-            eckit::BadParameter("No section named \"encoder\"");
-        }
+      }
     }
 }  // namespace bufr
 
@@ -215,7 +228,7 @@ int main(int argc, char **argv)
                             mappingFile,
                             outputFile,
                             tablePath,
-                            numMsgs);
+                            false);
     }
     else
     {
