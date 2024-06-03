@@ -428,18 +428,28 @@ namespace bufr {
       /// \param comm The MPI communicator to use.
       void mpiGather(const eckit::mpi::Comm& comm) final
       {
-        std::vector<int> rcvDims = getDims();
-        comm.reduce(rcvDims[0], rcvDims[0], eckit::mpi::Operation::SUM, 0);
-
-        size_t numDims = getDims().size();
+        size_t numDims = dims_.size();
         comm.reduce(numDims, numDims, eckit::mpi::Operation::MAX, 0);
+
+        // Ensure all ranks have the same number of dimensions
+        if (numDims != dims_.size())
+        {
+          int missingDims = numDims - dims_.size();
+          for (int idx = 0; idx < missingDims; ++idx)
+          {
+            dims_.insert(dims_.end() - 1, 1);
+          }
+        }
+
+        std::vector<int> rcvDims = dims_;
+        comm.reduce(rcvDims[0], rcvDims[0], eckit::mpi::Operation::SUM, 0);
 
         for (size_t i = 1; i < numDims; ++i)
         {
           comm.allReduce(rcvDims[i], rcvDims[i], eckit::mpi::Operation::MAX);
         }
 
-        size_t sendSize = getDims()[0];
+        size_t sendSize = dims_[0];
         for (int idx = 1; idx < rcvDims.size(); idx++)
         {
           sendSize *= rcvDims[idx];
@@ -453,42 +463,45 @@ namespace bufr {
 
         // Fix my send buffer if the global extra dimensions (not the first one) differ from my own
         // (resize and fill with missing values where necessary). This will involve creating a send
-        // array and copying data into the correct indeices.
+        // array and copying data into the correct indices.
 
-//        bool adjustDims = numDims != getDims().size();
-//        for (int idx = 1; idx < rcvDims.size(); idx++)
-//        {
-//          adjustDims = (rcvDims[idx] != getDims()[idx]);
-//        }
-//
-//        if (adjustDims)
-//        {
-//          std::vector<T> sendBuffer(sendSize, missingValue());
-//
-//          // Map the local data into the sendBuffer using the dimensions
-//          for (size_t i = 0; i < data_.size(); ++i)
-//          {
-//            Location loc;
-//
-//            // Compute the location in the old data
-//            size_t idx = i;
-//            for (size_t dimIdx = 0; dimIdx < dims_.size(); ++dimIdx)
-//            {
-//              loc.push_back(idx % dims_[dimIdx]);
-//              idx /= dims_[dimIdx];
-//            }
-//
-//            idx = 0;
-//            for (size_t dimIdx = 0; dimIdx < rcvDims.size(); ++dimIdx)
-//            {
-//              idx += loc[dimIdx] * rcvDims[dimIdx];
-//            }
-//
-//            sendBuffer[idx] = data_[i];
-//          }
-//
-//          data_ = std::move(sendBuffer);
-//        }
+        // Do the extra dimensions from the different ranks match?
+        bool adjustDims = false;
+        for (int idx = 1; idx < rcvDims.size(); idx++)
+        {
+          adjustDims = (rcvDims[idx] != getDims()[idx]);
+        }
+
+        // Resize the dimensions to match the global dimensions
+        if (adjustDims)
+        {
+          std::vector<T> sendBuffer(sendSize, missingValue());
+
+          // Map the local data into the sendBuffer using the dimensions
+          for (size_t i = 0; i < data_.size(); ++i)
+          {
+            Location loc;
+
+            // Compute the location coordinate in the old data
+            size_t idx = i;
+            for (size_t dimIdx = 0; dimIdx < dims_.size(); ++dimIdx)
+            {
+              loc.push_back(idx % dims_[dimIdx]);
+              idx /= dims_[dimIdx];
+            }
+
+            // Map that location into the new data (compute the new index)
+            idx = 0;
+            for (size_t dimIdx = 0; dimIdx < rcvDims.size(); ++dimIdx)
+            {
+              idx += loc[dimIdx] * rcvDims[dimIdx];
+            }
+
+            sendBuffer[idx] = data_[i];
+          }
+
+          data_ = std::move(sendBuffer);
+        }
 
         auto sizeArray = std::vector<int>(comm.size());
         comm.allGather(static_cast<int>(size()), sizeArray.begin(), sizeArray.end());

@@ -118,8 +118,6 @@ namespace bufr {
         }
       }
 
-      std::cout << "Rank: " << comm.rank() << " " << startOffset << " " << msgsToParse << std::endl;
-
       auto startTime = std::chrono::steady_clock::now();
 
       auto querySet = QuerySet(description_.getExport().getSubsets());
