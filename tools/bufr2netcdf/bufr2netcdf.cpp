@@ -219,7 +219,7 @@ int main(int argc, char **argv)
 
     std::cout << "outputFile: " << outputFile << std::endl;
 
-    bool isParallel = true;
+    bool isParallel = eckit::mpi::comm("world").size() > 1;
     if (isParallel)
     {
       auto app = bufr::Converter(argc, argv);
