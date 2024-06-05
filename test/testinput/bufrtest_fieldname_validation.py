@@ -21,7 +21,7 @@ def test_field_val():
     except Exception as e:
         return  # Success!
 
-    assert False, "Didn't throw exception for invalid field name."
+    assert False, "Did not throw exception for invalid field name."
 
 def test_groupby_field_val():
     DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
@@ -39,7 +39,7 @@ def test_groupby_field_val():
     except Exception as e:
         return  # Success!
 
-    assert False, "Didn't throw exception for invalid groupby field name."
+    assert False, "Did not throw exception for invalid groupby field name."
 
 
 if __name__ == '__main__':

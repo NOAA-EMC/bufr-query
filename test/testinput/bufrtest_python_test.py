@@ -117,7 +117,7 @@ def test_invalid_query():
     except Exception as e:
         return
 
-    assert False, "Didn't throw exception for invalid query."
+    assert False, "Did not throw exception for invalid query."
 
 
 def test_highlevel_replace():

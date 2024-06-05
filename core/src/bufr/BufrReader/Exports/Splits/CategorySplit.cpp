@@ -104,7 +104,7 @@ namespace bufr {
                 else
                 {
                     std::stringstream errStr;
-                    errStr << "Can't turn " << variable_ << " into a category as it contains ";
+                    errStr << "Can not turn " << variable_ << " into a category as it contains ";
                     errStr << "non-integer values.";
                     throw eckit::BadParameter(errStr.str());
                 }
