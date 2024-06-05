@@ -5,69 +5,70 @@
 # _aircft    nem 004001 004002 004003 004006 004009 004010 004011 004103
 #
 bufr:
-  exports:
-    group_by_variable: latitudeSeq
-    subsets:
-      - NC004103
+  group_by_variable: latitudeSeq
+  subsets:
+    - NC004103
 
-    # MetaData
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-      receipttime:
-        datetime:
-          year: "*/RCYR"
-          month: "*/RCMO"
-          day: "*/RCDY"
-          hour: "*/RCHR"
-          minute: "*/RCMI"
-      stationWIGOSId:
-        query: "*/WGOSLID"
-      latitude:
-        query: "*/CLATH"
-      longitude:
-        query: "*/CLONH"
-      latitudeSeq:
-        query: "*/ADRBLSEQ/CLATH"
+  # MetaData
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+    receipttime:
+      datetime:
+        year: "*/RCYR"
+        month: "*/RCMO"
+        day: "*/RCDY"
+        hour: "*/RCHR"
+        minute: "*/RCMI"
+    stationWIGOSId:
+      query: "*/WGOSLID"
+    latitude:
+      query: "*/CLATH"
+    longitude:
+      query: "*/CLONH"
+    latitudeSeq:
+      query: "*/ADRBLSEQ/CLATH"
 
-      aircraftFlightNumber:
-        query: "*/ACID"
-      aircraftNavigationalSystem:
-        query: "*/ACNS"
-      aircraftIdentifier:
-        query: "*/ACRN"
+    aircraftFlightNumber:
+      query: "*/ACID"
+    aircraftNavigationalSystem:
+      query: "*/ACNS"
+    aircraftIdentifier:
+      query: "*/ACRN"
+    aircraftAltitude:
       aircraftAltitude:
-        aircraftAltitude:
-          flightLevelST: "*/ADRBLSEQ/FLVLST"
+        flightLevelST: "*/ADRBLSEQ/FLVLST"
 
-      # ObsValue
-      airTemperature:
-        query: "*/ADRBLSEQ/TMDB"
-      dewpointTemperature:
-        query: "*/ADRBLSEQ/TMDP"
-      waterVaporMixingRatio:
-        query: "*/ADRBLSEQ/MIXR"
-      windDirection:
-        query: "*/ADRBLSEQ/WDIR"
-        type: float
-      windSpeed:
-        query: "*/ADRBLSEQ/WSPD"
+    # ObsValue
+    airTemperature:
+      query: "*/ADRBLSEQ/TMDB"
+    dewpointTemperature:
+      query: "*/ADRBLSEQ/TMDP"
+    waterVaporMixingRatio:
+      query: "*/ADRBLSEQ/MIXR"
+    windDirection:
+      query: "*/ADRBLSEQ/WDIR"
+      type: float
+    windSpeed:
+      query: "*/ADRBLSEQ/WSPD"
 
-      # QualityMarker
-      airTemperatureQM:
-        query: "*/QMAT"
-      relativeHumidityQM:
-        query: "*/QMDD"
-      windQM:
-        query: "*/QMWN"
+    # QualityMarker
+    airTemperatureQM:
+      query: "*/QMAT"
+    relativeHumidityQM:
+      query: "*/QMDD"
+    windQM:
+      query: "*/QMWN"
 
 
-ioda:
+encoder:
+  type: netcdf
+
   variables:
     # MetaData
     - name: "MetaData/dateTime"

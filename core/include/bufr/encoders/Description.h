@@ -7,18 +7,18 @@
 
 #pragma once
 
+#include <set>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "eckit/config/LocalConfiguration.h"
-#include "ioda/Engines/EngineUtils.h"
-#include "ioda/Group.h"
 
-#include "QueryParser.h"
+#include "eckit/config/LocalConfiguration.h"
+#include "bufr/QueryParser.h"
 
 
 namespace bufr {
+namespace encoders {
     struct Range
     {
         float start;
@@ -41,51 +41,48 @@ namespace bufr {
         std::string units;
         std::shared_ptr<std::string> coordinates;  // Optional
         std::shared_ptr<Range> range;  // Optional
-        std::vector<ioda::Dimensions_t> chunks;  // Optional
+        std::vector<size_t> chunks;  // Optional
         int compressionLevel;  // Optional
+    };
+
+    struct GlobalWriterBase
+    {
+      public:
+      GlobalWriterBase() = default;
+      virtual ~GlobalWriterBase() = default;
+    };
+
+    template<typename T>
+    struct GlobalWriter : public GlobalWriterBase
+    {
+      public:
+        GlobalWriter() = default;
+        virtual ~GlobalWriter() = default;
+        virtual void write(const std::string& name, const T& data) = 0;
     };
 
     struct GlobalDescriptionBase
     {
         std::string name;
-        virtual void addTo(ioda::Group& group) = 0;
+        virtual void writeTo(const std::shared_ptr<GlobalWriterBase>& writer) = 0;
         virtual ~GlobalDescriptionBase() = default;
     };
-
-    template<typename T>
-    struct is_vector : public std::false_type {};
-
-    template<typename T, typename A>
-    struct is_vector<std::vector<T, A>> : public std::true_type {};
 
     template<typename T>
     struct GlobalDescription : public GlobalDescriptionBase
     {
         T value;
 
-        void addTo(ioda::Group& group) final
+        void writeTo(const std::shared_ptr<GlobalWriterBase>& writer) final
         {
-            _addTo(group);
-        }
-
-     private:
-        // T is something other than a std::vector
-        template<typename U = void>
-        void _addTo(ioda::Group& group,
-                    typename std::enable_if<!is_vector<T>::value, U>::type* = nullptr)
-        {
-            ioda::Attribute attr = group.atts.create<T>(name, {1});
-            attr.write<T>({value});
-        }
-
-        // T is a vector
-        template<typename U = void>
-        void _addTo(ioda::Group& group,
-                    typename std::enable_if<is_vector<T>::value, U>::type* = nullptr)
-        {
-            ioda::Attribute attr = group.atts.create<typename T::value_type>(name, \
-                                   {static_cast<int>(value.size())});
-            attr.write<typename T::value_type>(value);
+          if (auto writerPtr = std::dynamic_pointer_cast<GlobalWriter<T>>(writer))
+          {
+            writerPtr->write(name, value);
+          }
+          else
+          {
+            throw std::runtime_error("Invalid writer type");
+          }
         }
     };
 
@@ -93,13 +90,13 @@ namespace bufr {
     typedef std::vector<VariableDescription> VariableDescriptions;
     typedef std::vector<std::shared_ptr<GlobalDescriptionBase>> GlobalDescriptions;
 
-    /// \brief Describes how to write data to IODA.
-    class IodaDescription
+    /// \brief Describes how to write data to NetCDF.
+    class Description
     {
      public:
-        IodaDescription() = default;
-        explicit IodaDescription(const std::string& yamlFile);
-        explicit IodaDescription(const eckit::Configuration& conf);
+        Description() = default;
+        explicit Description(const std::string& yamlFile);
+        explicit Description(const eckit::Configuration& conf);
 
         /// \brief Add Dimension defenition
         void addDimension(const DimensionDescription& dim);
@@ -142,6 +139,8 @@ namespace bufr {
         /// \brief Collection of defined globals
         GlobalDescriptions globals_;
 
+        /// \brief Initialize the object from a configuration
         void init(const eckit::Configuration& conf);
     };
+}  // namespace encoders
 }  // namespace bufr

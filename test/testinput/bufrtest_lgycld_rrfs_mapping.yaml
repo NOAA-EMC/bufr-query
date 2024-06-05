@@ -4,44 +4,45 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
 
-      # MetaData
-      longitude:
-        query: "*/CLONH"
-        transforms:
-          - offset: 360.0
-      latitude:
-        query: "*/CLATH"
-      satelliteIdentifier:
-        query: "*/SAID"
+    # MetaData
+    longitude:
+      query: "*/CLONH"
+      transforms:
+        - offset: 360.0
+    latitude:
+      query: "*/CLATH"
+    satelliteIdentifier:
+      query: "*/SAID"
 
-      # ObsValue - cloud, cloud ceiling, visibility, gust wind, min/max temperature, weather
-      # note: cloud ceiling is a derivative of HOCB, the height of cloud base
-      cloudPhase:
-        query: "*/CLDP"
-      heightOfBaseOfCloud:
-        query: "*/HOCB"
-      heightOfTopOfCloud:
-        query: "*/HOCT"
-      pressureAtBaseOfCloud:
-        query: "*/CDBP"
-      pressureAtTopOfCloud:
-        query: "*/CDTP"
-      equivalentBlackBodyTemperature:
-        query: "*/EBBTH"
-      liquidWaterPath:
-        query: "*/VILWC"
+    # ObsValue - cloud, cloud ceiling, visibility, gust wind, min/max temperature, weather
+    # note: cloud ceiling is a derivative of HOCB, the height of cloud base
+    cloudPhase:
+      query: "*/CLDP"
+    heightOfBaseOfCloud:
+      query: "*/HOCB"
+    heightOfTopOfCloud:
+      query: "*/HOCT"
+    pressureAtBaseOfCloud:
+      query: "*/CDBP"
+    pressureAtTopOfCloud:
+      query: "*/CDTP"
+    equivalentBlackBodyTemperature:
+      query: "*/EBBTH"
+    liquidWaterPath:
+      query: "*/VILWC"
 
-ioda:
+encoder:
+  type: netcdf
+
   variables:
     # MetaData
     - name: "MetaData/dateTime"

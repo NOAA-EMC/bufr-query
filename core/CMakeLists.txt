@@ -28,8 +28,11 @@ list(APPEND BUFR_PUBLIC
 	include/bufr/Tokenizer.h
 	include/bufr/SubsetTable.h
 	include/bufr/Data.h
-	include/bufr/IodaEncoder.h
-	include/bufr/IodaDescription.h
+)
+
+list (APPEND ENCODERS_PUBLIC
+	include/bufr/encoders/Description.h
+	include/bufr/encoders/netcdf/Encoder.h
 )
 
 list(APPEND BUFR_PRIVATE
@@ -89,8 +92,6 @@ list(APPEND BUFR_PRIVATE
 	src/bufr/BufrReader/Query/SubsetTable.cpp
 	src/bufr/BufrReader/Query/SubsetLookupTable.h
 	src/bufr/BufrReader/Query/SubsetLookupTable.cpp
-	src/bufr/IodaEncoder/IodaEncoder.cpp
-	src/bufr/IodaEncoder/IodaDescription.cpp
 
 	# atms
 	src/bufr/BufrReader/Exports/Variables/Transforms/atms/atms_kinds.F90
@@ -99,38 +100,46 @@ list(APPEND BUFR_PRIVATE
 	src/bufr/BufrReader/Exports/Variables/Transforms/atms/atms_spatial_average_interface.f90
 )
 
-source_group("core//include" FILES ${BUFR_PUBLIC})
-source_group("core//src" FILES ${BUFR_PRIVATE})
+list (APPEND ENCODERS_PRIVATE
+	src/encoders/Description.cpp
+	src/encoders/netcdf/Encoder.cpp
+)
+
+source_group("core//include/bufr" FILES ${BUFR_PUBLIC})
+source_group("core//src//bufr" FILES ${BUFR_PRIVATE})
+source_group("core//include/encoders" FILES ${ENCODERS_PUBLIC})
+source_group("core//src//encoders" FILES ${ENCODERS_PRIVATE})
 
 
 ## Define which source files are compiled.
 list(APPEND BUFR_SRCS
 	${BUFR_PUBLIC}
 	${BUFR_PRIVATE}
+	${ENCODERS_PUBLIC}
+	${ENCODERS_PRIVATE}
 	)
 
 ## Create options files that specify compilation options, available libraries,
 ## and test file paths.
 
 ## Create the library
-ecbuild_add_library( TARGET bufr_lib
+ecbuild_add_library( TARGET bufr_query
                      SOURCES ${BUFR_SRCS}
                      INSTALL_HEADERS LISTED
                      HEADER_DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
                      LINKER_LANGUAGE CXX )
 
 ## Linking options
-target_link_libraries(bufr_lib PUBLIC ioda)
-target_link_libraries(bufr_lib PUBLIC gsl::gsl-lite)
-target_link_libraries(bufr_lib PUBLIC Eigen3::Eigen)
-target_link_libraries(bufr_lib PUBLIC udunits::udunits)
-target_link_libraries(bufr_lib PUBLIC oops)
-target_link_libraries(bufr_lib PUBLIC eckit)
-target_link_libraries(bufr_lib PUBLIC bufr::bufr_4)
+target_link_libraries(bufr_query PUBLIC gsl::gsl-lite)
+target_link_libraries(bufr_query PUBLIC Eigen3::Eigen)
+target_link_libraries(bufr_query PUBLIC eckit)
+target_link_libraries(bufr_query PUBLIC bufr::bufr_4)
+target_link_libraries(bufr_query PUBLIC NetCDF::NetCDF_CXX)
+
 
 ## Public include files
 
-target_include_directories(bufr_lib PUBLIC
+target_include_directories(bufr_query PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>
 	)

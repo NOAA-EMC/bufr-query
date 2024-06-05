@@ -1,11 +1,11 @@
 LIST(APPEND _deps
-  bufr_lib
+  bufr_query
 )
 
 LIST(APPEND _srcs
-  bufr2ioda.cpp
+  bufr2netcdf.cpp
 )
 
-ecbuild_add_executable( TARGET  bufr2ioda.x
+ecbuild_add_executable( TARGET  bufr2netcdf.x
                         SOURCES ${_srcs}
                         LIBS    ${_deps})

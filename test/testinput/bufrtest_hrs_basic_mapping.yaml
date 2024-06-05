@@ -5,26 +5,27 @@
 
 
 bufr:
-  exports:
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-          second: "*/SECO"
-      longitude:
-        query: "*/CLON"
-      latitude:
-        query: "*/CLAT"
-      channel:
-        query: "[*/BRITCSTC/CHNM, */BRIT/CHNM]"
-      brightnessTemp:
-        query: "[*/BRITCSTC/TMBR, */BRIT/TMBR]"
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+        second: "*/SECO"
+    longitude:
+      query: "*/CLON"
+    latitude:
+      query: "*/CLAT"
+    channel:
+      query: "[*/BRITCSTC/CHNM, */BRIT/CHNM]"
+    brightnessTemp:
+      query: "[*/BRITCSTC/TMBR, */BRIT/TMBR]"
 
-ioda:
+encoder:
+  type: netcdf
+
   dimensions:
     - name: Channel
       paths:

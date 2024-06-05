@@ -4,101 +4,101 @@
 # # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    variables:
-      # MetaData
-      timestamp:
-        datetime:
-          year: "*/YEAR[1]"
-          month: "*/MNTH[1]"
-          day: "*/DAYS[1]"
-          hour: "*/HOUR[1]"
-          minute: "*/MINU[1]"
-      receipttime:
-        datetime:
-          year: "[*/RCYR, NC000007/RCPTIM/RCYR]"
-          month: "[*/RCMO, NC000007/RCPTIM/RCMO]"
-          day: "[*/RCDY, NC000007/RCPTIM/RCDY]"
-          hour: "[*/RCHR, NC000007/RCPTIM/RCHR]"
-          minute: "[*/RCMI, NC000007/RCPTIM/RCMI]"
-      wigosidentifier:
-        wigos:
-          wgosids: "*/WGOSIDS"
-          wgosisid: "*/WGOSISID"
-          wgosisnm: "*/WGOSISNM"
-          wgoslid: "*/WGOSLID"
-      latitude:
-        query: "[*/CLAT, */CLATH]"
-      longitude:
-        query: "[*/CLON, */CLONH]"
-      stationIdentification:
-        query: "*/RPID"
-      stationElevation:
-        query: "[*/SELV, */HSMSL]"
-      waterTemperatureMethod:
-        query: "*/MSST"
-      dataProviderRestricted:
-        query: "*/RSRD"
-      dataRestrictedExpiration:
-        query: "*/EXPRSRD"
+  variables:
+    # MetaData
+    timestamp:
+      datetime:
+        year: "*/YEAR[1]"
+        month: "*/MNTH[1]"
+        day: "*/DAYS[1]"
+        hour: "*/HOUR[1]"
+        minute: "*/MINU[1]"
+    receipttime:
+      datetime:
+        year: "[*/RCYR, NC000007/RCPTIM/RCYR]"
+        month: "[*/RCMO, NC000007/RCPTIM/RCMO]"
+        day: "[*/RCDY, NC000007/RCPTIM/RCDY]"
+        hour: "[*/RCHR, NC000007/RCPTIM/RCHR]"
+        minute: "[*/RCMI, NC000007/RCPTIM/RCMI]"
+    wigosidentifier:
+      wigos:
+        wgosids: "*/WGOSIDS"
+        wgosisid: "*/WGOSISID"
+        wgosisnm: "*/WGOSISNM"
+        wgoslid: "*/WGOSLID"
+    latitude:
+      query: "[*/CLAT, */CLATH]"
+    longitude:
+      query: "[*/CLON, */CLONH]"
+    stationIdentification:
+      query: "*/RPID"
+    stationElevation:
+      query: "[*/SELV, */HSMSL]"
+    waterTemperatureMethod:
+      query: "*/MSST"
+    dataProviderRestricted:
+      query: "*/RSRD"
+    dataRestrictedExpiration:
+      query: "*/EXPRSRD"
 
-      # ObsValue
-      pressure:
-        query: "*/PRES"
-      pressureReducedToMeanSeaLevel:
-        query: "*/PMSL"
-      altimeterSetting:
-        query: "*/ALSE"
-      airTemperature:
-        query: "*/TMDB"
-      dewPointTemperature:
-        query: "*/TMDP"
-      windDirection:
-        query: "*/WDIR"
-      windSpeed:
-        query: "*/WSPD"
+    # ObsValue
+    pressure:
+      query: "*/PRES"
+    pressureReducedToMeanSeaLevel:
+      query: "*/PMSL"
+    altimeterSetting:
+      query: "*/ALSE"
+    airTemperature:
+      query: "*/TMDB"
+    dewPointTemperature:
+      query: "*/TMDP"
+    windDirection:
+      query: "*/WDIR"
+    windSpeed:
+      query: "*/WSPD"
 
-      # ObsValue - ocean
-      waterTemperature:
-        query: "*/SST1"
-      heightOfWaves:
-        query: "*/WAVSQ1/HOWV"
+    # ObsValue - ocean
+    waterTemperature:
+      query: "*/SST1"
+    heightOfWaves:
+      query: "*/WAVSQ1/HOWV"
 
-      # ObsValue - cloud, visibility, gust wind, weather
-      cloudCoverTotal:
-        query: "*/TOCC"
-        type: float
-        transforms:
-          - scale: 0.01
-      cloudAmount:
-        query: "[*/CLDSQ1/CLAM, */MTRCLD/CLAM, NC000100/CLAM, NC000101/CLAM, NC000102/CLAM]"
-      heightOfBaseOfCloud:
-        query: "[*/CLDSQ1/HOCB, */MTRCLD/HOCB, NC000100/HOCB, NC000101/HOCB, NC000102/HOCB]"
-      verticalSignificance:
-        query: "[*/CLDSQ1/VSSO, */MTRCLD/VSSO, NC000100/VSSO[1], NC000101/VSSO[1], NC000102/VSSO[1]]"
-      verticalVisibility:
-        query: "[*/RPSEC3/VTVI, */VTVI]"
-      horizontalVisibility:
-        query: "*/HOVI"
-      maximumWindGustSpeed:
-        query: "[*/WNDSQ2/MXGS, */MTGUST/MXGS, */BSYWND2/MXGS]"
-      maximumWindGustDirection:
-        query: "*/BSYWND2/MXGD"
-      presentWeather:
-        query: "[*/PPWSQ1/PRWE, */MTRPRW/PRWE, */PWEATHER/PRWE]"
+    # ObsValue - cloud, visibility, gust wind, weather
+    cloudCoverTotal:
+      query: "*/TOCC"
+      type: float
+      transforms:
+        - scale: 0.01
+    cloudAmount:
+      query: "[*/CLDSQ1/CLAM, */MTRCLD/CLAM, NC000100/CLAM, NC000101/CLAM, NC000102/CLAM]"
+    heightOfBaseOfCloud:
+      query: "[*/CLDSQ1/HOCB, */MTRCLD/HOCB, NC000100/HOCB, NC000101/HOCB, NC000102/HOCB]"
+    verticalSignificance:
+      query: "[*/CLDSQ1/VSSO, */MTRCLD/VSSO, NC000100/VSSO[1], NC000101/VSSO[1], NC000102/VSSO[1]]"
+    verticalVisibility:
+      query: "[*/RPSEC3/VTVI, */VTVI]"
+    horizontalVisibility:
+      query: "*/HOVI"
+    maximumWindGustSpeed:
+      query: "[*/WNDSQ2/MXGS, */MTGUST/MXGS, */BSYWND2/MXGS]"
+    maximumWindGustDirection:
+      query: "*/BSYWND2/MXGD"
+    presentWeather:
+      query: "[*/PPWSQ1/PRWE, */MTRPRW/PRWE, */PWEATHER/PRWE]"
 
-      # QualityMarker
-      airTemperatureQM:
-        query: "*/QMAT"
-      dewPointTemperatureQM:
-        query: "*/QMDD"
-      pressureQM:
-        query: "*/QMPR"
-      windQM:
-        query: "*/QMWN"
+    # QualityMarker
+    airTemperatureQM:
+      query: "*/QMAT"
+    dewPointTemperatureQM:
+      query: "*/QMDD"
+    pressureQM:
+      query: "*/QMPR"
+    windQM:
+      query: "*/QMWN"
 
+encoder:
+  type: netcdf
 
-ioda:
   dimensions:
     - name: CloudSequence
       path: "*/CLDSQ1"
@@ -110,7 +110,6 @@ ioda:
       path: "*/MTRPRW"
 
   variables:
-
     # MetaData
     - name: "MetaData/dateTime"
       coordinates: "longitude latitude"

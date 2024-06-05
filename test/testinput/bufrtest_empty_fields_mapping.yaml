@@ -4,27 +4,28 @@
 # # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 #
 bufr:
-  exports:
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-      lat:
-        query: "*/CLAT"
-      lon:
-        query: "*/CLON"
-      swellWavesDirection:
-        query: "NC000000/WAVSQ3/DOSW"
-      heightOfSwellWaves:
-        query: "NC000000/WAVSQ3/HOSW"
-      periodOfSwellWaves:
-        query: "NC000000/WAVSQ3/POSW"
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+    lat:
+      query: "*/CLAT"
+    lon:
+      query: "*/CLON"
+    swellWavesDirection:
+      query: "NC000000/WAVSQ3/DOSW"
+    heightOfSwellWaves:
+      query: "NC000000/WAVSQ3/HOSW"
+    periodOfSwellWaves:
+      query: "NC000000/WAVSQ3/POSW"
 
-ioda:
+encoder:
+  type: netcdf
+
   variables:
     - name: "MetaData/dateTime"
       source: variables/timestamp

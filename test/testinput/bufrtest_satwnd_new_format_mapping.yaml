@@ -4,57 +4,58 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    variables:
-      satellite:
-        query: "*/SAID"
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-          second: "*/SECO"
-      longitude:
-        query: "*/CLONH"
-      latitude:
-        query: "*/CLATH"
-      satellite_wind_calculation_method:
-        query: "*/SWCM"
-      satellite_zenith_angle:
-        query: "*/SAZA"
-      satellite_channel_center_frequency:
-        query: "*/SCCF"
-      originating_generating_center:
-        query: "*/OGCE[1]"
-      satellite_wind_quality_mark:
-        query: "*/SWQM"
-      extended_height_assignment_method:
-        query: "*/EHAM"
-      pressure:
-        query: "*/PRLC[1]"
-        type: float
-      wind_direction:
-        query: "*/WDIR"
-        type: float
-      wind_speed:
-        query: "*/WSPD"
-      tracking_correlation_of_vector:
-        query: "*/AMVIVR/TCOV"
-      coefficient_of_variation:
-        query: "*/AMVIVR/CVWD"
-      percent_confidence:
-        query: "*/AMVQIC/PCCF"
-      generating_application:
-        query: "*/AMVQIC/GNAPS"
-    filters:
-      - bounding:
-          variable: longitude
-          lowerBound: -180
-          upperBound: 180
+  variables:
+    satellite:
+      query: "*/SAID"
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+        second: "*/SECO"
+    longitude:
+      query: "*/CLONH"
+    latitude:
+      query: "*/CLATH"
+    satellite_wind_calculation_method:
+      query: "*/SWCM"
+    satellite_zenith_angle:
+      query: "*/SAZA"
+    satellite_channel_center_frequency:
+      query: "*/SCCF"
+    originating_generating_center:
+      query: "*/OGCE[1]"
+    satellite_wind_quality_mark:
+      query: "*/SWQM"
+    extended_height_assignment_method:
+      query: "*/EHAM"
+    pressure:
+      query: "*/PRLC[1]"
+      type: float
+    wind_direction:
+      query: "*/WDIR"
+      type: float
+    wind_speed:
+      query: "*/WSPD"
+    tracking_correlation_of_vector:
+      query: "*/AMVIVR/TCOV"
+    coefficient_of_variation:
+      query: "*/AMVIVR/CVWD"
+    percent_confidence:
+      query: "*/AMVQIC/PCCF"
+    generating_application:
+      query: "*/AMVQIC/GNAPS"
+  filters:
+    - bounding:
+        variable: longitude
+        lowerBound: -180
+        upperBound: 180
 
-ioda:
+encoder:
+  type: netcdf
+
   dimensions:
     - name: "Confidence"
       path: "*/AMVQIC"

@@ -4,51 +4,52 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-          second: "*/SECO"
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+        second: "*/SECO"
 
-      latitude:
-        query: "*/CLAT"
+    latitude:
+      query: "*/CLAT"
 
-      longitude:
-        query: "*/CLON"
+    longitude:
+      query: "*/CLON"
 
-      originatingGeneratingCenter:
-        query: "*/OGCE"
+    originatingGeneratingCenter:
+      query: "*/OGCE"
 
-      pressure:
-        query: "*/QCPRMS[1]/GNAP"
+    pressure:
+      query: "*/QCPRMS[1]/GNAP"
 
-      windDirection:
-        query: "*/QCPRMS[2]/GNAP"
+    windDirection:
+      query: "*/QCPRMS[2]/GNAP"
 
-      windSpeed:
-        query: "*/QCPRMS[3]/GNAP"
+    windSpeed:
+      query: "*/QCPRMS[3]/GNAP"
 
-      coldClusterTemperature:
-        query: "*/QCPRMS[4]/GNAP"
+    coldClusterTemperature:
+      query: "*/QCPRMS[4]/GNAP"
 
-      percentConfidencePressure:
-        query: "*/QCPRMS[1]/PCCF"
+    percentConfidencePressure:
+      query: "*/QCPRMS[1]/PCCF"
 
-      percentConfidenceWindDirection:
-        query: "*/QCPRMS[2]/PCCF"
+    percentConfidenceWindDirection:
+      query: "*/QCPRMS[2]/PCCF"
 
-      percentConfidenceWindSpeed:
-        query: "*/QCPRMS[3]/PCCF"
+    percentConfidenceWindSpeed:
+      query: "*/QCPRMS[3]/PCCF"
 
-      percentConfidenceColdClusterTemperature:
-        query: "*/QCPRMS[4]/PCCF"
+    percentConfidenceColdClusterTemperature:
+      query: "*/QCPRMS[4]/PCCF"
 
-ioda:
+encoder:
+  type: netcdf
+
   dimensions:
     - name: "Confidence"
       paths:

@@ -7,21 +7,20 @@
 
 #include <pybind11/pybind11.h>
 
-#include <memory>
-#include <vector>
 #include <string>
 
-#include "bufr/IodaDescription.h"
+#include "bufr/encoders/Description.h"
+
 
 namespace py = pybind11;
 
-using bufr::IodaDescription;
+using bufr::encoders::Description;
 
-void setupIodaDescription(py::module& m)
+void setupEncoderDescription(py::module& m)
 {
-  py::class_<IodaDescription>(m, "IodaDescription")
+  py::class_<Description>(m, "Description")
    .def(py::init<const std::string&>())
-   .def("add_variable", &IodaDescription::py_addVariable,
+   .def("add_variable", &Description::py_addVariable,
         py::arg("name"),
         py::arg("source"),
         py::arg("units"),

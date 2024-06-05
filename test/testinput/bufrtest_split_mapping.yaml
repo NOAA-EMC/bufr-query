@@ -4,36 +4,37 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-          second: "*/SECO"
-      longitude:
-        query: "*/CLON"
-      latitude:
-        query: "*/CLAT"
-      brightnessTemperature:
-        query: "[*/BRITCSTC/TMBR, */BRIT/TMBR]"
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+        second: "*/SECO"
+    longitude:
+      query: "*/CLON"
+    latitude:
+      query: "*/CLAT"
+    brightnessTemperature:
+      query: "[*/BRITCSTC/TMBR, */BRIT/TMBR]"
 
-    splits:
-      hour:
-        category:
-          variable: timestamp_hour
-      minute:
-        category:
-          variable: timestamp_minute
-          map: # Optional
-            _5: five #can't use integers as keys so underscore
-            _6: six
-            _7: seven
+  splits:
+    hour:
+      category:
+        variable: timestamp_hour
+    minute:
+      category:
+        variable: timestamp_minute
+        map: # Optional
+          _5: five #can't use integers as keys so underscore
+          _6: six
+          _7: seven
 
-ioda:
+encoder:
+  type: netcdf
+
   dimensions:
     - name: "Channel"
       path: "*/BRITCSTC"

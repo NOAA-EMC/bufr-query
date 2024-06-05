@@ -4,36 +4,37 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-          second: "*/SECO"
-      longitude:
-        query: "*/CLON"
-      latitude:
-        query: "*/CLAT"
-      brightnessTemperature:
-        query: "[*/BRITCSTC/TMBR, */BRIT/TMBR]"
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+        second: "*/SECO"
+    longitude:
+      query: "*/CLON"
+    latitude:
+      query: "*/CLAT"
+    brightnessTemperature:
+      query: "[*/BRITCSTC/TMBR, */BRIT/TMBR]"
 
-    filters:
-      - bounding:
-          variable: latitude
-          upperBound: 42.5
-      - bounding:
-          variable: latitude
-          lowerBound: 35
-      - bounding:
-          variable: longitude
-          upperBound: -68
-          lowerBound: -86.3
+  filters:
+    - bounding:
+        variable: latitude
+        upperBound: 42.5
+    - bounding:
+        variable: latitude
+        lowerBound: 35
+    - bounding:
+        variable: longitude
+        upperBound: -68
+        lowerBound: -86.3
 
-ioda:
+encoder:
+  type: netcdf
+
   dimensions:
     - name: Channel
       paths:

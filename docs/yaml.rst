@@ -131,14 +131,16 @@ It has the following sub-sections:
 .. note::
     Either **upperBound**, **lowerBound**, or both must be present.
 
-IODA Description
+Encoder Description
 ~~~~~~~~~~~~~~~~
 
 The **ioda** section defines the ObsGroup objects that will be created. Here is an example:
 
 .. code-block:: yaml
 
-  ioda:
+  encoder:
+    type: netcdf
+
     dimensions:
       - name: nchans
         paths:

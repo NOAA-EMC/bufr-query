@@ -4,96 +4,97 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    variables:
-      # MetaData
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-          second: "*/SECO"
+  variables:
+    # MetaData
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+        second: "*/SECO"
 
-      latitude:
-        query: "*/CLATH"
+    latitude:
+      query: "*/CLATH"
 
-      longitude:
-        query: "*/CLONH"
+    longitude:
+      query: "*/CLONH"
 
-      satelliteId:
-        query: "*/SAID"
+    satelliteId:
+      query: "*/SAID"
 
-      sensorId:
-        query: "*/SIID[1]"
+    sensorId:
+      query: "*/SIID[1]"
 
-      scanLineNumber:
-        query: "*/SLNM"
+    scanLineNumber:
+      query: "*/SLNM"
 
-      gqisFlagQual:
-        query: "*/QGFQ"
+    gqisFlagQual:
+      query: "*/QGFQ"
 
-      fieldOfViewNumber:
-        query: "*/FOVN"
+    fieldOfViewNumber:
+      query: "*/FOVN"
 
+    sensorScanPosition:
       sensorScanPosition:
-        sensorScanPosition:
-          fieldOfViewNumber: "*/FOVN"
-          sensor: iasi
+        fieldOfViewNumber: "*/FOVN"
+        sensor: iasi
 
-      solarZenithAngle:
-        query: "*/SOZA"
+    solarZenithAngle:
+      query: "*/SOZA"
 
-      solarAzimuthAngle:
-        query: "*/SOLAZI"
+    solarAzimuthAngle:
+      query: "*/SOLAZI"
 
-      sensorZenithAngle:
-        query: "*/SAZA"
+    sensorZenithAngle:
+      query: "*/SAZA"
 
-      sensorAzimuthAngle:
-        query: "*/BEARAZ"
+    sensorAzimuthAngle:
+      query: "*/BEARAZ"
 
-      stationElevation:
-        query: "*/SELV"
-        type: float
+    stationElevation:
+      query: "*/SELV"
+      type: float
 
-      sensorViewAngle:
-        sensorScanAngle:
-          fieldOfViewNumber: "*/FOVN"
-          scanStart: -48.330
-          scanStep: 3.334
-          scanStepAdjust: 0.625
-          sensor: iasi
+    sensorViewAngle:
+      sensorScanAngle:
+        fieldOfViewNumber: "*/FOVN"
+        scanStart: -48.330
+        scanStep: 3.334
+        scanStepAdjust: 0.625
+        sensor: iasi
 
-      fractionOfClearPixelsInFOV:
-        query: "*/IASIL1CS{1}/FCPH"
-        type: float
-        transforms:
-          - scale: 0.01
+    fractionOfClearPixelsInFOV:
+      query: "*/IASIL1CS{1}/FCPH"
+      type: float
+      transforms:
+        - scale: 0.01
 
-      sensorChannelNumber:
-        query: "*/IASICHN/CHNM"
+    sensorChannelNumber:
+      query: "*/IASICHN/CHNM"
 
-      # ObsValue
+    # ObsValue
+    spectralRadiance:
       spectralRadiance:
-        spectralRadiance:
-          sensorChannelNumber: "*/IASICHN/CHNM"
-          startChannel: "*/IASIL1CB/STCH"
-          endChannel: "*/IASIL1CB/ENCH"
-          scaleFactor: "*/IASIL1CB/CHSF"
-          scaledSpectralRadiance: "*/IASICHN/SCRA"
+        sensorChannelNumber: "*/IASICHN/CHNM"
+        startChannel: "*/IASIL1CB/STCH"
+        endChannel: "*/IASIL1CB/ENCH"
+        scaleFactor: "*/IASIL1CB/CHSF"
+        scaledSpectralRadiance: "*/IASICHN/SCRA"
 
-    splits:
-      satId:
-        category:
-          variable: satelliteId
-          map:
-            _3: metop-b
-            _4: metop-a
-            _5: metop-c
+  splits:
+    satId:
+      category:
+        variable: satelliteId
+        map:
+          _3: metop-b
+          _4: metop-a
+          _5: metop-c
 
-ioda:
+encoder:
+  type: netcdf
+
   dimensions:
     - name: Channel
       source: variables/sensorChannelNumber

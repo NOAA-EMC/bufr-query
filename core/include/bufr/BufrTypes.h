@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "DataObject.h"
-#include "Eigen/Dense"
 
 namespace bufr {
   typedef std::unordered_map<std::string, std::shared_ptr<DataObjectBase> > BufrDataMap;

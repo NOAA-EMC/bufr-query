@@ -4,42 +4,43 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR[1]"
-          month: "*/MNTH[1]"
-          day: "*/DAYS[1]"
-          hour: "*/HOUR[1]"
-          minute: "*/MINU[1]"
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR[1]"
+        month: "*/MNTH[1]"
+        day: "*/DAYS[1]"
+        hour: "*/HOUR[1]"
+        minute: "*/MINU[1]"
 
-      longitude:
-        query: "[*/CLON, */CLONH]"
+    longitude:
+      query: "[*/CLON, */CLONH]"
 
-      latitude:
-        query:  "[*/CLAT, */CLATH]"
+    latitude:
+      query:  "[*/CLAT, */CLATH]"
 
-      stationPressure:
-        query: "*/PRES"
+    stationPressure:
+      query: "*/PRES"
 
-      stationElevation:
-        query: "[*/SELV, */HSMSL]"
+    stationElevation:
+      query: "[*/SELV, */HSMSL]"
 
-      stationIdentification:
-        query: "*/RPID"
+    stationIdentification:
+      query: "*/RPID"
 
-      airTemperature:
-        query: "*/TMDB"
+    airTemperature:
+      query: "*/TMDB"
 
-      dewpointTemperature:
-        query: "*/TMDP"
+    dewpointTemperature:
+      query: "*/TMDP"
 
-      totalSnowDepth:
-        query: "[*/SNWSQ1/TOSD, */MTRMSC/TOSD, */STGDSNDM/TOSD]"
+    totalSnowDepth:
+      query: "[*/SNWSQ1/TOSD, */MTRMSC/TOSD, */STGDSNDM/TOSD]"
 
 
-ioda:
+encoder:
+  type: netcdf
+
   variables:
     - name: "MetaData/dateTime"
       source: variables/timestamp

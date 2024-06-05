@@ -19,9 +19,9 @@
 
 #include "eckit/exception/Exceptions.h"
 
-#include "Log.h"
 #include "bufr/DataObject.h"
 #include "../../../DataObjectBuilder.h"
+#include "../../../Log.h"
 
 
 namespace
