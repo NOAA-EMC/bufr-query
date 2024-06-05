@@ -79,7 +79,7 @@ namespace bufr {
                 // Print message to inform the user of the missing targets
                 log::warning() << "Warning: Query String ";
                 log::warning() << querySet_.queriesFor(name)[0].str();
-                log::warning() << " didn't apply to subset ";
+                log::warning() << " did not apply to subset ";
                 log::warning() << dataProvider_->getSubsetVariant().str();
                 log::warning() << std::endl;
 

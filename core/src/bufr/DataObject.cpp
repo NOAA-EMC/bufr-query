@@ -12,7 +12,7 @@ namespace bufr {
 
   bool DataObjectBase::hasSamePath(const std::shared_ptr<DataObjectBase>& dataObject)
   {
-    // Can't be the same
+    // Can not be the same
     if (dimPaths_.size() != dataObject->dimPaths_.size())
     {
       return false;
