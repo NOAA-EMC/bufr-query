@@ -21,14 +21,15 @@ list (APPEND PYTHON_SRCS DataObjectFunctions.h
 												py_query_set.cpp
 												py_file.cpp
 												py_parser.cpp
-												py_ioda_description.cpp
-												py_ioda_encoder.cpp
-												py_data_cache.cpp)
+												py_data_cache.cpp
+											  py_encoder_description.cpp
+												py_netcdf_encoder.cpp
+												)
 
 # We cannot call ecbuild_add_library here since it conflicts with pybind11_add_module.
 pybind11_add_module(bufr_python ${PYTHON_SRCS})
 
-target_link_libraries(bufr_python PUBLIC bufr_lib)
+target_link_libraries(bufr_python PUBLIC bufr_query)
 target_link_libraries(bufr_python PUBLIC Eigen3::Eigen)
 set(pyver python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
 
@@ -53,3 +54,8 @@ add_custom_command(TARGET bufr_python
 									 COMMAND ${CMAKE_COMMAND} -E copy_directory
 	                 				 ${CMAKE_CURRENT_SOURCE_DIR}/bufr
 													 $<TARGET_FILE_DIR:bufr_python>)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bufr
+	      DESTINATION ${CMAKE_INSTALL_LIBDIR}/${pyver}
+			  COMPONENT Python
+	      FILES_MATCHING PATTERN "*.py")

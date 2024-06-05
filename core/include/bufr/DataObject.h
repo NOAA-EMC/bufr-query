@@ -10,16 +10,29 @@
 #include <memory>
 #include <iostream>
 #include <vector>
-
-#include "ioda/ObsGroup.h"
-#include "ioda/defs.h"
-#include "ioda/Variables/Variable.h"
+#include <netcdf>
 
 #include "QueryParser.h"
 #include "Data.h"
 
+namespace nc = netCDF;
+
 
 namespace bufr {
+
+    class ObjectWriterBase
+    {
+     public:
+        ObjectWriterBase() = default;
+        virtual ~ObjectWriterBase() = default;
+    };
+
+    template<typename T>
+    class ObjectWriter : public ObjectWriterBase
+    {
+     public:
+        virtual void write(const std::vector<T>& data) = 0;
+    };
 
   struct Data;
   typedef std::vector<int> Dimensions;
@@ -28,28 +41,45 @@ namespace bufr {
   struct DimensionDataBase
   {
     virtual ~DimensionDataBase() = default;
+    virtual size_t size() = 0;
 
-    std::shared_ptr<ioda::NewDimensionScale_Base> dimScale;
-
-    virtual void write(ioda::Variable& var) = 0;
+    virtual void write(std::shared_ptr<ObjectWriterBase> writer) = 0;
   };
 
   template<typename T>
   struct DimensionData : public DimensionDataBase
   {
+    std::string name;
     std::vector<T> data;
 
     DimensionData() = delete;
 
     virtual ~DimensionData() = default;
 
-    explicit DimensionData(size_t size) : data(std::vector<T>(size, _default()))
+    explicit DimensionData(const std::string& dimname, size_t size) :
+        name(dimname),
+        data(std::vector<T>(size, _default()))
     {
     }
 
-    void write(ioda::Variable& var)
+    size_t size() final
     {
-      var.write(data);
+        return data.size();
+    }
+
+    void write(std::shared_ptr<ObjectWriterBase> writer) final
+    {
+        if (auto writerPtr = std::dynamic_pointer_cast<ObjectWriter<T>>(writer))
+        {
+            writerPtr->write(data);
+        }
+        else
+        {
+            std::ostringstream str;
+            str << "Cannot write data of type " << typeid(T).name() << " with writer of type ";
+            str << typeid(writer).name();
+            throw eckit::BadParameter(str.str());
+        }
     }
 
   private:
@@ -121,18 +151,9 @@ namespace bufr {
       /// \param val Scalar to add to the data..
       virtual void offsetBy(double val) = 0;
 
-      /// \brief Makes an ioda::Variable and adds it to the given ioda::ObsGroup
-      /// \param obsGroup Obsgroup where to add the variable
-      /// \param name The name to associate with the variable (ex "MetaData/latitude")
-      /// \param dimensions List of Variables to use as the dimensions for this new variable
-      /// \param chunks List of integers specifying the chunking dimensions
-      /// \param compressionLevel The GZip compression level to use, must be 0-9
-      virtual ioda::Variable createVariable(
-        ioda::ObsGroup& obsGroup,
-        const std::string& name,
-        const std::vector<ioda::Variable>& dimensions,
-        const std::vector<ioda::Dimensions_t>& chunks,
-        int compressionLevel) const = 0;
+      /// \brief Write the data out using a writer.
+      /// \param writer The writer to use.
+      virtual void write(std::shared_ptr<ObjectWriterBase> writer) = 0;
 
       /// \brief Makes a new dimension scale using this data object as the source
       /// \param name The name of the dimension variable.
@@ -168,8 +189,7 @@ namespace bufr {
       std::shared_ptr<DimensionDataBase> createEmptyDimension(const std::string& name,
                                                               std::size_t dimIdx) const
       {
-        auto dimData = std::make_shared<DimensionData<int>>(getDims()[dimIdx]);
-        dimData->dimScale = ioda::NewDimensionScale<int>(name, getDims()[dimIdx]);
+        auto dimData = std::make_shared<DimensionData<int>>(name, getDims()[dimIdx]);
         return dimData;
       }
 
@@ -198,7 +218,7 @@ namespace bufr {
       std::vector<Query> dimPaths_;
   };
 
-  template <class T>
+  template <typename T>
   class DataObject : public DataObjectBase
   {
     public:
@@ -241,8 +261,6 @@ namespace bufr {
             out << std::endl;
           }
         }
-
-        out << "****" << std::endl;
       }
 
       /// \brief Get the data at the location as an integer.
@@ -381,6 +399,23 @@ namespace bufr {
         data_ = data;
       }
 
+      /// \brief Write the data out using a writer.
+      /// \param writer The writer to use.
+      void write(std::shared_ptr<ObjectWriterBase> writer) final
+      {
+        if (auto writerPtr = std::dynamic_pointer_cast<ObjectWriter<T>>(writer))
+        {
+          writerPtr->write(data_);
+        }
+        else
+        {
+          std::ostringstream str;
+          str << "Can't write data of type " << typeid(T).name() << " with writer of type ";
+          str << typeid(writer).name();
+          throw eckit::BadParameter(str.str());
+        }
+      }
+
       /// \brief Append the data from another DataObject to this one.
       /// \param data The data object to append.
       void append(const std::shared_ptr<DataObjectBase>& data) final
@@ -417,32 +452,13 @@ namespace bufr {
         data_.insert(data_.end(), other->data_.begin(), other->data_.end());
       }
 
-      /// \brief Makes an ioda::Variable and adds it to the given ioda::ObsGroup
-      /// \param obsGroup Obsgroup were to add the variable
-      /// \param name The name to associate with the variable (ex "MetaData/latitude")
-      /// \param dimensions List of Variables to use as the dimensions for this new variable
-      /// \param chunks List of integers specifying the chunking dimensions
-      /// \param compressionLevel The GZip compression level to use, must be 0-9
-      ioda::Variable createVariable(ioda::ObsGroup& obsGroup,
-                                    const std::string& name,
-                                    const std::vector<ioda::Variable>& dimensions,
-                                    const std::vector<ioda::Dimensions_t>& chunks,
-                                    int compressionLevel) const final
-      {
-        auto params = makeCreationParams(chunks, compressionLevel);
-        auto var = obsGroup.vars.createWithScales<T>(name, dimensions, params);
-        var.write(data_);
-        return var;
-      };
-
       /// \brief Makes a new dimension scale using this data object as the source
       /// \param name The name of the dimension variable.
       /// \param dimIdx The idx of the data dimension to use.
       std::shared_ptr<DimensionDataBase> createDimensionFromData(const std::string& name,
                                                                  std::size_t dimIdx) const final
       {
-        auto dimData = std::make_shared<DimensionData<T>>(getDims()[dimIdx]);
-        dimData->dimScale = ioda::NewDimensionScale<T>(name, getDims()[dimIdx]);
+        auto dimData = std::make_shared<DimensionData<T>>(name, getDims()[dimIdx]);
 
         if (data_.empty())
         {
@@ -523,23 +539,6 @@ namespace bufr {
 
     private:
       std::vector<T> data_;
-
-      /// \brief Make the variable creation parameters.
-      /// \param chunks The chunk sizes
-      /// \param compressionLevel The compression level
-      /// \return The variable creation patterns.
-      ioda::VariableCreationParameters makeCreationParams(
-        const std::vector<ioda::Dimensions_t>& chunks,
-        int compressionLevel) const
-      {
-        ioda::VariableCreationParameters params;
-        params.chunk = true;
-        params.chunks = chunks;
-        params.compressWithGZIP(compressionLevel);
-        params.setFillValue<T>(missingValue());
-
-        return params;
-      }
   };
 
   template<>
@@ -547,7 +546,6 @@ namespace bufr {
   {
     public:
       DataObject() = default;
-
 
       /// \brief Make a copy of the data object.
       /// \return copy
@@ -694,6 +692,23 @@ namespace bufr {
         data_ = data;
       }
 
+      /// \brief Write the data out using a writer.
+      /// \param writer The writer to use.
+      void write(std::shared_ptr<ObjectWriterBase> writer) final
+      {
+        if (auto writerPtr = std::dynamic_pointer_cast<ObjectWriter<std::string>>(writer))
+        {
+          writerPtr->write(data_);
+        }
+        else
+        {
+          std::ostringstream str;
+          str << "Can't write data of type " << typeid(std::string).name() << " with writer of type ";
+          str << typeid(writer).name();
+          throw eckit::BadParameter(str.str());
+        }
+      }
+
       /// \brief Append the data from another DataObject to this one.
       /// \param data The data object to append.
       void append(const std::shared_ptr<DataObjectBase>& data) final
@@ -730,32 +745,13 @@ namespace bufr {
         data_.insert(data_.end(), other->data_.begin(), other->data_.end());
       }
 
-      /// \brief Makes an ioda::Variable and adds it to the given ioda::ObsGroup
-      /// \param obsGroup Obsgroup were to add the variable
-      /// \param name The name to associate with the variable (ex "MetaData/latitude")
-      /// \param dimensions List of Variables to use as the dimensions for this new variable
-      /// \param chunks List of integers specifying the chunking dimensions
-      /// \param compressionLevel The GZip compression level to use, must be 0-9
-      ioda::Variable createVariable(ioda::ObsGroup& obsGroup,
-                                    const std::string& name,
-                                    const std::vector<ioda::Variable>& dimensions,
-                                    const std::vector<ioda::Dimensions_t>& chunks,
-                                    int compressionLevel) const final
-      {
-        auto params = makeCreationParams(chunks, compressionLevel);
-        auto var = obsGroup.vars.createWithScales<std::string>(name, dimensions, params);
-        var.write(data_);
-        return var;
-      };
-
       /// \brief Makes a new dimension scale using this data object as the source
       /// \param name The name of the dimension variable.
       /// \param dimIdx The idx of the data dimension to use.
       std::shared_ptr<DimensionDataBase> createDimensionFromData(const std::string& name,
                                                                  std::size_t dimIdx) const final
       {
-        auto dimData = std::make_shared<DimensionData<std::string>>(getDims()[dimIdx]);
-        dimData->dimScale = ioda::NewDimensionScale<std::string>(name, getDims()[dimIdx]);
+        auto dimData = std::make_shared<DimensionData<std::string>>(name, getDims()[dimIdx]);
 
         std::copy(data_.begin(),
                   data_.begin() + dimData->data.size(),
@@ -831,22 +827,5 @@ namespace bufr {
 
     private:
       std::vector<std::string> data_;
-
-      /// \brief Make the variable creation parameters.
-      /// \param chunks The chunk sizes
-      /// \param compressionLevel The compression level
-      /// \return The variable creation patterns.
-      ioda::VariableCreationParameters makeCreationParams(
-        const std::vector<ioda::Dimensions_t>& chunks,
-        int compressionLevel) const
-      {
-        ioda::VariableCreationParameters params;
-        params.chunk = true;
-        params.chunks = chunks;
-        params.compressWithGZIP(compressionLevel);
-        params.setFillValue<std::string>("");
-
-        return params;
-      }
   };
 }  // namespace bufr

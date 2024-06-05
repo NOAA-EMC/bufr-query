@@ -13,8 +13,8 @@ void setupParser(py::module& m);
 void setupFile(py::module& m);
 void setupQuerySet(py::module& m);
 void setupResultSet(py::module& m);
-void setupIodaDescription(py::module& m);
-void setupIodaEncoder(py::module& m);
+void setupEncoderDescription(py::module& m);
+void setupNetcdfEncoder(py::module& m);
 void setupDataContainer(py::module& m);
 void setupDataCache(py::module& m);
 
@@ -27,7 +27,11 @@ PYBIND11_MODULE(bufr_python, m)
   setupFile(m);
   setupResultSet(m);
   setupParser(m);
-  setupIodaDescription(m);
-  setupIodaEncoder(m);
   setupDataCache(m);
+
+  auto encoder_m = m.def_submodule("encoders", "BUFR data Encoders");
+  setupEncoderDescription(encoder_m);
+
+  auto netcdf_encoder_m = encoder_m.def_submodule("netcdf", "NetCDF4 Encoder");
+  setupNetcdfEncoder(netcdf_encoder_m);
 }

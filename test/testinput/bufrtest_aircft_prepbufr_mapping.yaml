@@ -4,96 +4,97 @@
 # # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    group_by: prepbufrDataLevelCategory
-    variables:
-      timestamp:
-        timeoffset:
-          timeOffset: "*/RPT"
-          transforms:
-            - scale: 3600
-          referenceTime: "2020-11-01T12:00:00Z"
+  group_by: prepbufrDataLevelCategory
+  variables:
+    timestamp:
+      timeoffset:
+        timeOffset: "*/RPT"
+        transforms:
+          - scale: 3600
+        referenceTime: "2020-11-01T12:00:00Z"
 
-      #MetaData
-      longitude:
-        query: "*/PRSLEVLA/DRFTINFO/XDR"
-      latitude:
-        query: "*/PRSLEVLA/DRFTINFO/YDR"
-      aircraftIdentifier:
-        query: "*/SID"
-      aircraftFlightNumber:
-        query: "[*/ACID, */ACID_SEQ/ACID]"
-      prepbufrDataLevelCategory:
-        query: "*/PRSLEVLA/CAT"
-      prepbufrReportType:
-        query: "*/TYP"
-      dumpReportType:
-        query: "*/T29"
-      obsTimeMinusCycleTime:
-        query: "*/DHR"
-      timeProfileLevel:
-        query: "*/PRSLEVLA/DRFTINFO/HRDR"
-      aircraftPhase:
-        query: "*/PRSLEVLA/ACFT_SEQ/POAF"
-      stationElevation:
-        query: "*/ELV"
-        type: float
-      aircraftFlightLevel:
-        query: "*/PRSLEVLA/Z___INFO/Z__EVENT/ZOB"
-      instantaneousAltitudeRate:
-        query: "*/PRSLEVLA/IALR"
+    #MetaData
+    longitude:
+      query: "*/PRSLEVLA/DRFTINFO/XDR"
+    latitude:
+      query: "*/PRSLEVLA/DRFTINFO/YDR"
+    aircraftIdentifier:
+      query: "*/SID"
+    aircraftFlightNumber:
+      query: "[*/ACID, */ACID_SEQ/ACID]"
+    prepbufrDataLevelCategory:
+      query: "*/PRSLEVLA/CAT"
+    prepbufrReportType:
+      query: "*/TYP"
+    dumpReportType:
+      query: "*/T29"
+    obsTimeMinusCycleTime:
+      query: "*/DHR"
+    timeProfileLevel:
+      query: "*/PRSLEVLA/DRFTINFO/HRDR"
+    aircraftPhase:
+      query: "*/PRSLEVLA/ACFT_SEQ/POAF"
+    stationElevation:
+      query: "*/ELV"
+      type: float
+    aircraftFlightLevel:
+      query: "*/PRSLEVLA/Z___INFO/Z__EVENT/ZOB"
+    instantaneousAltitudeRate:
+      query: "*/PRSLEVLA/IALR"
 
-      #ObsValue
-      pressure:
-        query: "*/PRSLEVLA/P___INFO/P__EVENT/POB"
-        transforms:
-          - scale: 100
-      airTemperature:
-        query: "*/PRSLEVLA/T___INFO/T__EVENT/TOB"
-        transforms:
-          - offset: 273.15
-      dewpointTemperature:
-        query: "*/PRSLEVLA/Q___INFO/TDO"
-        transforms:
-          - offset: 273.15
-      specificHumidity:
-        query: "*/PRSLEVLA/Q___INFO/Q__EVENT/QOB"
-        type: float
-        transforms:
-          - scale: 0.000001
-      windEastward:
-        query: "*/PRSLEVLA/W___INFO/W__EVENT/UOB"
-      windNorthward:
-        query: "*/PRSLEVLA/W___INFO/W__EVENT/VOB"
+    #ObsValue
+    pressure:
+      query: "*/PRSLEVLA/P___INFO/P__EVENT/POB"
+      transforms:
+        - scale: 100
+    airTemperature:
+      query: "*/PRSLEVLA/T___INFO/T__EVENT/TOB"
+      transforms:
+        - offset: 273.15
+    dewpointTemperature:
+      query: "*/PRSLEVLA/Q___INFO/TDO"
+      transforms:
+        - offset: 273.15
+    specificHumidity:
+      query: "*/PRSLEVLA/Q___INFO/Q__EVENT/QOB"
+      type: float
+      transforms:
+        - scale: 0.000001
+    windEastward:
+      query: "*/PRSLEVLA/W___INFO/W__EVENT/UOB"
+    windNorthward:
+      query: "*/PRSLEVLA/W___INFO/W__EVENT/VOB"
 
-      #QualityMarker
-      heightQM:
-        query: "*/PRSLEVLA/Z___INFO/Z__EVENT/ZQM"
-      pressureQM:
-        query: "*/PRSLEVLA/P___INFO/P__EVENT/PQM"
-      airTemperatureQM:
-        query: "*/PRSLEVLA/T___INFO/T__EVENT/TQM"
-      specificHumidityQM:
-        query: "*/PRSLEVLA/Q___INFO/Q__EVENT/QQM"
-      windQM:
-        query: "*/PRSLEVLA/W___INFO/W__EVENT/WQM"
+    #QualityMarker
+    heightQM:
+      query: "*/PRSLEVLA/Z___INFO/Z__EVENT/ZQM"
+    pressureQM:
+      query: "*/PRSLEVLA/P___INFO/P__EVENT/PQM"
+    airTemperatureQM:
+      query: "*/PRSLEVLA/T___INFO/T__EVENT/TQM"
+    specificHumidityQM:
+      query: "*/PRSLEVLA/Q___INFO/Q__EVENT/QQM"
+    windQM:
+      query: "*/PRSLEVLA/W___INFO/W__EVENT/WQM"
 
-      #ObsError
-      pressureError:
-        query: "*/PRSLEVLA/P___INFO/P__BACKG/POE"
-        transforms:
-          - scale: 100
-      airTemperatureError:
-        query: "*/PRSLEVLA/T___INFO/T__BACKG/TOE"
-      relativeHumidityError:
-        query: "*/PRSLEVLA/Q___INFO/Q__BACKG/QOE"
-        type: float
-        transforms:
-          - scale: 0.1
-      windError:
-        query: "*/PRSLEVLA/W___INFO/W__BACKG/WOE"
+    #ObsError
+    pressureError:
+      query: "*/PRSLEVLA/P___INFO/P__BACKG/POE"
+      transforms:
+        - scale: 100
+    airTemperatureError:
+      query: "*/PRSLEVLA/T___INFO/T__BACKG/TOE"
+    relativeHumidityError:
+      query: "*/PRSLEVLA/Q___INFO/Q__BACKG/QOE"
+      type: float
+      transforms:
+        - scale: 0.1
+    windError:
+      query: "*/PRSLEVLA/W___INFO/W__BACKG/WOE"
 
-ioda:
+encoder:
+  type: netcdf
+
   dimensions:
     - name: PressureEvent
       path: "*/PRSLEVLA/P___INFO/P__EVENT"

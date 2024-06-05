@@ -4,40 +4,41 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    group_by_variable: depth
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-          second: ""
+  group_by_variable: depth
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+        second: ""
 
-      stationID:
-        query: "*/RPID"
+    stationID:
+      query: "*/RPID"
 
-      longitude:
-        query: "*/CLONH"
+    longitude:
+      query: "*/CLONH"
 
-      latitude:
-        query: "*/CLATH"
+    latitude:
+      query: "*/CLATH"
 
-      sst:
-        query: "*/SST0"
+    sst:
+      query: "*/SST0"
 
-      t-profile:
-        query: "*/IDMSMDBS/BBYSTSL/SST1"
+    t-profile:
+      query: "*/IDMSMDBS/BBYSTSL/SST1"
 
-      s-profile:
-        query: "*/IDMSMDBS/BBYSTSL/SALN"
+    s-profile:
+      query: "*/IDMSMDBS/BBYSTSL/SALN"
 
-      depth:
-        query: "*/IDMSMDBS/BBYSTSL/DBSS"
+    depth:
+      query: "*/IDMSMDBS/BBYSTSL/DBSS"
 
-ioda:
+encoder:
+  type: netcdf
+
   globals:
     - name: "platformLongDescription"
       type: string

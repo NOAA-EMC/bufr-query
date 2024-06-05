@@ -4,27 +4,28 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-      longitude:
-        query: "*/CLONH"
-      latitude:
-        query: "*/CLATH"
-      wgoslid:
-        query: "*/WGOSLID"
-      lstn:
-        query: "*/LSTN"
-      borg:
-        query: "*/BORG"
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+    longitude:
+      query: "*/CLONH"
+    latitude:
+      query: "*/CLATH"
+    wgoslid:
+      query: "*/WGOSLID"
+    lstn:
+      query: "*/LSTN"
+    borg:
+      query: "*/BORG"
 
-ioda:
+encoder:
+  type: netcdf
+
   variables:
 
     - name: "MetaData/dateTime"

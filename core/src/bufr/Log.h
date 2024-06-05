@@ -12,10 +12,10 @@
 namespace bufr {
 namespace log {
 
-static std::ostream &info() { return eckit::Log::info(); }
-static std::ostream &error() { return eckit::Log::error(); }
-static std::ostream &warning() { return eckit::Log::warning(); }
-static std::ostream &debug() { return eckit::Log::debug(); }
+inline std::ostream &info() { return eckit::Log::info(); }
+inline std::ostream &error() { return eckit::Log::error(); }
+inline std::ostream &warning() { return eckit::Log::warning(); }
+inline std::ostream &debug() { return eckit::Log::debug(); }
 
 }  // namespace log
 }  // namespace bufr

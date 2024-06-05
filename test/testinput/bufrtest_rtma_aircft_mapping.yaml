@@ -5,104 +5,105 @@
 # _aircft    nem 004001 004002 004003 004006 004009 004010 004011 004103
 #
 bufr:
-  exports:
-    subsets:
-      - NC004001
-      - NC004002
-      - NC004003
-      - NC004006
-      - NC004009
-      - NC004010
-      - NC004011
+  subsets:
+    - NC004001
+    - NC004002
+    - NC004003
+    - NC004006
+    - NC004009
+    - NC004010
+    - NC004011
 
-    # MetaData
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-      receipttime:
-        datetime:
-          year: "*/RCYR"
-          month: "*/RCMO"
-          day: "*/RCDY"
-          hour: "*/RCHR"
-          minute: "*/RCMI"
-      stationWIGOSId:
-        query: "*/WGOSLID"
-      latitude:
-        query: "[*/CLATH, */CLAT]"
-      longitude:
-        query: "[*/CLONH, */CLON]"
+  # MetaData
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+    receipttime:
+      datetime:
+        year: "*/RCYR"
+        month: "*/RCMO"
+        day: "*/RCDY"
+        hour: "*/RCHR"
+        minute: "*/RCMI"
+    stationWIGOSId:
+      query: "*/WGOSLID"
+    latitude:
+      query: "[*/CLATH, */CLAT]"
+    longitude:
+      query: "[*/CLONH, */CLON]"
 
-      aircraftFlightNumber:
-        query: "*/ACID"
-      aircraftNavigationalSystem:
-        query: "*/ACNS"
-      aircraftIdentifier:
-        query: "[*/RPID, */ACRN]"
-      commercialAircraftType:
-        query: "*/ACTP"
-      aircraftFlightPhase:
-        query: "*/POAF"
+    aircraftFlightNumber:
+      query: "*/ACID"
+    aircraftNavigationalSystem:
+      query: "*/ACNS"
+    aircraftIdentifier:
+      query: "[*/RPID, */ACRN]"
+    commercialAircraftType:
+      query: "*/ACTP"
+    aircraftFlightPhase:
+      query: "*/POAF"
 
-      dataProviderRestricted:
-        query: "*/RSRD"
-      dataRestrictedExpiration:
-        query: "*/EXPRSRD"
+    dataProviderRestricted:
+      query: "*/RSRD"
+    dataRestrictedExpiration:
+      query: "*/EXPRSRD"
 
+    aircraftAltitude:
       aircraftAltitude:
-        aircraftAltitude:
-          flightLevel: "[*/FLVL]"
-          flightLevelST: "[*/FLVLST]"
-          height: "[*/HEIT]"
-          heightOrAltitude: "[*/HMSL]"
-          pressureAltitudeRelativeToMeanSeaLevel: "[*/PSAL]"
+        flightLevel: "[*/FLVL]"
+        flightLevelST: "[*/FLVLST]"
+        height: "[*/HEIT]"
+        heightOrAltitude: "[*/HMSL]"
+        pressureAltitudeRelativeToMeanSeaLevel: "[*/PSAL]"
 
-      percentConfidenceRH:
-        query: "*/PCCF"
-        type: int
+    percentConfidenceRH:
+      query: "*/PCCF"
+      type: int
 
-      # ObsValue
-      airTemperature:
-        query: "[*/TMDB, */TMDBST]"
-      relativeHumidity:
-        query: "[*/AFMST/REHU, */ACMST2/REHU, */RAWHU]"
-        type: float
-        transforms:
-          - scale: .01
-      waterVaporMixingRatio:
-        query: "[*/ACMST2/MIXR, */MIXR]"
-      windDirection:
-        query: "*/WDIR"
-        type: float
-      windSpeed:
-        query: "*/WSPD"
-      pressureReducedToMeanSeaLevel:
-        query: "*/PMSL"
+    # ObsValue
+    airTemperature:
+      query: "[*/TMDB, */TMDBST]"
+    relativeHumidity:
+      query: "[*/AFMST/REHU, */ACMST2/REHU, */RAWHU]"
+      type: float
+      transforms:
+        - scale: .01
+    waterVaporMixingRatio:
+      query: "[*/ACMST2/MIXR, */MIXR]"
+    windDirection:
+      query: "*/WDIR"
+      type: float
+    windSpeed:
+      query: "*/WSPD"
+    pressureReducedToMeanSeaLevel:
+      query: "*/PMSL"
 
-      # QualityMarker
-      airTemperatureQM:
-        query: "*/QMAT"
-      relativeHumidityQM:
-        query: "[NC004010/QMDD, NC004003/AFMST/QMDD]"
-      waterVaporMixingRatioQM:
-        query: "NC004006/QMDD"
-      windQM:
-        query: "*/QMWN"
+    # QualityMarker
+    airTemperatureQM:
+      query: "*/QMAT"
+    relativeHumidityQM:
+      query: "[NC004010/QMDD, NC004003/AFMST/QMDD]"
+    waterVaporMixingRatioQM:
+      query: "NC004006/QMDD"
+    windQM:
+      query: "*/QMWN"
 
-      # QualityInformation
-      airTemperatureQI:
-        query: "NC004010/QMRKH[2]"
-      windDirectionQI:
-        query: "NC004010/QMRKH[3]"
-      windSpeedQI:
-        query: "NC004010/QMRKH[4]"
+    # QualityInformation
+    airTemperatureQI:
+      query: "NC004010/QMRKH[2]"
+    windDirectionQI:
+      query: "NC004010/QMRKH[3]"
+    windSpeedQI:
+      query: "NC004010/QMRKH[4]"
 
-ioda:
+encoder:
+  type: netcdf
+
   variables:
     # MetaData
     - name: "MetaData/dateTime"

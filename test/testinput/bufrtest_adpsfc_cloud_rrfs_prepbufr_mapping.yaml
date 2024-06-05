@@ -4,63 +4,64 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    variables:
-      timestamp:
-        timeoffset:
-          timeOffset: "*/RPT"
-          transforms:
-            - scale: 3600
-          referenceTime: "2020-11-01T12:00:00Z"
-      # MetaData
-      obsTimeMinusCycleTime:
-        query: "*/DHR"
-      prepbufrDataLevelCategory:
-        query: "*/CAT"
-      prepbufrReportType:
-        query: "*/TYP"
-      dumpReportType:
-        query: "*/T29"
-      longitude:
-        query: "*/XOB"
-      latitude:
-        query: "*/YOB"
-      stationIdentification:
-        query: "*/SID"
-      stationElevation:
-        query: "*/ELV"
-
-      # ObsValue - cloud, cloud ceiling, visibility, gust wind, min/max temperature, weather
-      # note: cloud ceiling is a derivative of HOCB, the height of cloud base
-      cloudCoverTotal:
-        query: "*/CLOU2SEQ/TOCC"
-        type: float
+  variables:
+    timestamp:
+      timeoffset:
+        timeOffset: "*/RPT"
         transforms:
-          - scale: 0.01
-      cloudAmountDescription:
-        query: "*/CLOUDSEQ/CLAM"
-      cloudCeiling:
-        query: "*/CLOU3SEQ/CEILING"
-      heightAboveSurfaceOfBaseOfLowestCloud:
-        query: "*/CLOU2SEQ/HBLCS"
-      heightOfBaseOfCloud:
-        query: "*/CLOUDSEQ/HOCB"
-      verticalSignificanceSurfaceObservations:
-        query: "*/CLOUDSEQ/VSSO"
-      verticalVisibility:
-        query: "*/VISB1SEQ/VTVI_SEQ/VTVI"
-      horizontalVisibility:
-        query: "*/VISB1SEQ/HOVI"
-      minimumTemperature:
-        query: "*/TMXMNSEQ/MITM"
-      maximumTemperature:
-        query: "*/TMXMNSEQ/MXTM"
-      maximumWindGustSpeed:
-        query: "*/GUST1SEQ/MXGS"
-      presentWeather:
-        query: "*/PREWXSEQ/PRWE"
+          - scale: 3600
+        referenceTime: "2020-11-01T12:00:00Z"
+    # MetaData
+    obsTimeMinusCycleTime:
+      query: "*/DHR"
+    prepbufrDataLevelCategory:
+      query: "*/CAT"
+    prepbufrReportType:
+      query: "*/TYP"
+    dumpReportType:
+      query: "*/T29"
+    longitude:
+      query: "*/XOB"
+    latitude:
+      query: "*/YOB"
+    stationIdentification:
+      query: "*/SID"
+    stationElevation:
+      query: "*/ELV"
 
-ioda:
+    # ObsValue - cloud, cloud ceiling, visibility, gust wind, min/max temperature, weather
+    # note: cloud ceiling is a derivative of HOCB, the height of cloud base
+    cloudCoverTotal:
+      query: "*/CLOU2SEQ/TOCC"
+      type: float
+      transforms:
+        - scale: 0.01
+    cloudAmountDescription:
+      query: "*/CLOUDSEQ/CLAM"
+    cloudCeiling:
+      query: "*/CLOU3SEQ/CEILING"
+    heightAboveSurfaceOfBaseOfLowestCloud:
+      query: "*/CLOU2SEQ/HBLCS"
+    heightOfBaseOfCloud:
+      query: "*/CLOUDSEQ/HOCB"
+    verticalSignificanceSurfaceObservations:
+      query: "*/CLOUDSEQ/VSSO"
+    verticalVisibility:
+      query: "*/VISB1SEQ/VTVI_SEQ/VTVI"
+    horizontalVisibility:
+      query: "*/VISB1SEQ/HOVI"
+    minimumTemperature:
+      query: "*/TMXMNSEQ/MITM"
+    maximumTemperature:
+      query: "*/TMXMNSEQ/MXTM"
+    maximumWindGustSpeed:
+      query: "*/GUST1SEQ/MXGS"
+    presentWeather:
+      query: "*/PREWXSEQ/PRWE"
+
+encoder:
+  type: netcdf
+
   dimensions:
     - name: CloudSequence
       path: "*/CLOUDSEQ"

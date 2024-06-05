@@ -15,11 +15,12 @@
 #include <unordered_map>
 #include <vector>
 
-#include "bufr/DataObject.h"
-#include "../../../DataObjectBuilder.h"
-#include "Transforms/TransformBuilder.h"
 #include "eckit/exception/Exceptions.h"
-#include "Log.h"
+
+#include "bufr/DataObject.h"
+#include "Transforms/TransformBuilder.h"
+#include "../../../DataObjectBuilder.h"
+#include "../../../Log.h"
 
 namespace
 {

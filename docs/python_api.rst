@@ -7,7 +7,7 @@ Python
 High Level API
 --------------
 
-The high level API allows you to make use of YAML files to define the queries and ioda ObsGroup mappings. This makes it
+The high level API allows you to make use of YAML files to define the queries and encoded mappings. This makes it
 convenient to use in conjunction with the "script" interface on ioda when you discover that special processing is needed
 to get the data into the correct format. In general this interface will also be faster, as the bulk of the
 work will be done in native code. Here is a simple example in the form of a "script" backend script:
@@ -15,26 +15,31 @@ work will be done in native code. Here is a simple example in the form of a "scr
 .. code-block:: python
 
   import bufr
+  from bufr.encoders import netcdf
 
-  def create_obs_group(input_path, category):
-    YAML_PATH = "./testinput/iodatest_bufr_basic.yaml"
+  def get_data(input_path, category):
+    YAML_PATH = 'testinput/bufrtest_hrs_basic_mapping.yaml'
+    OUTPUT_PATH = 'testrun/hrs.nc'
+
     container = bufr.Parser(input_path, YAML_PATH).parse()
 
-    encoder = bufr.IodaEncoder(YAML_PATH)
-    data = encoder.encode(container)
-    return data[category]
+    datasets = netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)[category]
+    obs_temp = dataset["ObsValue/brightnessTemperature"][:]
+    dataset.close()
+
+    return obs_temp
 
 As opposed to dealing with the low level components (bufr.QuerySet, bufr.File, bufr.ResultSet) directly the example
-makes use of the bufr.Parser, bufr.DataContainer, and bufr.IodaEncoder components. The
+makes use of the bufr.Parser, bufr.DataContainer, and bufr.encoder.netcdf.Encoder components. The
 :ref:`Mapping YAML File` defines the queries and mapping to the resulting ObsGroup object in its **bufr** and
-**ioda** sections.
+**encoder** sections.
 
 The basic steps involved are:
     #. Import the bufr module
     #. Create a Parser object with the path to the BUFR file and the path to the YAML file
     #. Parse the BUFR file into a DataContainer object
     #. *(optional)* Modify the DataContainer
-    #. Create an IodaEncoder object with the path to the mapping YAML file
+    #. Create an Encoder object with the path to the mapping YAML file
     #. Encode the DataContainer object as a dict (keys=tuple(str) and values=ObsGroup)
     #. Return the encoded ObsGroup object
 
@@ -93,31 +98,30 @@ So to replace a value in the DataContainer you would do something like this (ass
 .. code-block:: python
 
   import bufr
+  from bufr.encoders import netcdf
 
-  def create_obs_group(input_path):
-    YAML_PATH = "./testinput/iodatest_bufr_basic.yaml"
+  def get_data(input_path):
+    YAML_PATH = 'testinput/bufrtest_hrs_basic_mapping.yaml'
+    OUTPUT_PATH = 'testrun/hrs.nc'
 
-    # Get the DataContainer
     container = bufr.Parser(input_path, YAML_PATH).parse()
-    data = container.get('variables/radiance')
 
-    # Modify the data
-    data[0, 0] = 0.0
+    data = container.get('variables/brightnessTemp')
+    container.replace('variables/brightnessTemp', data * 1.1)
 
-    # Replace the data
-    container.replace('variables/radiance', data)
+    datasets = netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH).values()
+    obs_temp = dataset["ObsValue/brightnessTemperature"][:]
+    dataset.close()
 
-    encoder = bufr.IodaEncoder(YAML_PATH)
-    data = encoder.encode(container)
-    return next(iter(data.values()))
+    return obs_temp
 
-IodaDescription
-~~~~~~~~~~~~~~~
+Encoder Description
+~~~~~~~~~~~~~~~~~~~
 
-Taking this a step further, adding a new variable requires that you also add the variable to the IodaDescription so
-that the IodaEncoder writes it out to the ObsGroup.
+Taking this a step further, adding a new variable requires that you also add the variable to the Description so
+that the Encoder writes it out to the ObsGroup.
 
-.. class:: IodaDescription
+.. class:: Description
 
       .. method:: add_variable(field_name, dim_paths, units, long_name='')
 
@@ -129,9 +133,11 @@ So the code looks more like this:
 .. code-block:: python
 
   import bufr
+  from bufr.encoders import netcdf
 
-  def create_obs_group(input_path):
-      YAML_PATH = './testinput/bufr_hrs.yaml'
+  def get_data(input_path):
+      YAML_PATH = 'testinput/bufrtest_hrs_basic_mapping.yaml'
+      OUTPUT_PATH = 'testrun/hrs.nc'
 
       container = bufr.Parser(input_path, YAML_PATH).parse()
 
@@ -139,13 +145,15 @@ So the code looks more like this:
       paths = container.getPaths('variables/brightnessTemp')
       container.add('variables/brightnessTemp_new', data*.01, paths)
 
-      iodaDescription = bufr.IodaDescription(YAML_PATH)
-      iodaDescription.add_variable(name='ObsValue/new_brightnessTemperature',
-                                   source='variables/brightnessTemp_new',
-                                   units='K',
-                                   longName='New Brightness Temperature')
+      description = netcdf.Description(YAML_PATH)
+      description.add_variable(name='ObsValue/new_brightnessTemperature',
+                               source='variables/brightnessTemp_new',
+                               units='K',
+                               longName='New Brightness Temperature')
 
-      return next(iter(bufr.IodaEncoder(iodaDescription).encode(container).values()))
+      dataset = next(iter(netcdf.Encoder(description).encode(container, OUTPUT_PATH).values()))
+      return dataset
+
 
 Adding a new variable is a little more involved. The most difficult part is to correctly configure a path for the
 variable. The easiest way to solve this is to copy the path from an existing variable otherwise you will have to
@@ -182,9 +190,11 @@ Example:
 .. code-block:: python
 
   import bufr
+  from bufr.encoders import netcdf
 
-  def create_obs_group(input_path, category):
-      YAML_PATH = './testinput/bufr_hrs.yaml'
+  def get_data(input_path, category):
+      YAML_PATH = 'testinput/bufr_hrs.yaml'
+      OUTPUT_PATH = 'testrun/hrs.nc'
 
       if not bufr.DataCache.has(input_path, YAML_PATH):
         container = bufr.Parser(input_path, YAML_PATH).parse()
@@ -196,8 +206,8 @@ Example:
       data = container.get('variables/brightnessTemp', category)
       container.replace('variables/brightnessTemp', data*.01, category)
 
-      encoded = bufr.IodaEncoder(YAML_PATH).encode(container)
-      return encoded[category]
+      dataset = netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)[category]
+      return dataset
 
 
 

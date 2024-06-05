@@ -4,59 +4,60 @@
 # # # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 #
 bufr:
-  exports:
-    subsets:
-      - NC004103
+  subsets:
+    - NC004103
 
-    group_by_variable: latitudeSeq
-    #MetaData
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-      latitude:
-        query: "*/CLATH"
-      longitude:
-        query: "*/CLONH"
-      latitudeSeq:
-        query: "*/ADRBLSEQ/CLATH"
+  group_by_variable: latitudeSeq
+  #MetaData
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+    latitude:
+      query: "*/CLATH"
+    longitude:
+      query: "*/CLONH"
+    latitudeSeq:
+      query: "*/ADRBLSEQ/CLATH"
 
-      aircraftFlightNumber:
-        query: "*/ACID"
-      aircraftNavigationalSystem:
-        query: "*/ACNS"
-      aircraftIdentifier:
-        query: "*/ACRN"
+    aircraftFlightNumber:
+      query: "*/ACID"
+    aircraftNavigationalSystem:
+      query: "*/ACNS"
+    aircraftIdentifier:
+      query: "*/ACRN"
+    aircraftAltitude:
       aircraftAltitude:
-        aircraftAltitude:
-          flightLevelST: "*/ADRBLSEQ/FLVLST"
+        flightLevelST: "*/ADRBLSEQ/FLVLST"
 
-      #ObsValue
-      airTemperature:
-        query: "*/ADRBLSEQ/TMDB"
-      dewpointTemperature:
-        query: "*/ADRBLSEQ/TMDP"
-      waterVaporMixingRatio:
-        query: "*/ADRBLSEQ/MIXR"
-      windDirection:
-        query: "*/ADRBLSEQ/WDIR"
-        type: float
-      windSpeed:
-        query: "*/ADRBLSEQ/WSPD"
+    #ObsValue
+    airTemperature:
+      query: "*/ADRBLSEQ/TMDB"
+    dewpointTemperature:
+      query: "*/ADRBLSEQ/TMDP"
+    waterVaporMixingRatio:
+      query: "*/ADRBLSEQ/MIXR"
+    windDirection:
+      query: "*/ADRBLSEQ/WDIR"
+      type: float
+    windSpeed:
+      query: "*/ADRBLSEQ/WSPD"
 
-      #QualityMarker
-      airTemperatureQM:
-        query: "*/QMAT"
-      relativeHumidityQM:
-        query: "*/QMDD"
-      windQM:
-        query: "*/QMWN"
+    #QualityMarker
+    airTemperatureQM:
+      query: "*/QMAT"
+    relativeHumidityQM:
+      query: "*/QMDD"
+    windQM:
+      query: "*/QMWN"
 
-ioda:
+encoder:
+  type: netcdf
+
   variables:
     # MetaData
     - name: "MetaData/dateTime"

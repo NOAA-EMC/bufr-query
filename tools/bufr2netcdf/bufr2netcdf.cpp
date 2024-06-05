@@ -14,18 +14,10 @@
 #include "eckit/filesystem/PathName.h"
 
 #include "bufr/BufrParser.h"
-#include "bufr/IodaDescription.h"
-#include "bufr/IodaEncoder.h"
+#include "bufr/encoders/Description.h"
+#include "bufr/encoders/netcdf/Encoder.h"
 
-#include "ioda/Group.h"
-#include "ioda/Engines/EngineUtils.h"
-#include "ioda/ObsGroup.h"
-#include "ioda/Layout.h"
-#include "ioda/Copying.h"
-#include "ioda/Misc/DimensionScales.h"
-
-namespace bufr
-{
+namespace bufr {
 //    typedef ObjectFactory<Parser, const eckit::LocalConfiguration&> ParseFactory;
 
     std::string makeFilename(const std::string& prototype, const SubCategory& categories)
@@ -65,29 +57,15 @@ namespace bufr
         std::unique_ptr<eckit::YAMLConfiguration>
             yaml(new eckit::YAMLConfiguration(eckit::PathName(mappingFile)));
 
-        if (yaml->has("ioda"))
+        if (yaml->has("encoder"))
         {
             auto data = BufrParser(obsFile,
                                    yaml->getSubConfiguration("bufr"), tablePath).parse(numMsgs);
 
-            auto dataMap = IodaEncoder(yaml->getSubConfiguration("ioda")).encode(data);
+            auto backend = encoders::netcdf::Encoder::Backend(false, outputFile);
 
-            for (const auto& obs : dataMap)
-            {
-                ioda::Engines::BackendCreationParameters backendParams;
-                backendParams.fileName = makeFilename(outputFile, obs.first);
-                backendParams.openMode = ioda::Engines::BackendOpenModes::Read_Write;
-                backendParams.createMode = ioda::Engines::BackendCreateModes::Truncate_If_Exists;
-                backendParams.action = ioda::Engines::BackendFileActions::Create;
-                backendParams.flush = true;
-
-                auto rootGroup = ioda::Engines::constructBackend(
-                    ioda::Engines::BackendNames::Hdf5File,
-                    backendParams);
-
-                const auto &obsGroup = obs.second;
-                ioda::copyGroup(obsGroup, rootGroup);
-            }
+            auto encoderConf = yaml->getSubConfiguration("encoder");
+            encoders::netcdf::Encoder(encoderConf).encode(data, backend);
         }
         else
         {
@@ -99,10 +77,14 @@ namespace bufr
 
 static void showHelp()
 {
-    std::cerr << "Usage: bufr2ioda.x [-n NUM_MESSAGES] YAML_PATH"
+    std::cerr << "Usage: bufr2netcdf.x [-t TABLE_PATH] [-n NUM_MESSAGES] SRC_FILE MAPPING_FILE"
+              << " OUT_FILE\n"
               << "Options:\n"
               << "  -h,  Show this help message\n"
-              << "  -n NUM_MESSAGES,  Number of BUFR messages to parse."
+              << "  -t TABLE_PATH,  Path to BUFR table files (use with WMO BUFR files)\n"
+              << "  -n NUM_MESSAGES,  Number of BUFR messages to parse.\n"
+              << "Example:\n"
+              << "  bufr2netcdf.x input/mhs.bufr input/mhs_mapping.yaml output/mhs.nc\n"
               << std::endl;
 }
 
@@ -137,35 +119,30 @@ int main(int argc, char **argv)
             if (static_cast<std::size_t> (argc) > argIdx + 1)
             {
                 numMsgs = atoi(argv[argIdx + 1]);
-            }
-            else
+            } else
             {
                 showHelp();
                 return 0;
             }
 
             argIdx += 2;
-        }
-        else if (strcmp(argv[argIdx], "-h") == 0)
+        } else if (strcmp(argv[argIdx], "-h") == 0)
         {
             showHelp();
             return 0;
-        }
-        else if (strcmp(argv[argIdx], "-t") == 0)
+        } else if (strcmp(argv[argIdx], "-t") == 0)
         {
             if (static_cast<std::size_t> (argc) > argIdx + 1)
             {
                 tablePath = std::string(argv[argIdx + 1]);
-            }
-            else
+            } else
             {
                 showHelp();
                 return 0;
             }
 
             argIdx += 2;
-        }
-        else
+        } else
         {
             switch (reqArgIdx)
             {
@@ -192,5 +169,4 @@ int main(int argc, char **argv)
     bufr::parse(obsFile, mappingFile, outputFile, tablePath, numMsgs);
 
     return 0;
-}
-
+}  // namespace bufr

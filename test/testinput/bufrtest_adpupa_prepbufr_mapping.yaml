@@ -4,119 +4,118 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    group_by_variable: prepbufrDataLvlCat
-    variables:
-      timestamp:
-        timeoffset:
-          timeOffset: "*/PRSLEVEL/DRFTINFO/HRDR"
-          transforms:
-            - scale: 3600
-          referenceTime: "2020-11-01T12:00:00Z"
-      stationIdentification:
-        query: "*/SID"
-      longitude:
-        query: "*/XOB"
-      latitude:
-        query: "*/YOB"
-      obsTimeMinusCycleTime:
-        query: "*/DHR"
-      stationElevation:
-        query: "*/ELV"
-      prepbufrReportType:
-        query: "*/TYP"
-      dumpReportType:
-        query: "*/T29"
-
-      prepbufrDataLvlCat:
-        query: "*/PRSLEVEL/CAT"
-
-      #          methodofTemperatureSeaSurfaceMeasurement:
-      #            query: "*/SST_INFO/MSST"
-      #
-      #          presentWeather:
-      #            query: "*/PREWXSEQ/PRWE"
-      #
-      #          verticalSignificanceSurfaceObservations:
-      #            query: "*/CLOUDSEQ/VSSO"
-      #          cloudAmount:
-      #            query: "*/CLOUDSEQ/CLAM"
-      #          cloudType:
-      #            query: "*/CLOUDSEQ/CLTP"
-      #          heightOfBaseOfCloud:
-      #            query: "*/CLOUDSEQ/HOCB"
-      #
-      #          cloudCoverTotal:
-      #            query: "*/CLOU2SEQ/TOCC"
-      #
-      #          heightAboveSurfaceofBaseofLowestCloud:
-      #            query: "*/CLOU2SEQ/HBLCS"
-
-      dewpointTemperature:
-        query: "*/PRSLEVEL/Q___INFO/TDO"
+  group_by_variable: prepbufrDataLvlCat
+  variables:
+    timestamp:
+      timeoffset:
+        timeOffset: "*/PRSLEVEL/DRFTINFO/HRDR"
         transforms:
-          - offset: 273.15
+          - scale: 3600
+        referenceTime: "2020-11-01T12:00:00Z"
+    stationIdentification:
+      query: "*/SID"
+    longitude:
+      query: "*/XOB"
+    latitude:
+      query: "*/YOB"
+    obsTimeMinusCycleTime:
+      query: "*/DHR"
+    stationElevation:
+      query: "*/ELV"
+    prepbufrReportType:
+      query: "*/TYP"
+    dumpReportType:
+      query: "*/T29"
 
-      virtualTemperature:
-        query: "*/PRSLEVEL/T___INFO/TVO"
-        transforms:
-          - offset: 273.15
+    prepbufrDataLvlCat:
+      query: "*/PRSLEVEL/CAT"
 
-      pressure:
-        query: "*/PRSLEVEL/P___INFO/P__EVENT/POB"
-        transforms:
-          - scale: 100
-      pressureQualityMarker:
-        query: "*/PRSLEVEL/P___INFO/P__EVENT/PQM"
+    #          methodofTemperatureSeaSurfaceMeasurement:
+    #            query: "*/SST_INFO/MSST"
+    #
+    #          presentWeather:
+    #            query: "*/PREWXSEQ/PRWE"
+    #
+    #          verticalSignificanceSurfaceObservations:
+    #            query: "*/CLOUDSEQ/VSSO"
+    #          cloudAmount:
+    #            query: "*/CLOUDSEQ/CLAM"
+    #          cloudType:
+    #            query: "*/CLOUDSEQ/CLTP"
+    #          heightOfBaseOfCloud:
+    #            query: "*/CLOUDSEQ/HOCB"
+    #
+    #          cloudCoverTotal:
+    #            query: "*/CLOU2SEQ/TOCC"
+    #
+    #          heightAboveSurfaceofBaseofLowestCloud:
+    #            query: "*/CLOU2SEQ/HBLCS"
 
-      specificHumidity:
-        query: "*/PRSLEVEL/Q___INFO/Q__EVENT/QOB"
-        type: float
-        transforms:
-          - scale: 0.000001
-      specificHumidityQualityMarker:
-        query: "*/PRSLEVEL/Q___INFO/Q__EVENT/QQM"
+    dewpointTemperature:
+      query: "*/PRSLEVEL/Q___INFO/TDO"
+      transforms:
+        - offset: 273.15
 
-      airTemperature:
-        query: "*/PRSLEVEL/T___INFO/T__EVENT/TOB"
-        transforms:
-          - offset: 273.15
-      airTemperatureQualityMarker:
-        query: "*/PRSLEVEL/T___INFO/T__EVENT/TQM"
+    virtualTemperature:
+      query: "*/PRSLEVEL/T___INFO/TVO"
+      transforms:
+        - offset: 273.15
 
-      heightOfObservation:
-        query: "*/PRSLEVEL/Z___INFO/Z__EVENT/ZOB"
-      heightQualityMarker:
-        query: "*/PRSLEVEL/Z___INFO/Z__EVENT/ZQM"
+    pressure:
+      query: "*/PRSLEVEL/P___INFO/P__EVENT/POB"
+      transforms:
+        - scale: 100
+    pressureQualityMarker:
+      query: "*/PRSLEVEL/P___INFO/P__EVENT/PQM"
 
-      windEastward:
-        query: "*/PRSLEVEL/W___INFO/W__EVENT/UOB"
-      windNorthward:
-        query: "*/PRSLEVEL/W___INFO/W__EVENT/VOB"
-      windQualityMarker:
-        query: "*/PRSLEVEL/W___INFO/W__EVENT/WQM"
+    specificHumidity:
+      query: "*/PRSLEVEL/Q___INFO/Q__EVENT/QOB"
+      type: float
+      transforms:
+        - scale: 0.000001
+    specificHumidityQualityMarker:
+      query: "*/PRSLEVEL/Q___INFO/Q__EVENT/QQM"
 
-      pressureError:
-        query: "*/PRSLEVEL/P___INFO/P__BACKG/POE"
-        transforms:
-          - scale: 100
-      relativeHumidityError:
-        query: "*/PRSLEVEL/Q___INFO/Q__BACKG/QOE"
-      airTemperatureError:
-        query: "*/PRSLEVEL/T___INFO/T__BACKG/TOE"
-        transforms:
-          - offset: 273.15
-      windError:
-        query: "*/PRSLEVEL/W___INFO/W__BACKG/WOE"
+    airTemperature:
+      query: "*/PRSLEVEL/T___INFO/T__EVENT/TOB"
+      transforms:
+        - offset: 273.15
+    airTemperatureQualityMarker:
+      query: "*/PRSLEVEL/T___INFO/T__EVENT/TQM"
 
-      lonProfileLevel:
-        query: "*/PRSLEVEL/DRFTINFO/XDR"
+    heightOfObservation:
+      query: "*/PRSLEVEL/Z___INFO/Z__EVENT/ZOB"
+    heightQualityMarker:
+      query: "*/PRSLEVEL/Z___INFO/Z__EVENT/ZQM"
 
-      latProfileLevel:
-        query: "*/PRSLEVEL/DRFTINFO/YDR"
+    windEastward:
+      query: "*/PRSLEVEL/W___INFO/W__EVENT/UOB"
+    windNorthward:
+      query: "*/PRSLEVEL/W___INFO/W__EVENT/VOB"
+    windQualityMarker:
+      query: "*/PRSLEVEL/W___INFO/W__EVENT/WQM"
 
-      timeCycleProfileLevel:
-        query: "*/PRSLEVEL/DRFTINFO/HRDR"
+    pressureError:
+      query: "*/PRSLEVEL/P___INFO/P__BACKG/POE"
+      transforms:
+        - scale: 100
+    relativeHumidityError:
+      query: "*/PRSLEVEL/Q___INFO/Q__BACKG/QOE"
+    airTemperatureError:
+      query: "*/PRSLEVEL/T___INFO/T__BACKG/TOE"
+      transforms:
+        - offset: 273.15
+    windError:
+      query: "*/PRSLEVEL/W___INFO/W__BACKG/WOE"
+
+    lonProfileLevel:
+      query: "*/PRSLEVEL/DRFTINFO/XDR"
+
+    latProfileLevel:
+      query: "*/PRSLEVEL/DRFTINFO/YDR"
+
+    timeCycleProfileLevel:
+      query: "*/PRSLEVEL/DRFTINFO/HRDR"
 
 
 #          seaSurfaceTemperature:
@@ -131,7 +130,9 @@ bufr:
 #            query: "*/SST_INFO/DBSS_SEQ/DBSS"
 
 
-ioda:
+encoder:
+  type: netcdf
+
   backend: netcdf
   obsdataout: "./testrun/bufr_ncep_prepbufr_adpupa.nc"
 

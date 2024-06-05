@@ -5,66 +5,67 @@
 #
 
 bufr:
-  exports:
-    variables:
-      satelliteIdentifier:
-        query: "*/SAID"
+  variables:
+    satelliteIdentifier:
+      query: "*/SAID"
 
-      latitude:
-        query: "*/CLAT"
+    latitude:
+      query: "*/CLAT"
 
-      longitude:
-        query: "*/CLON"
+    longitude:
+      query: "*/CLON"
 
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-          second: "*/SECO"
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+        second: "*/SECO"
 
-      windComputationMethod:
-        query: "*/SWCM"
+    windComputationMethod:
+      query: "*/SWCM"
 
-      satelliteZenithAngle:
-        query: "*/SAZA"
+    satelliteZenithAngle:
+      query: "*/SAZA"
 
-      dataProviderOrigin:
-        query: "*/OGCE"
+    dataProviderOrigin:
+      query: "*/OGCE"
 
-      sensorCentralFrequency:
-        query: "*/SCCF"
+    sensorCentralFrequency:
+      query: "*/SCCF"
 
-      qualityFlags:
-        query: "*/SWQM"
+    qualityFlags:
+      query: "*/SWQM"
 
-      windHeightAssignMethod:
-        query: "*/HAMD"
+    windHeightAssignMethod:
+      query: "*/HAMD"
 
-      pressure:
-        query: "*/PRLC"
+    pressure:
+      query: "*/PRLC"
 
-      windDirection:
-        query: "*/WDIR"
+    windDirection:
+      query: "*/WDIR"
 
-      windSpeed:
-        query: "*/WSPD"
+    windSpeed:
+      query: "*/WSPD"
 
-      windSpeedGeneratingApplication:
-        query: "*/GQCPRMS[1]/GNAP"
+    windSpeedGeneratingApplication:
+      query: "*/GQCPRMS[1]/GNAP"
 
-      windDirectionGeneratingApplication:
-        query: "*/GQCPRMS[2]/GNAP"
+    windDirectionGeneratingApplication:
+      query: "*/GQCPRMS[2]/GNAP"
 
-      windSpeedPercentConfidence:
-        query: "*/GQCPRMS[1]/PCCF"
+    windSpeedPercentConfidence:
+      query: "*/GQCPRMS[1]/PCCF"
 
-      windDirectionPercentConfidence:
-        query: "*/GQCPRMS[2]/PCCF"
+    windDirectionPercentConfidence:
+      query: "*/GQCPRMS[2]/PCCF"
 
-ioda:
+encoder:
+  type: netcdf
+
   dimensions:
     - name: Confidence
       paths:

@@ -13,7 +13,7 @@ namespace
 {
   namespace ConfKeys
   {
-    const char* Exports = "exports";
+    const char* Bufr = "bufr";
   }  // namespace ConfKeys
 }  // namespace
 
@@ -22,12 +22,11 @@ namespace bufr {
     export_(Export())
   {
     auto conf = eckit::YAMLConfiguration(eckit::PathName(yamlPath));
-    auto bufrConf = conf.getSubConfiguration("bufr");
-    export_ = Export(bufrConf.getSubConfiguration(ConfKeys::Exports));
+    export_ = Export(conf.getSubConfiguration(ConfKeys::Bufr));
   }
 
   BufrDescription::BufrDescription(const eckit::Configuration &conf) :
-      export_(Export(conf.getSubConfiguration(ConfKeys::Exports)))
+      export_(Export(conf))
   {
   }
 }  // namespace bufr

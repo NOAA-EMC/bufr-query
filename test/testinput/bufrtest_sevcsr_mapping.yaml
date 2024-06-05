@@ -5,36 +5,37 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 bufr:
-  exports:
-    variables:
-      timestamp:
-        datetime:
-          year: "*/YEAR"
-          month: "*/MNTH"
-          day: "*/DAYS"
-          hour: "*/HOUR"
-          minute: "*/MINU"
-      latitude:
-        query: "*/CLATH"
-      longitude:
-        query: "*/CLONH"
-      satelliteIdentifier:
-        query: "*/SAID"
-      solarZenithAngle:
-        query: "*/SOZA"
-      sensorZenithAngle:
-        query: "*/SAZA"
-      cloudAmount:
-        query: "*/RPSEQ7/CLDMNT"
-        type: float
-        transforms:
-          - scale: 0.01
-      brightnessTemperature:
-        query: "*/RPSEQ7/TMBRST"
-      brightnessTemperatureStandardDeviation:
-        query: "*/RPSEQ7/SDTB"
+  variables:
+    timestamp:
+      datetime:
+        year: "*/YEAR"
+        month: "*/MNTH"
+        day: "*/DAYS"
+        hour: "*/HOUR"
+        minute: "*/MINU"
+    latitude:
+      query: "*/CLATH"
+    longitude:
+      query: "*/CLONH"
+    satelliteIdentifier:
+      query: "*/SAID"
+    solarZenithAngle:
+      query: "*/SOZA"
+    sensorZenithAngle:
+      query: "*/SAZA"
+    cloudAmount:
+      query: "*/RPSEQ7/CLDMNT"
+      type: float
+      transforms:
+        - scale: 0.01
+    brightnessTemperature:
+      query: "*/RPSEQ7/TMBRST"
+    brightnessTemperatureStandardDeviation:
+      query: "*/RPSEQ7/SDTB"
 
-ioda:
+encoder:
+  type: netcdf
+
   dimensions:
     - name: "Channel"
       paths:
