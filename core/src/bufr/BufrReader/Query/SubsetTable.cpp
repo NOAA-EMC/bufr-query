@@ -1,9 +1,4 @@
-/*
- * (C) Copyright 2022 NOAA/NWS/NCEP/EMC
- *
- * This software is licensed under the terms of the Apache Licence Version 2.0
- * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
- */
+// (C) Copyright 2022 NOAA/NWS/NCEP/EMC
 
 #include <algorithm>
 #include <memory>
@@ -59,8 +54,8 @@ namespace bufr {
             newNode->parent = parent;
 
             // For hacky reasons we track the number of times we've seen a mnemonic
-            // this is because NCEPLIB_bufr doeen't have a consept of unique nodes but relies
-            // on mnemonics (which aren't unique) in an extremely bad way.
+            // this is because NCEPLIB_bufr does not have a consept of unique nodes but relies
+            // on mnemonics (which are not unique) in an extremely bad way.
             if (mnemonicCnts_.find(newNode->mnemonic) == mnemonicCnts_.end())
             {
                 mnemonicCnts_[newNode->mnemonic] = 1;

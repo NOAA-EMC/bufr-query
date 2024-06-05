@@ -381,7 +381,7 @@ namespace bufr {
         if (data.isLongStr())
         {
           std::ostringstream str;
-          str << "Can't make numerical field from string data.";
+          str << "Can not make numerical field from string data.";
           throw eckit::BadParameter(str.str());
         }
         else
@@ -418,7 +418,7 @@ namespace bufr {
         else
         {
           std::ostringstream str;
-          str << "Can't write data of type " << typeid(T).name() << " with writer of type ";
+          str << "Can not write data of type " << typeid(T).name() << " with writer of type ";
           str << typeid(writer).name();
           throw eckit::BadParameter(str.str());
         }
@@ -597,7 +597,7 @@ namespace bufr {
           {
             std::stringstream errStr;
             errStr << "Dimension " << name << " has an invalid source field. ";
-            errStr << "The values don't repeat in each sequence.";
+            errStr << "The values do not repeat in each sequence.";
             throw eckit::BadParameter(errStr.str());
           }
         }
@@ -821,7 +821,7 @@ namespace bufr {
         else
         {
           std::ostringstream str;
-          str << "Can't write data of type " << typeid(std::string).name() << " with writer of type ";
+          str << "Can not write data of type " << typeid(std::string).name() << " with writer of type ";
           str << typeid(writer).name();
           throw eckit::BadParameter(str.str());
         }
@@ -914,7 +914,7 @@ namespace bufr {
           {
             std::stringstream errStr;
             errStr << "Dimension " << name << " has an invalid source field. ";
-            errStr << "The values don't repeat in each sequence.";
+            errStr << "The values do not repeat in each sequence.";
             throw eckit::BadParameter(errStr.str());
           }
         }

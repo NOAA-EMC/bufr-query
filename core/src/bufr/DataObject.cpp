@@ -1,9 +1,4 @@
-/*
-* (C) Copyright 2024 NOAA/NWS/NCEP/EMC
-*
-* This software is licensed under the terms of the Apache Licence Version 2.0
-* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
-*/
+// (C) Copyright 2024 NOAA/NWS/NCEP/EMC
 
 #include "bufr/DataObject.h"
 #include "bufr/Data.h"
@@ -12,7 +7,7 @@ namespace bufr {
 
   bool DataObjectBase::hasSamePath(const std::shared_ptr<DataObjectBase>& dataObject)
   {
-    // Can't be the same
+    // Can not be the same
     if (dimPaths_.size() != dataObject->dimPaths_.size())
     {
       return false;

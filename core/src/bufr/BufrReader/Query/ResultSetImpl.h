@@ -1,9 +1,4 @@
-/*
- * (C) Copyright 2022 NOAA/NWS/NCEP/EMC
- *
- * This software is licensed under the terms of the Apache Licence Version 2.0
- * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
- */
+// (C) Copyright 2022 NOAA/NWS/NCEP/EMC
 
 #pragma once
 
@@ -57,7 +52,7 @@ namespace details
     ///
     /// \par The getter functions for the data construct the final output based on the data and
     /// metadata in these lookup tables. There are many complications. For one the data may be
-    /// jagged (lookup table instances don't necessarily all have the same number of elements
+    /// jagged (lookup table instances do not necessarily all have the same number of elements
     /// [repeated data could have a different number of repeats per instance]). Another is the
     /// application group_by fields which affect the dimensionality of the data. In order to make
     /// the data into rectangular arrays it may be necessary to strategically fill in missing values

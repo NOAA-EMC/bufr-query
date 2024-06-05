@@ -1,7 +1,4 @@
 # (C) Copyright 2023 NOAA/NWS/NCEP/EMC
-#
-# This software is licensed under the terms of the Apache Licence Version 2.0
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 import bufr
 from bufr.encoders import netcdf
@@ -117,7 +114,7 @@ def test_invalid_query():
     except Exception as e:
         return
 
-    assert False, "Didn't throw exception for invalid query."
+    assert False, "Did not throw exception for invalid query."
 
 
 def test_highlevel_replace():
