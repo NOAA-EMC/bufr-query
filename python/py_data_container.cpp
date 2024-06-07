@@ -128,5 +128,8 @@ void setupDataContainer(py::module& m)
    .def("list", &DataContainer::getFieldNames, "Get the field names.")
    .def("append", &DataContainer::append,
         py::arg("other"),
-        "Append contents of another container. Must have the same category map and fields.");
+        "Append contents of another container. Must have the same category map and fields.")
+   .def("mpi_gather", &DataContainer::mpiGather,
+        py::arg("comm"),
+        "Gather data from all processes.");
 }

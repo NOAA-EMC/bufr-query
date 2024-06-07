@@ -214,10 +214,10 @@ int main(int argc, char **argv)
 
     std::cout << "outputFile: " << outputFile << std::endl;
 
+    auto app = bufr::Converter(argc, argv);
     bool isParallel = eckit::mpi::comm("world").size() > 1;
     if (isParallel)
     {
-      auto app = bufr::Converter(argc, argv);
       bufr::parseInParallel(eckit::mpi::comm("world"),
                             obsFile,
                             mappingFile,

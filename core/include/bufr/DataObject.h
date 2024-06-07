@@ -831,29 +831,133 @@ namespace bufr {
       /// \param comm The MPI communicator to use.
       void mpiGather(const eckit::mpi::Comm& comm) final
       {
-//        size_t totalSize = 0;
-//        comm.reduce(size(), totalSize, eckit::mpi::Operation::SUM, 0);
-//
-//        std::vector<int> dims = getDims();
-//        comm.reduce(dims[0], dims[0], eckit::mpi::Operation::SUM, 0);
-//
-//        size_t numDims = dims.size();
-//        comm.reduce(numDims, numDims, eckit::mpi::Operation::MAX, 0);
-//
-//        for (size_t i = 1; i < numDims; ++i)
-//        {
-//          comm.reduce(dims[i], dims[i], eckit::mpi::Operation::MAX, 0);
-//        }
-//
-//        std::vector<std::string> rcvBuffer(totalSize);
-//        auto rcvCounts = std::vector<int> (comm.size());
-//        auto displacements = std::vector<int> (comm.size());
-//        comm.gatherv(getRawData(), rcvBuffer, rcvCounts, displacements, 0);
-//
-//        if (comm.rank() == 0)
-//        {
-//          data_ = std::move(rcvBuffer);
-//        }
+        size_t numDims = dims_.size();
+        comm.reduce(numDims, numDims, eckit::mpi::Operation::MAX, 0);
+
+        // Ensure all ranks have the same number of dimensions
+        if (numDims != dims_.size())
+        {
+          int missingDims = numDims - dims_.size();
+          for (int idx = 0; idx < missingDims; ++idx)
+          {
+            dims_.insert(dims_.end() - 1, 1);
+          }
+        }
+
+        std::vector<int> rcvDims = dims_;
+        comm.reduce(rcvDims[0], rcvDims[0], eckit::mpi::Operation::SUM, 0);
+
+        for (size_t i = 1; i < numDims; ++i)
+        {
+          comm.allReduce(rcvDims[i], rcvDims[i], eckit::mpi::Operation::MAX);
+        }
+
+        // Fix my send buffer if the global extra dimensions (not the first one) differ from my own
+        // (resize and fill with missing values where necessary). This will involve creating a send
+        // array and copying data into the correct indices.
+
+        // Do the extra dimensions from the different ranks match?
+        bool adjustDims = false;
+        for (int idx = 1; idx < rcvDims.size(); idx++)
+        {
+          adjustDims = (rcvDims[idx] != getDims()[idx]);
+        }
+
+        // Resize the dimensions to match the global dimensions
+        if (adjustDims)
+        {
+          auto totRcvDimSize = 1;
+          for (const auto& dim : rcvDims)
+          {
+            totRcvDimSize *= dim;
+          }
+
+          std::vector<std::string> sendBuffer(totRcvDimSize, missingValue());
+
+          // Map the local data into the sendBuffer using the dimensions
+          for (size_t i = 0; i < data_.size(); ++i)
+          {
+            Location loc;
+
+            // Compute the location coordinate in the old data
+            size_t idx = i;
+            for (size_t dimIdx = 0; dimIdx < dims_.size(); ++dimIdx)
+            {
+              loc.push_back(idx % dims_[dimIdx]);
+              idx /= dims_[dimIdx];
+            }
+
+            // Map that location into the new data (compute the new index)
+            idx = 0;
+            for (size_t dimIdx = 0; dimIdx < rcvDims.size(); ++dimIdx)
+            {
+              idx += loc[dimIdx] * rcvDims[dimIdx];
+            }
+
+            sendBuffer[idx] = data_[i];
+          }
+
+          data_ = std::move(sendBuffer);
+        }
+
+        size_t sendSize = 0;
+        for (const auto& str : data_)
+        {
+          sendSize += str.size();
+        }
+
+        size_t rcvSize = sendSize;
+        comm.reduce(rcvSize, rcvSize, eckit::mpi::Operation::SUM, 0);
+
+        auto sizeArray = std::vector<int>(comm.size());
+        comm.allGather(static_cast<int>(size()), sizeArray.begin(), sizeArray.end());
+
+        std::vector<char> rcvBuffer(rcvSize, 0);
+        auto rcvCounts = std::vector<int>(comm.size());
+
+        std::vector<int> displacement(comm.size(), 0);
+        for (int i = 1; i < comm.size(); i++)
+        {
+          displacement[i] =  displacement[i - 1] + sizeArray[i - 1];
+        }
+
+        std::vector<char> charSendBuffer;
+        for (const auto& str : data_)
+        {
+          charSendBuffer.insert(charSendBuffer.end(), str.begin(), str.end());
+        }
+
+        comm.gatherv(charSendBuffer, rcvBuffer, sizeArray, displacement, 0);
+
+        size_t numStrs = 1;
+        for (const auto d : rcvDims)
+        {
+          numStrs *= d;
+        }
+
+        std::vector<size_t> strSizes(numStrs);
+        for (size_t idx=0; idx < data_.size(); ++idx)
+        {
+          strSizes[idx] = data_[idx].size();
+        }
+
+        comm.gather(strSizes, strSizes, 0);
+
+        if (comm.rank() == 0)
+        {
+          dims_ = rcvDims;
+
+          // write rcvBuffer back to data
+          size_t pos = 0;
+          data_.resize(rcvSize);
+          for (size_t i = 0; i < rcvBuffer.size();)
+          {
+            std::string str(rcvBuffer.begin() + i, rcvBuffer.begin() + i + strSizes[i]);
+            data_[pos] = str;
+            i += strSizes[i];
+            pos++;
+          }
+        }
       }
 
       /// \brief Append the data from another DataObject to this one.

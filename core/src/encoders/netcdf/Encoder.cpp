@@ -190,7 +190,7 @@ namespace netcdf {
         }
         else if (auto strobj = std::dynamic_pointer_cast<DataObject<std::string>>(object))
         {
-            // Can't compress string data
+            // Can not compress string data
             var = createVar(strobj, group, name, dimNames, chunks, 0);
         }
         else
@@ -621,7 +621,7 @@ namespace netcdf {
             } else
             {
                 std::ostringstream errStr;
-                errStr << "Can't find " << subs.first << ". No category with that name.";
+                errStr << "Can not find " << subs.first << ". No category with that name.";
                 throw eckit::BadParameter(errStr.str());
             }
         }

@@ -27,5 +27,7 @@ void setupParser(py::module& m)
          py::arg("mapping_path"),
          py::arg("table_path") = "")
     .def("parse", &BufrParser::parse, py::arg("numMsgs") = 0,
-         "Get Parser to parse a config file and get the data container.");
+         "Get Parser to parse a config file and get the data container.")
+    .def("parse_in_parallel", &BufrParser::parseInParallel, py::arg("comm"),
+         "Get Parser to parse a config file and get the data container in parallel.");
 }

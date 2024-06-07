@@ -2082,7 +2082,7 @@ def CheckForHeaderGuard(filename, clean_lines, error):
               '#endif line should be "#endif  /* %s */"' % cppvar)
       return
 
-  # Didn't find anything
+  # Did not find anything
   error(filename, endif_linenum, 'build/header_guard', 5,
         '#endif line should be "#endif  // %s"' % cppvar)
 
