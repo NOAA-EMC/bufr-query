@@ -1,9 +1,9 @@
 # (C) Copyright 2023 NOAA/NWS/NCEP/EMC
+import sys
 
 import bufr
 from bufr.encoders import netcdf
 import numpy as np
-from mpi4py import MPI
 
 
 def test_basic_query():
@@ -231,31 +231,31 @@ def test_highlevel_cache():
         assert False, "Data Cache still contains entry."
 
 def test_highlevel_parallel():
-    DATA_PATH = 'test/testinput/data/gdas.t18z.1bmhs.tm00.bufr_d'
-    YAML_PATH = 'test/testinput/bufrtest_mhs_basic_mapping.yaml'
+    DATA_PATH = 'testinput/data/gdas.t18z.1bmhs.tm00.bufr_d'
+    YAML_PATH = 'testinput/bufrtest_mhs_basic_mapping.yaml'
     OUTPUT_PATH = 'testrun/mhs_basic_parallel.nc'
 
-    comm = MPI.COMM_WORLD
+    bufr.mpi.App(sys.argv)
+    comm = bufr.mpi.Comm("world")
     container = bufr.Parser(DATA_PATH, YAML_PATH).parse_in_parallel(comm)
     container.mpi_gather(comm)
 
-    if comm.rank == 0:
+    if comm.rank() == 0:
         netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)
 
 
-
 if __name__ == '__main__':
-    # # Low level interface tests
-    # test_basic_query()
-    # test_string_field()
-    # test_long_str_field()
-    # test_type_override()
-    # test_invalid_query()
-    #
-    # # High level interface tests
-    # test_highlevel_replace()
-    # test_highlevel_add()
-    # test_highlevel_w_category()
-    # test_highlevel_cache()
-    # test_highlevel_append()
-    test_highlevel_parallel()
+
+    test_highlevel_parallel()    # Low level interface tests
+    test_basic_query()
+    test_string_field()
+    test_long_str_field()
+    test_type_override()
+    test_invalid_query()
+
+    # High level interface tests
+    test_highlevel_replace()
+    test_highlevel_add()
+    test_highlevel_w_category()
+    test_highlevel_cache()
+    test_highlevel_append()

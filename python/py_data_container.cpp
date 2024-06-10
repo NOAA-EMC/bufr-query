@@ -19,6 +19,7 @@
 #include "bufr/QueryParser.h"
 
 #include "DataObjectFunctions.h"
+#include "py_mpi.h"
 
 
 namespace py = pybind11;
@@ -129,7 +130,10 @@ void setupDataContainer(py::module& m)
    .def("append", &DataContainer::append,
         py::arg("other"),
         "Append contents of another container. Must have the same category map and fields.")
-   .def("mpi_gather", &DataContainer::mpiGather,
+   .def("mpi_gather", [](DataContainer& self, bufr::mpi::Comm& comm)
+        {
+          return self.mpiGather(comm.getComm());
+        },
         py::arg("comm"),
         "Gather data from all processes.");
 }
