@@ -15,16 +15,18 @@
 #include "bufr/encoders/netcdf/Encoder.h"
 
 namespace bufr {
-
-  class Converter : public eckit::Main
+namespace mpi {
+  class App : public eckit::Main
   {
-   public:
-    Converter() = delete;
-    Converter(int argc, char **argv) : eckit::Main(argc, argv)
+  public:
+    App() = delete;
+    App(int argc, char **argv) : eckit::Main(argc, argv)
     {
       name_ = "bufr2netcdf";
     }
   };
+}  // namespace mpi
+
 //    typedef ObjectFactory<Parser, const eckit::LocalConfiguration&> ParseFactory;
 
     std::string makeFilename(const std::string& prototype, const SubCategory& categories)
@@ -214,9 +216,8 @@ int main(int argc, char **argv)
 
     std::cout << "outputFile: " << outputFile << std::endl;
 
-    auto app = bufr::Converter(argc, argv);
-    bool isParallel = eckit::mpi::comm("world").size() > 1;
-    if (isParallel)
+    auto app = bufr::mpi::App(argc, argv);
+    if (eckit::mpi::comm("world").size() > 1)
     {
       bufr::parseInParallel(eckit::mpi::comm("world"),
                             obsFile,
