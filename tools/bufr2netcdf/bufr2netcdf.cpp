@@ -214,8 +214,6 @@ int main(int argc, char **argv)
         }
     }
 
-    std::cout << "outputFile: " << outputFile << std::endl;
-
     auto app = bufr::mpi::App(argc, argv);
     if (eckit::mpi::comm("world").size() > 1)
     {

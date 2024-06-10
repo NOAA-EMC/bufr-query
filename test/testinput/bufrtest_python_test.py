@@ -9,8 +9,6 @@ import numpy as np
 def test_basic_query():
     DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
 
-    print('***** ' + str(dir(bufr)) + ' *****')
-
     # Make the QuerySet for all the data we want
     q = bufr.QuerySet()
     q.add('year', '*/YEAR')
