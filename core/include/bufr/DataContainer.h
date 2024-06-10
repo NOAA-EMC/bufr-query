@@ -92,6 +92,8 @@ namespace bufr {
     /// \param other DataContainer to append.
     void append(const DataContainer& other);
 
+    /// \brief Gather data from all ranks into rank 0.
+    /// \param comm MPI communicator to use.
     void mpiGather(const eckit::mpi::Comm& comm);
 
   private:
