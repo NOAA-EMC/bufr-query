@@ -521,10 +521,20 @@ namespace bufr {
         }
         else
         {
-//          // Use a dummy buffer and counts for ranks that do not participate with real data
-//          std::vector<T> dummyBuffer(1); // or some minimal buffer as needed
-//          std::fill(rcvCounts.begin(), rcvCounts.end(), 0); // No data contributed by this rank
-//          comm.gatherv(dummyBuffer, rcvBuffer, rcvCounts, displacements, 0);
+          // Use unsigned long as the type and use that to gatherv back to the correct type. This is
+          // necessary because eckit MPI does not support unsigned long long or unsigned int
+          std::vector<unsigned long> ulData(data_.begin(), data_.end());
+          std::vector<unsigned long> ulRcvBuffer(rcvSize, DataObject<unsigned long>::missingValue());
+          comm.gatherv(ulData, ulRcvBuffer, sizeArray, displacement, 0);
+
+          // manually copy preserving missing values
+          for (size_t i = 0; i < rcvSize; i++)
+          {
+            if (ulRcvBuffer[i] != DataObject<unsigned long>::missingValue())
+            {
+              rcvBuffer[i] = static_cast<T>(ulRcvBuffer[i]);
+            }
+          }
         }
 
         if (comm.rank() == 0)

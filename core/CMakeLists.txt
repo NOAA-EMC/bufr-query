@@ -136,7 +136,6 @@ target_link_libraries(bufr_query PUBLIC eckit eckit_mpi)
 
 
 ## Public include files
-
 target_include_directories(bufr_query PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>

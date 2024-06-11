@@ -246,7 +246,6 @@ namespace bufr {
     {
       for (const auto &field: getFieldNames())
       {
-        size_t totalSize = 0;
         auto data = get(field, subCat);
         data->mpiGather(comm);
       }

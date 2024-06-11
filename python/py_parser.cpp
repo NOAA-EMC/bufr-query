@@ -31,9 +31,9 @@ void setupParser(py::module& m)
          py::arg("table_path") = "")
     .def("parse", &BufrParser::parse, py::arg("numMsgs") = 0,
          "Get Parser to parse a config file and get the data container.")
-    .def("parse_in_parallel", [](BufrParser& self, bufr::mpi::Comm& comm)
+    .def("mpi_parse", [](BufrParser& self, bufr::mpi::Comm& comm)
         {
-          return self.parseInParallel(comm.getComm());
+          return self.mpiParse(comm.getComm());
         },
         py::arg("comm"),
         "Get Parser to parse a config file and get the data container in parallel.");

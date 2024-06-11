@@ -28,7 +28,6 @@ def test_basic_query():
 
 
     # Use the ResultSet returned to get numpy arrays of the data
-    print(type(r.get('latitude')))
     lat = r.get('latitude')
     rad = r.get('radiance')
     rad_all = r.get('radiance_all')
@@ -235,7 +234,7 @@ def test_highlevel_parallel():
 
     bufr.mpi.App(sys.argv)
     comm = bufr.mpi.Comm("world")
-    container = bufr.Parser(DATA_PATH, YAML_PATH).parse_in_parallel(comm)
+    container = bufr.Parser(DATA_PATH, YAML_PATH).mpi_parse(comm)
     container.mpi_gather(comm)
 
     if comm.rank() == 0:
@@ -243,8 +242,7 @@ def test_highlevel_parallel():
 
 
 if __name__ == '__main__':
-
-    test_highlevel_parallel()    # Low level interface tests
+    # Low level interface tests
     test_basic_query()
     test_string_field()
     test_long_str_field()
@@ -257,3 +255,4 @@ if __name__ == '__main__':
     test_highlevel_w_category()
     test_highlevel_cache()
     test_highlevel_append()
+    test_highlevel_parallel()

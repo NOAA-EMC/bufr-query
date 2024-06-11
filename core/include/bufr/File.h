@@ -39,6 +39,5 @@ namespace bufr {
 
      private:
         std::shared_ptr<DataProvider> dataProvider_;
-        size_t numSubsets_;
     };
 }  // namespace bufr
