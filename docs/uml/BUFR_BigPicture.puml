@@ -30,6 +30,7 @@ package BufrReader <<Folder>>
   {
     +BufrParser(conf)
     +parse() : DataContainer
+    +mpiParse(comm) : DataContainer
   }
 
   class BufrDescription
