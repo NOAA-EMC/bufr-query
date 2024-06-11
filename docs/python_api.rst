@@ -181,7 +181,7 @@ to make this easy. Please see the following example:
 
       bufr.mpi.App(sys.argv)  # Initialize the MPI application
       comm = bufr.mpi.Comm("world")  # Get the MPI communicator
-      container = bufr.Parser(DATA_PATH, YAML_PATH).mpi_parse(comm)  # Parse the BUFR file in parallel
+      container = bufr.Parser(DATA_PATH, YAML_PATH).mpi_parse(comm)  # Parse the BUFR file with mpi
       container.mpi_gather(comm)  # (OPTIONAL) Gather the DataContainer data from all the ranks
 
       if comm.rank() == 0:
