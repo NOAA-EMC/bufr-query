@@ -64,6 +64,9 @@ namespace bufr {
         int nobs = (radObj->getDims())[0];
         int nchn = (radObj->getDims())[1];
 
+        log::info()  << "RemappedBrightnessTemperatureVariable: nobs = " << nobs << std::endl;
+        log::info()  << "RemappedBrightnessTemperatureVariable: nchn = " << nchn << std::endl;
+
         // Declare and initialize scanline array
         // scanline has the same dimension as fovn
         std::vector<int> scanline(fovnObj->size(), DataObject<int>::missingValue());
@@ -97,17 +100,19 @@ namespace bufr {
         // Perform FFT image remapping
         // input only variables: nobs, nchn obstime, fovn, channel
         // input & output variables: btobs, scanline, error_status
-        int error_status;
-        ATMS_Spatial_Average_f(nobs, nchn, &obstime, &fovn, &channel, &btobs,
-                                           &scanline, &error_status);
+        if (nobs > 0) {
+            int error_status;
+	    ATMS_Spatial_Average_f(nobs, nchn, &obstime, &fovn, &channel, &btobs,
+                                               &scanline, &error_status);
+        }
 
         // Export remapped observation (btobs)
         return DataObjectBuilder::make<float>(btobs,
                                               getExportName(),
                                               groupByField_,
-                                              fovnObj->getDims(),
-                                              fovnObj->getPath(),
-                                              fovnObj->getDimPaths());
+                                              radObj->getDims(),
+                                              radObj->getPath(),
+                                              radObj->getDimPaths());
     }
 
     void RemappedBrightnessTemperatureVariable::checkKeys(const BufrDataMap& map)
