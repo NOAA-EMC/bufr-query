@@ -1,5 +1,3 @@
-# (C) Copyright 2022 NOAA/NWS/NCEP/EMC
-
 bufr:
   variables:
     # MetaData
@@ -53,9 +51,19 @@ bufr:
       query: "*/ATMSCH/CHNM"
 
     # ObsValue
-    # Brightness Temperature
-    brightnessTemperature:
-      query: "*/ATMSCH/TMBR"
+    # Remapped Brightness Temperature
+    remappedBT:
+      remappedBrightnessTemperature:
+        fieldOfViewNumber: "*/FOVN"
+        sensorChannelNumber: "*/ATMSCH/CHNM"
+        brightnessTemperature: "*/ATMSCH/TMANT"
+        obsTime:
+          year: "*/YEAR"
+          month: "*/MNTH"
+          day: "*/DAYS"
+          hour: "*/HOUR"
+          minute: "*/MINU"
+          second: "*/SECO"
 
   splits:
     satId:
@@ -64,6 +72,7 @@ bufr:
         map:
           _224: npp
           _225: n20
+          _226: n21
 
 encoder:
   type: netcdf
@@ -151,9 +160,9 @@ encoder:
       longName: "Sensor Channel Number"
 
     # ObsValue
-    # Brightness Temperature
+    # Remapped Brightness Temperature
     - name: "ObsValue/brightnessTemperature"
-      source: variables/brightnessTemperature
-      longName: "Brightness Temperature"
+      source: variables/remappedBT
+      longName: "3-by-3 Averaged Brightness Temperature"
       units: "K"
       chunks: [10000, 22]
