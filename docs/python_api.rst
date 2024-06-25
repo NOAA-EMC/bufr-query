@@ -142,7 +142,7 @@ So the code looks more like this:
       container = bufr.Parser(input_path, YAML_PATH).parse()
 
       data = container.get('variables/brightnessTemp')
-      paths = container.getPaths('variables/brightnessTemp')
+      paths = container.get_paths('variables/brightnessTemp')
       container.add('variables/brightnessTemp_new', data*.01, paths)
 
       description = netcdf.Description(YAML_PATH)
@@ -198,10 +198,10 @@ Example:
 
       if not bufr.DataCache.has(input_path, YAML_PATH):
         container = bufr.Parser(input_path, YAML_PATH).parse()
-        bufr.DataCache.add(DATA_PATH, YAML_PATH, dat.allSubCategories(), dat)
+        bufr.DataCache.add(input_path, YAML_PATH, dat.allSubCategories(), dat)
       else:
-        container = bufr.DataCache.get(DATA_PATH, YAML_PATH)
-      bufr.DataCache.mark_finished(DATA_PATH, YAML_PATH, category)
+        container = bufr.DataCache.get(input_path, YAML_PATH)
+      bufr.DataCache.mark_finished(input_path, YAML_PATH, category)
 
       data = container.get('variables/brightnessTemp', category)
       container.replace('variables/brightnessTemp', data*.01, category)
