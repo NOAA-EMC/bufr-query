@@ -68,7 +68,7 @@ Here is what the DataContainer looks like:
 
           Add a new variable object into the data container.
 
-      .. method:: getPaths(field_name, category_id=[])
+      .. method:: get_paths(field_name, category_id=[])
 
           Adds a new Category object to the DataContainer with the given category_id.
 
