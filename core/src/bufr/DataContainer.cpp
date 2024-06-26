@@ -240,7 +240,7 @@ namespace bufr {
   }
 
 
-  void DataContainer::mpiGather(const eckit::mpi::Comm& comm)
+  void DataContainer::gather(const eckit::mpi::Comm& comm)
   {
     for (const auto &subCat: allSubCategories())
     {

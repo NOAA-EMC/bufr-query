@@ -94,7 +94,7 @@ namespace bufr {
 
     /// \brief Gather data from all ranks into rank 0.
     /// \param comm MPI communicator to use.
-    void mpiGather(const eckit::mpi::Comm& comm);
+    void gather(const eckit::mpi::Comm& comm);
 
   private:
     /// Category map given (see constructor).

@@ -232,10 +232,11 @@ def test_highlevel_mpi():
     YAML_PATH = 'testinput/bufrtest_mhs_basic_mapping.yaml'
     OUTPUT_PATH = 'testrun/mhs_basic_parallel.nc'
 
-    bufr.mpi.App(sys.argv)
+    bufr.mpi.App(sys.argv) # Don't do this if passing in MPI communicator
     comm = bufr.mpi.Comm("world")
-    container = bufr.Parser(DATA_PATH, YAML_PATH).mpi_parse(comm)
-    container.mpi_gather(comm)
+
+    container = bufr.Parser(DATA_PATH, YAML_PATH).parse(comm)
+    container.gather(comm)
 
     if comm.rank() == 0:
         netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)

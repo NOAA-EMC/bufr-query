@@ -94,7 +94,7 @@ namespace bufr {
         return exportedData;
     }
 
-    std::shared_ptr<DataContainer> BufrParser::mpiParse(const eckit::mpi::Comm& comm)
+    std::shared_ptr<DataContainer> BufrParser::parse(const eckit::mpi::Comm& comm)
     {
       auto msgsToParse = std::floor(file_.size() / comm.size());
       size_t startOffset = comm.rank() * msgsToParse;

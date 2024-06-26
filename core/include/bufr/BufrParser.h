@@ -44,7 +44,7 @@ namespace bufr {
 
         /// \brief Uses the provided description to parse the buffer file using MPI.
         /// \param comm The eckit MPI comm object
-        std::shared_ptr<DataContainer> mpiParse(const eckit::mpi::Comm&);
+        std::shared_ptr<DataContainer> parse(const eckit::mpi::Comm&);
 
         /// \brief Start over from beginning of the BUFR file
         void reset();

@@ -82,7 +82,7 @@ namespace mpi {
         }
     }
 
-    void mpiParse(const eckit::mpi::Comm& comm,
+    void parse(const eckit::mpi::Comm& comm,
                          const std::string& obsFile,
                          const std::string& mappingFile,
                          const std::string& outputFile,
@@ -98,7 +98,7 @@ namespace mpi {
       }
 
       auto parser = BufrParser(obsFile, yaml->getSubConfiguration("bufr"), tablePath);
-      auto data = parser.mpiParse(comm);
+      auto data = parser.parse(comm);
 
       if (separateFiles)
       {
@@ -111,7 +111,7 @@ namespace mpi {
       }
       else
       {
-        data->mpiGather(comm);
+        data->gather(comm);
 
         if (comm.rank() == 0)
         {
@@ -217,7 +217,7 @@ int main(int argc, char **argv)
     auto app = bufr::mpi::App(argc, argv);
     if (eckit::mpi::comm("world").size() > 1)
     {
-      bufr::mpiParse(eckit::mpi::comm("world"),
+      bufr::parse(eckit::mpi::comm("world"),
                      obsFile,
                      mappingFile,
                      outputFile,
