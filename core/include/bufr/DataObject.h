@@ -161,7 +161,7 @@ namespace bufr {
 
       /// \brief Do an MPI Gather operation and accumalate the data into the root process.
       /// \param comm The MPI communicator to use.
-      virtual void mpiGather(const eckit::mpi::Comm& comm) = 0;
+      virtual void gather(const eckit::mpi::Comm& comm) = 0;
 
       /// \brief Makes a new dimension scale using this data object as the source
       /// \param name The name of the dimension variable.
@@ -426,7 +426,7 @@ namespace bufr {
 
       /// \brief Do an MPI Gather operation and accumalate the data into the root process.
       /// \param comm The MPI communicator to use.
-      void mpiGather(const eckit::mpi::Comm& comm) final
+      void gather(const eckit::mpi::Comm& comm) final
       {
         size_t numDims = dims_.size();
         comm.reduce(numDims, numDims, eckit::mpi::Operation::MAX, 0);
@@ -839,7 +839,7 @@ namespace bufr {
 
       /// \brief Do an MPI Gather operation and accumalate the data into the root process.
       /// \param comm The MPI communicator to use.
-      void mpiGather(const eckit::mpi::Comm& comm) final
+      void gather(const eckit::mpi::Comm& comm) final
       {
         size_t numDims = dims_.size();
         comm.reduce(numDims, numDims, eckit::mpi::Operation::MAX, 0);
