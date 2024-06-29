@@ -179,7 +179,7 @@ to make this easy. Please see the following example:
       YAML_PATH = 'testinput/bufrtest_mhs_basic_mapping.yaml'
       OUTPUT_PATH = 'testrun/mhs_basic_parallel.nc'
 
-      bufr.mpi.App(sys.argv)  # Initialize the MPI application
+      bufr.mpi.App(sys.argv)  # Initialize the MPI application (not needed if ioda script)
       comm = bufr.mpi.Comm("world")  # Get the MPI communicator
       container = bufr.Parser(DATA_PATH, YAML_PATH).parse(comm)  # Parse the BUFR file with mpi
       container.gather(comm)  # (OPTIONAL) Gather the DataContainer data from all the ranks
