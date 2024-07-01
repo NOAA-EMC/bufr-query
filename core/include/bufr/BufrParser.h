@@ -42,7 +42,7 @@ namespace bufr {
         /// \param maxMsgsToParse Messages to parse (0 for everything)
         std::shared_ptr<DataContainer> parse(const size_t maxMsgsToParse = 0);
 
-        /// \brief Uses the provided description to parse the buffer file using MPI.
+        /// \brief Uses the provided description to parse the BUFR file using MPI.
         /// \param comm The eckit MPI comm object
         std::shared_ptr<DataContainer> parse(const eckit::mpi::Comm&);
 
