@@ -61,5 +61,3 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bufr
 	      DESTINATION ${CMAKE_INSTALL_LIBDIR}/${pyver}
 			  COMPONENT Python
 	      FILES_MATCHING PATTERN "*.py")
-
-set_target_properties(bufr_python PROPERTIES INSTALL_RPATH "/opt/local/lib/libgcc")
