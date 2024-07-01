@@ -100,16 +100,16 @@ namespace bufr {
       size_t startOffset = comm.rank() * msgsToParse;
 
       // Messages may not split evenly among tasks, so distribute the remaining messages
-      if (auto remander = file_.size() - comm.size() * msgsToParse)
+      if (auto remainder = file_.size() - comm.size() * msgsToParse)
       {
-        if (comm.rank() < remander)
+        if (comm.rank() < remainder)
         {
           msgsToParse++;
           startOffset += comm.rank();
         }
         else
         {
-          startOffset += remander;
+          startOffset += remainder;
         }
       }
 
