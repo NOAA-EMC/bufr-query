@@ -97,7 +97,7 @@ namespace mpi {
         eckit::BadParameter("No section named \"encoder\"");
     }
 
-    logElapsedTime("Finished", startTime);
+    logElapsedTime("Total Time", startTime);
   }
 
   void parse(const eckit::mpi::Comm& comm,
@@ -150,7 +150,7 @@ namespace mpi {
     comm.barrier();
     if (comm.rank() == 0)
     {
-      logElapsedTime("Finished", startTime);
+      logElapsedTime("Total Time", startTime);
     }
   }
 }  // namespace bufr
