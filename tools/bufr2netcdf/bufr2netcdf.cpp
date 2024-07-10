@@ -31,7 +31,7 @@ namespace mpi {
 
 //    typedef ObjectFactory<Parser, const eckit::LocalConfiguration&> ParseFactory;
 
-  void printTimeElapsed(const std::string& msg,
+  void printElapsedTime(const std::string& msg,
                         const std::chrono::steady_clock::time_point& startTime)
   {
     auto timeElapsed = std::chrono::steady_clock::now() - startTime;
@@ -90,14 +90,14 @@ namespace mpi {
       auto encoderStartTime = std::chrono::steady_clock::now();
       auto encoderConf = yaml->getSubConfiguration("encoder");
       encoders::netcdf::Encoder(encoderConf).encode(data, backend);
-      printTimeElapsed("Encoder Finished", encoderStartTime);
+      printElapsedTime("Encoder Finished", encoderStartTime);
     }
     else
     {
         eckit::BadParameter("No section named \"encoder\"");
     }
 
-    printTimeElapsed("Total Time Elapsed", startTime);
+    printElapsedTime("Total Time Elapsed", startTime);
   }
 
   void parse(const eckit::mpi::Comm& comm,
@@ -129,7 +129,7 @@ namespace mpi {
       auto encoderStartTime = std::chrono::steady_clock::now();
       auto encoderConf = yaml->getSubConfiguration("encoder");
       encoders::netcdf::Encoder(encoderConf).encode(data, backend);
-      printTimeElapsed("MPI task: " + std::to_string(comm.rank()) + " Encoder Finished",
+      printElapsedTime("MPI task: " + std::to_string(comm.rank()) + " Encoder Finished",
                        encoderStartTime);
     }
     else
@@ -143,14 +143,14 @@ namespace mpi {
         auto encoderStartTime = std::chrono::steady_clock::now();
         auto encoderConf = yaml->getSubConfiguration("encoder");
         encoders::netcdf::Encoder(encoderConf).encode(data, backend);
-        printTimeElapsed("Encoder Finished", encoderStartTime);
+        printElapsedTime("Encoder Finished", encoderStartTime);
       }
     }
 
     comm.barrier();
     if (comm.rank() == 0)
     {
-      printTimeElapsed("Total Time Elapsed", startTime);
+      printElapsedTime("Total Time Elapsed", startTime);
     }
   }
 }  // namespace bufr
