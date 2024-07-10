@@ -31,8 +31,8 @@ namespace mpi {
 
 //    typedef ObjectFactory<Parser, const eckit::LocalConfiguration&> ParseFactory;
 
-  void printElapsedTime(const std::string& msg,
-                        const std::chrono::steady_clock::time_point& startTime)
+  void logElapsedTime(const std::string& msg,
+                      const std::chrono::steady_clock::time_point& startTime)
   {
     auto timeElapsed = std::chrono::steady_clock::now() - startTime;
     auto timeElapsedDuration = std::chrono::duration_cast<std::chrono::milliseconds>
@@ -90,14 +90,14 @@ namespace mpi {
       auto encoderStartTime = std::chrono::steady_clock::now();
       auto encoderConf = yaml->getSubConfiguration("encoder");
       encoders::netcdf::Encoder(encoderConf).encode(data, backend);
-      printElapsedTime("Encoder Finished", encoderStartTime);
+      logElapsedTime("Encoder Finished", encoderStartTime);
     }
     else
     {
         eckit::BadParameter("No section named \"encoder\"");
     }
 
-    printElapsedTime("Total Time Elapsed", startTime);
+    logElapsedTime("Total Time Elapsed", startTime);
   }
 
   void parse(const eckit::mpi::Comm& comm,
@@ -129,8 +129,8 @@ namespace mpi {
       auto encoderStartTime = std::chrono::steady_clock::now();
       auto encoderConf = yaml->getSubConfiguration("encoder");
       encoders::netcdf::Encoder(encoderConf).encode(data, backend);
-      printElapsedTime("MPI task: " + std::to_string(comm.rank()) + " Encoder Finished",
-                       encoderStartTime);
+      logElapsedTime("MPI task: " + std::to_string(comm.rank()) + " Encoder Finished",
+                     encoderStartTime);
     }
     else
     {
@@ -143,14 +143,14 @@ namespace mpi {
         auto encoderStartTime = std::chrono::steady_clock::now();
         auto encoderConf = yaml->getSubConfiguration("encoder");
         encoders::netcdf::Encoder(encoderConf).encode(data, backend);
-        printElapsedTime("Encoder Finished", encoderStartTime);
+        logElapsedTime("Encoder Finished", encoderStartTime);
       }
     }
 
     comm.barrier();
     if (comm.rank() == 0)
     {
-      printElapsedTime("Total Time Elapsed", startTime);
+      logElapsedTime("Total Time Elapsed", startTime);
     }
   }
 }  // namespace bufr
