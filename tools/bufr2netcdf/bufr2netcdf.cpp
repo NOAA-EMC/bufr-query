@@ -5,6 +5,7 @@
 #include <iostream>
 #include <ostream>
 
+#include "eckit/log/Log.h"
 #include "eckit/runtime/Main.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/config/YAMLConfiguration.h"
@@ -36,8 +37,8 @@ namespace mpi {
     auto timeElapsed = std::chrono::steady_clock::now() - startTime;
     auto timeElapsedDuration = std::chrono::duration_cast<std::chrono::milliseconds>
         (timeElapsed);
-    std::cout << msg << " "
-              << "[" << timeElapsedDuration.count() / 1000.0 << "s]" << std::endl;
+    eckit::Log::info() << msg << " "
+                       << "[" << timeElapsedDuration.count() / 1000.0 << "s]" << std::endl;
   }
 
   std::string makeFilename(const std::string& prototype, const SubCategory& categories)
@@ -89,14 +90,14 @@ namespace mpi {
       auto encoderStartTime = std::chrono::steady_clock::now();
       auto encoderConf = yaml->getSubConfiguration("encoder");
       encoders::netcdf::Encoder(encoderConf).encode(data, backend);
-      printTimeElapsed("Encoder Finished ", encoderStartTime);
+      printTimeElapsed("Encoder Finished", encoderStartTime);
     }
     else
     {
         eckit::BadParameter("No section named \"encoder\"");
     }
 
-    printTimeElapsed("Total Time Elapsed ", startTime);
+    printTimeElapsed("Total Time Elapsed", startTime);
   }
 
   void parse(const eckit::mpi::Comm& comm,
@@ -128,7 +129,7 @@ namespace mpi {
       auto encoderStartTime = std::chrono::steady_clock::now();
       auto encoderConf = yaml->getSubConfiguration("encoder");
       encoders::netcdf::Encoder(encoderConf).encode(data, backend);
-      printTimeElapsed("MPI task: " + std::to_string(comm.rank()) + " Encoder Finished ",
+      printTimeElapsed("MPI task: " + std::to_string(comm.rank()) + " Encoder Finished",
                        encoderStartTime);
     }
     else
@@ -142,14 +143,14 @@ namespace mpi {
         auto encoderStartTime = std::chrono::steady_clock::now();
         auto encoderConf = yaml->getSubConfiguration("encoder");
         encoders::netcdf::Encoder(encoderConf).encode(data, backend);
-        printTimeElapsed("Encoder Finished ", encoderStartTime);
+        printTimeElapsed("Encoder Finished", encoderStartTime);
       }
     }
 
     comm.barrier();
     if (comm.rank() == 0)
     {
-      printTimeElapsed("Total Time Elapsed ", startTime);
+      printTimeElapsed("Total Time Elapsed", startTime);
     }
   }
 }  // namespace bufr
