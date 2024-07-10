@@ -87,7 +87,7 @@ namespace bufr {
         auto timeElapsed = std::chrono::steady_clock::now() - startTime;
         auto timeElapsedDuration = std::chrono::duration_cast<std::chrono::milliseconds>
                 (timeElapsed);
-        log::info()  << "Finished "
+        log::info()  << "Parser Finished "
                            << "[" << timeElapsedDuration.count() / 1000.0 << "s]"
                            << std::endl;
 
@@ -147,7 +147,7 @@ namespace bufr {
       auto timeElapsed = std::chrono::steady_clock::now() - startTime;
       auto timeElapsedDuration = std::chrono::duration_cast<std::chrono::milliseconds>
         (timeElapsed);
-      log::info()  << "MPI task: " << comm.rank()  << " Finished "
+      log::info()  << "MPI task: " << comm.rank()  << " Parser Finished "
                    << "[" << timeElapsedDuration.count() / 1000.0 << "s]"
                    << std::endl;
 

@@ -1,5 +1,6 @@
 // (C) Copyright 2020 NOAA/NWS/NCEP/EMC
 
+#include <chrono>  // NOLINT
 #include <string>
 #include <iostream>
 #include <ostream>
@@ -29,99 +30,128 @@ namespace mpi {
 
 //    typedef ObjectFactory<Parser, const eckit::LocalConfiguration&> ParseFactory;
 
-    std::string makeFilename(const std::string& prototype, const SubCategory& categories)
+  void printTimeElapsed(const std::string& msg,
+                        const std::chrono::steady_clock::time_point& startTime)
+  {
+    auto timeElapsed = std::chrono::steady_clock::now() - startTime;
+    auto timeElapsedDuration = std::chrono::duration_cast<std::chrono::milliseconds>
+        (timeElapsed);
+    std::cout << msg << " "
+              << "[" << timeElapsedDuration.count() / 1000.0 << "s]" << std::endl;
+  }
+
+  std::string makeFilename(const std::string& prototype, const SubCategory& categories)
+  {
+    if (categories.empty())
     {
-        if (categories.empty())
-        {
-            return prototype;
-        }
-
-        // take a string formatted like ex: abc/gdas.{{ category }}.nc and replace {{ category }}
-        // with the category string. The category string is the concatenation of the subcategories
-        // with an underscore.
-
-        std::string filename = prototype;
-        std::string category = "";
-        for (const auto& subCat : categories)
-        {
-            category += subCat + "_";
-        }
-        category.pop_back();
-
-        size_t startPos = filename.find("{{");
-        size_t endPos = filename.find("}}") + 2;
-        if (startPos != std::string::npos)
-        {
-            filename.replace(startPos, endPos-startPos, category);
-        }
-        return filename;
+        return prototype;
     }
 
-    void parse(const std::string& obsFile,
-               const std::string& mappingFile,
-               const std::string& outputFile,
-               const std::string& tablePath = "",
-               std::size_t numMsgs = 0)
+    // take a string formatted like ex: abc/gdas.{{ category }}.nc and replace {{ category }}
+    // with the category string. The category string is the concatenation of the subcategories
+    // with an underscore.
+
+    std::string filename = prototype;
+    std::string category = "";
+    for (const auto& subCat : categories)
     {
-        std::unique_ptr<eckit::YAMLConfiguration>
-            yaml(new eckit::YAMLConfiguration(eckit::PathName(mappingFile)));
-
-        if (yaml->has("encoder"))
-        {
-            auto data = BufrParser(obsFile,
-                                   yaml->getSubConfiguration("bufr"), tablePath).parse(numMsgs);
-
-            auto backend = encoders::netcdf::Encoder::Backend(false, outputFile);
-
-            auto encoderConf = yaml->getSubConfiguration("encoder");
-            encoders::netcdf::Encoder(encoderConf).encode(data, backend);
-        }
-        else
-        {
-            eckit::BadParameter("No section named \"encoder\"");
-        }
+        category += subCat + "_";
     }
+    category.pop_back();
 
-    void parse(const eckit::mpi::Comm& comm,
-                         const std::string& obsFile,
-                         const std::string& mappingFile,
-                         const std::string& outputFile,
-                         const std::string& tablePath = "",
-                         bool separateFiles = false)
+    size_t startPos = filename.find("{{");
+    size_t endPos = filename.find("}}") + 2;
+    if (startPos != std::string::npos)
     {
-      std::unique_ptr<eckit::YAMLConfiguration>
+        filename.replace(startPos, endPos-startPos, category);
+    }
+    return filename;
+  }
+
+  void parse(const std::string& obsFile,
+             const std::string& mappingFile,
+             const std::string& outputFile,
+             const std::string& tablePath = "",
+             std::size_t numMsgs = 0)
+  {
+    auto startTime = std::chrono::steady_clock::now();
+
+    std::unique_ptr<eckit::YAMLConfiguration>
         yaml(new eckit::YAMLConfiguration(eckit::PathName(mappingFile)));
 
-      if (!yaml->has("encoder"))
+    if (yaml->has("encoder"))
+    {
+      auto data = BufrParser(obsFile,
+                             yaml->getSubConfiguration("bufr"), tablePath).parse(numMsgs);
+
+      auto backend = encoders::netcdf::Encoder::Backend(false, outputFile);
+
+      auto encoderStartTime = std::chrono::steady_clock::now();
+      auto encoderConf = yaml->getSubConfiguration("encoder");
+      encoders::netcdf::Encoder(encoderConf).encode(data, backend);
+      printTimeElapsed("Encoder Finished ", encoderStartTime);
+    }
+    else
+    {
+        eckit::BadParameter("No section named \"encoder\"");
+    }
+
+    printTimeElapsed("Total Time Elapsed ", startTime);
+  }
+
+  void parse(const eckit::mpi::Comm& comm,
+                       const std::string& obsFile,
+                       const std::string& mappingFile,
+                       const std::string& outputFile,
+                       const std::string& tablePath = "",
+                       bool separateFiles = false)
+  {
+    auto startTime = std::chrono::steady_clock::now();
+
+    std::unique_ptr<eckit::YAMLConfiguration>
+      yaml(new eckit::YAMLConfiguration(eckit::PathName(mappingFile)));
+
+    if (!yaml->has("encoder"))
+    {
+      throw eckit::BadParameter("No section named \"encoder\"");
+    }
+
+    auto parser = BufrParser(obsFile, yaml->getSubConfiguration("bufr"), tablePath);
+    auto data = parser.parse(comm);
+
+    if (separateFiles)
+    {
+      auto backend = encoders::netcdf::Encoder::Backend(false,
+                                                        outputFile + ".task_" +
+                                                        std::to_string(comm.rank()));
+
+      auto encoderStartTime = std::chrono::steady_clock::now();
+      auto encoderConf = yaml->getSubConfiguration("encoder");
+      encoders::netcdf::Encoder(encoderConf).encode(data, backend);
+      printTimeElapsed("MPI task: " + std::to_string(comm.rank()) + " Encoder Finished ",
+                       encoderStartTime);
+    }
+    else
+    {
+      data->gather(comm);
+
+      if (comm.rank() == 0)
       {
-        throw eckit::BadParameter("No section named \"encoder\"");
-      }
+        auto backend = encoders::netcdf::Encoder::Backend(false, outputFile);
 
-      auto parser = BufrParser(obsFile, yaml->getSubConfiguration("bufr"), tablePath);
-      auto data = parser.parse(comm);
-
-      if (separateFiles)
-      {
-        auto backend = encoders::netcdf::Encoder::Backend(false,
-                                                          outputFile + ".task_" +
-                                                          std::to_string(comm.rank()));
-
+        auto encoderStartTime = std::chrono::steady_clock::now();
         auto encoderConf = yaml->getSubConfiguration("encoder");
         encoders::netcdf::Encoder(encoderConf).encode(data, backend);
-      }
-      else
-      {
-        data->gather(comm);
-
-        if (comm.rank() == 0)
-        {
-          auto backend = encoders::netcdf::Encoder::Backend(false, outputFile);
-
-          auto encoderConf = yaml->getSubConfiguration("encoder");
-          encoders::netcdf::Encoder(encoderConf).encode(data, backend);
-        }
+        printTimeElapsed("Encoder Finished ", encoderStartTime);
       }
     }
+
+    comm.barrier();
+    if (comm.rank() == 0)
+    {
+      printTimeElapsed("Total Time Elapsed ", startTime);
+    }
+  }
 }  // namespace bufr
 
 
