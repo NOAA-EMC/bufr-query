@@ -2,6 +2,7 @@
 
 #include "bufr/encoders/netcdf/Encoder.h"
 
+#include <chrono>  // NOLINT
 #include <numeric>
 #include <map>
 #include <memory>
@@ -221,6 +222,8 @@ namespace netcdf {
                     const Encoder::Backend &backend,
                     bool append)
     {
+        auto startTime = std::chrono::steady_clock::now();
+
         std::map<SubCategory, std::shared_ptr<nc::NcFile>> obsGroups;
 
         // Get the named dimensions
@@ -580,6 +583,12 @@ namespace netcdf {
 
             obsGroups.insert({categories, file});
         }
+
+        auto timeElapsed = std::chrono::steady_clock::now() - startTime;
+        auto timeElapsedDuration = std::chrono::duration_cast<std::chrono::milliseconds>
+          (timeElapsed);
+        eckit::Log::info() << "Encoder Finished "
+                           << "[" << timeElapsedDuration.count() / 1000.0 << "s]" << std::endl;
 
         return obsGroups;
     }

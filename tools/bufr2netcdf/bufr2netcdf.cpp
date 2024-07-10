@@ -87,10 +87,8 @@ namespace mpi {
 
       auto backend = encoders::netcdf::Encoder::Backend(false, outputFile);
 
-      auto encoderStartTime = std::chrono::steady_clock::now();
       auto encoderConf = yaml->getSubConfiguration("encoder");
       encoders::netcdf::Encoder(encoderConf).encode(data, backend);
-      logElapsedTime("Encoder Finished", encoderStartTime);
     }
     else
     {
@@ -126,11 +124,8 @@ namespace mpi {
                                                         outputFile + ".task_" +
                                                         std::to_string(comm.rank()));
 
-      auto encoderStartTime = std::chrono::steady_clock::now();
       auto encoderConf = yaml->getSubConfiguration("encoder");
       encoders::netcdf::Encoder(encoderConf).encode(data, backend);
-      logElapsedTime("MPI task: " + std::to_string(comm.rank()) + " Encoder Finished",
-                     encoderStartTime);
     }
     else
     {
@@ -140,10 +135,8 @@ namespace mpi {
       {
         auto backend = encoders::netcdf::Encoder::Backend(false, outputFile);
 
-        auto encoderStartTime = std::chrono::steady_clock::now();
         auto encoderConf = yaml->getSubConfiguration("encoder");
         encoders::netcdf::Encoder(encoderConf).encode(data, backend);
-        logElapsedTime("Encoder Finished", encoderStartTime);
       }
     }
 
