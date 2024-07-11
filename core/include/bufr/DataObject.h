@@ -862,6 +862,18 @@ namespace bufr {
           comm.allReduce(rcvDims[i], rcvDims[i], eckit::mpi::Operation::MAX);
         }
 
+        size_t sendSize = dims_[0];
+        for (int idx = 1; idx < rcvDims.size(); idx++)
+        {
+          sendSize *= rcvDims[idx];
+        }
+
+        size_t rcvSize = 1;
+        for (int idx = 0; idx < rcvDims.size(); idx++)
+        {
+          rcvSize *= rcvDims[idx];
+        }
+
         // Fix my send buffer if the global extra dimensions (not the first one) differ from my own
         // (resize and fill with missing values where necessary). This will involve creating a send
         // array and copying data into the correct indices.
@@ -876,13 +888,7 @@ namespace bufr {
         // Resize the dimensions to match the global dimensions
         if (adjustDims)
         {
-          auto totRcvDimSize = 1;
-          for (const auto& dim : rcvDims)
-          {
-            totRcvDimSize *= dim;
-          }
-
-          std::vector<std::string> sendBuffer(totRcvDimSize, missingValue());
+          std::vector<std::string> sendBuffer(sendSize, missingValue());
 
           // Map the local data into the sendBuffer using the dimensions
           for (size_t i = 0; i < data_.size(); ++i)
@@ -910,19 +916,19 @@ namespace bufr {
           data_ = std::move(sendBuffer);
         }
 
-        size_t sendSize = 0;
+        size_t charsToSend = 0;
         for (const auto& str : data_)
         {
-          sendSize += str.size();
+          charsToSend += str.size();
         }
 
-        size_t rcvSize = sendSize;
-        comm.reduce(rcvSize, rcvSize, eckit::mpi::Operation::SUM, 0);
+        size_t charsToReceive = charsToSend;
+        comm.reduce(charsToReceive, charsToReceive, eckit::mpi::Operation::SUM, 0);
 
         auto sizeArray = std::vector<int>(comm.size());
-        comm.allGather(static_cast<int>(size()), sizeArray.begin(), sizeArray.end());
+        comm.allGather(static_cast<int>(charsToSend), sizeArray.begin(), sizeArray.end());
 
-        std::vector<char> rcvBuffer(rcvSize, 0);
+        std::vector<char> rcvBuffer(charsToReceive, 0);
         auto rcvCounts = std::vector<int>(comm.size());
 
         std::vector<int> displacement(comm.size(), 0);
@@ -945,13 +951,14 @@ namespace bufr {
           numStrs *= d;
         }
 
-        std::vector<size_t> strSizes(numStrs);
+        std::vector<int> mySizes(data_.size());
         for (size_t idx=0; idx < data_.size(); ++idx)
         {
-          strSizes[idx] = data_[idx].size();
+          mySizes[idx] = data_[idx].size();
         }
 
-        comm.gather(strSizes, strSizes, 0);
+        std::vector<int> allSizes(numStrs);
+        comm.gather(mySizes, allSizes, 0);
 
         if (comm.rank() == 0)
         {
@@ -962,9 +969,9 @@ namespace bufr {
           data_.resize(rcvSize);
           for (size_t i = 0; i < rcvBuffer.size();)
           {
-            std::string str(rcvBuffer.begin() + i, rcvBuffer.begin() + i + strSizes[i]);
+            std::string str(rcvBuffer.begin() + i, rcvBuffer.begin() + i + allSizes[i]);
             data_[pos] = str;
-            i += strSizes[i];
+            i += allSizes[i];
             pos++;
           }
         }
