@@ -945,20 +945,23 @@ namespace bufr {
 
         comm.gatherv(charSendBuffer, rcvBuffer, sizeArray, displacement, 0);
 
-        size_t numStrs = 1;
-        for (const auto d : rcvDims)
-        {
-          numStrs *= d;
-        }
-
         std::vector<int> mySizes(data_.size());
         for (size_t idx=0; idx < data_.size(); ++idx)
         {
           mySizes[idx] = data_[idx].size();
         }
 
+        comm.allGather(static_cast<int>(mySizes.size()), sizeArray.begin(), sizeArray.end());
+
+        for (int i = 1; i < comm.size(); i++)
+        {
+          displacement[i] =  displacement[i - 1] + sizeArray[i - 1];
+        }
+
+        size_t numStrs = data_.size();
+        comm.reduce(numStrs, numStrs, eckit::mpi::Operation::SUM, 0);
         std::vector<int> allSizes(numStrs);
-        comm.gather(mySizes, allSizes, 0);
+        comm.gatherv(mySizes, allSizes, sizeArray, displacement, 0);
 
         if (comm.rank() == 0)
         {
