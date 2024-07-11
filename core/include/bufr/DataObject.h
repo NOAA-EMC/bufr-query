@@ -968,14 +968,13 @@ namespace bufr {
           dims_ = rcvDims;
 
           // write rcvBuffer back to data
-          size_t pos = 0;
-          data_.resize(rcvSize);
-          for (size_t i = 0; i < rcvBuffer.size();)
+          data_.resize(allSizes.size());
+          size_t offset = 0;
+          for (size_t idx = 0; idx < allSizes.size(); ++idx)
           {
-            std::string str(rcvBuffer.begin() + i, rcvBuffer.begin() + i + allSizes[i]);
-            data_[pos] = str;
-            i += allSizes[i];
-            pos++;
+            std::string str(rcvBuffer.begin() + offset, rcvBuffer.begin() + offset + allSizes[idx]);
+            data_[idx] = str;
+            offset += allSizes[idx];
           }
         }
       }
