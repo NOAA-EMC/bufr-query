@@ -96,6 +96,7 @@ list(APPEND test_output
   testoutput/bufrtest_mtiasi_metop-c.nc
   testoutput/bufrtest_rtma_aircft_NC004103.nc
   testoutput/bufrtest_satwnd_old_format.nc
+  testoutput/bufrtest_specific_subsets_by_query.nc
   testoutput/bufrtest_specifying_subsets.nc
   testoutput/bufrtest_esamua_n18.nc
 )
@@ -491,7 +492,7 @@ ecbuild_add_test( TARGET  test_bufr_specific_subsets_by_query
                           "${CMAKE_BINARY_DIR}/bin/bufr2netcdf.x testinput/data/gdas.t12z.aircft.tm00.bufr_d
                                                                  testinput/bufrtest_specific_subsets_by_query_mapping.yaml
                                                                  testrun/bufrtest_specific_subsets_by_query.nc"
-                          bufrtest_specifying_subsets.nc)
+                          bufrtest_specific_subsets_by_query.nc)
 
 ecbuild_add_test( TARGET  test_bufr_specifying_subsets
                   TYPE    SCRIPT
