@@ -183,7 +183,7 @@ namespace bufr {
 
         // Compute the index into the data array
         size_t index = 0;
-        for (int dim_idx = loc.size() - 1; dim_idx >= 0; --dim_idx) {
+        for (int dim_idx = static_cast<int>(loc.size() - 1); dim_idx >= 0; --dim_idx) {
           index += dim_prod * loc[dim_idx];
           dim_prod *= dims_[dim_idx];
         }
@@ -450,13 +450,13 @@ namespace bufr {
         }
 
         size_t sendSize = dims_[0];
-        for (int idx = 1; idx < rcvDims.size(); idx++)
+        for (size_t idx = 1; idx < rcvDims.size(); idx++)
         {
           sendSize *= rcvDims[idx];
         }
 
         size_t rcvSize = 1;
-        for (int idx = 0; idx < rcvDims.size(); idx++)
+        for (size_t idx = 0; idx < rcvDims.size(); idx++)
         {
           rcvSize *= rcvDims[idx];
         }
@@ -467,7 +467,7 @@ namespace bufr {
 
         // Do the extra dimensions from the different ranks match?
         bool adjustDims = false;
-        for (int idx = 1; idx < rcvDims.size(); idx++)
+        for (size_t idx = 1; idx < rcvDims.size(); idx++)
         {
           adjustDims = (rcvDims[idx] != getDims()[idx]);
         }
@@ -510,7 +510,7 @@ namespace bufr {
         auto rcvCounts = std::vector<int>(comm.size());
 
         std::vector<int> displacement(comm.size(), 0);
-        for (int i = 1; i < comm.size(); i++)
+        for (size_t i = 1; i < comm.size(); i++)
         {
           displacement[i] =  displacement[i - 1] + sizeArray[i - 1];
         }
@@ -863,15 +863,9 @@ namespace bufr {
         }
 
         size_t sendSize = dims_[0];
-        for (int idx = 1; idx < rcvDims.size(); idx++)
+        for (size_t idx = 1; idx < rcvDims.size(); idx++)
         {
           sendSize *= rcvDims[idx];
-        }
-
-        size_t rcvSize = 1;
-        for (int idx = 0; idx < rcvDims.size(); idx++)
-        {
-          rcvSize *= rcvDims[idx];
         }
 
         // Fix my send buffer if the global extra dimensions (not the first one) differ from my own
@@ -880,7 +874,7 @@ namespace bufr {
 
         // Do the extra dimensions from the different ranks match?
         bool adjustDims = false;
-        for (int idx = 1; idx < rcvDims.size(); idx++)
+        for (size_t idx = 1; idx < rcvDims.size(); idx++)
         {
           adjustDims = (rcvDims[idx] != getDims()[idx]);
         }
@@ -932,7 +926,7 @@ namespace bufr {
         auto rcvCounts = std::vector<int>(comm.size());
 
         std::vector<int> displacement(comm.size(), 0);
-        for (int i = 1; i < comm.size(); i++)
+        for (size_t i = 1; i < comm.size(); i++)
         {
           displacement[i] =  displacement[i - 1] + sizeArray[i - 1];
         }
@@ -945,36 +939,36 @@ namespace bufr {
 
         comm.gatherv(charSendBuffer, rcvBuffer, sizeArray, displacement, 0);
 
-        std::vector<int> mySizes(data_.size());
+        std::vector<int> myStrSizes(data_.size());
         for (size_t idx=0; idx < data_.size(); ++idx)
         {
-          mySizes[idx] = data_[idx].size();
+          myStrSizes[idx] = data_[idx].size();
         }
 
-        comm.allGather(static_cast<int>(mySizes.size()), sizeArray.begin(), sizeArray.end());
+        comm.allGather(static_cast<int>(myStrSizes.size()), sizeArray.begin(), sizeArray.end());
 
-        for (int i = 1; i < comm.size(); i++)
+        for (size_t i = 1; i < comm.size(); i++)
         {
           displacement[i] =  displacement[i - 1] + sizeArray[i - 1];
         }
 
         size_t numStrs = data_.size();
         comm.reduce(numStrs, numStrs, eckit::mpi::Operation::SUM, 0);
-        std::vector<int> allSizes(numStrs);
-        comm.gatherv(mySizes, allSizes, sizeArray, displacement, 0);
+        std::vector<int> strSizes(numStrs);
+        comm.gatherv(myStrSizes, strSizes, sizeArray, displacement, 0);
 
         if (comm.rank() == 0)
         {
           dims_ = rcvDims;
 
           // write rcvBuffer back to data
-          data_.resize(allSizes.size());
+          data_.resize(numStrs);
           size_t offset = 0;
-          for (size_t idx = 0; idx < allSizes.size(); ++idx)
+          for (size_t idx = 0; idx < numStrs; ++idx)
           {
-            std::string str(rcvBuffer.begin() + offset, rcvBuffer.begin() + offset + allSizes[idx]);
+            std::string str(rcvBuffer.begin() + offset, rcvBuffer.begin() + offset + strSizes[idx]);
             data_[idx] = str;
-            offset += allSizes[idx];
+            offset += strSizes[idx];
           }
         }
       }
