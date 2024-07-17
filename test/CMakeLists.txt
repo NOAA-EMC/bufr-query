@@ -1,39 +1,37 @@
 # (C) Copyright 2024 NOAA/NCEP/EMC.
-#
-# This software is licensed under the terms of the Apache Licence Version 2.0
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
-
 
 # Download the test data if we don't have it.
+# Code borrowed from NCEPLIB-bufr project...
 
-set(FTP_URL "https://ftp.emc.ncep.noaa.gov/static_files/public")
-set(TEST_TAR "bufr_query-0.0.1.tgz")
+#set(DOWNLOAD_URL "https://ftp.emc.ncep.noaa.gov/static_files/public")
+set(DOWNLOAD_URL "https://rmclaren.opalstacked.com/public")
+set(FILE_COLLECTION "bufr_query-0.0.1.tgz")
 
 # Get the test data if we don't have it.
-if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${TEST_TAR}")
-  message(STATUS "Downloading test files...")
+if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION}")
+  message(STATUS "Downloading: " ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
   file(DOWNLOAD
-    ${FTP_URL}/${TEST_TAR}
-    ${CMAKE_CURRENT_BINARY_DIR}/${BUFR_TAR}
+    ${DOWNLOAD_URL}/${FILE_COLLECTION}
+    ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION}
     SHOW_PROGRESS
-    STATUS status
+    STATUS download_status
     INACTIVITY_TIMEOUT 30
   )
 
-  list(GET status 0 status_num)
+  list(GET download_status 0 download_status_num)
 
-  if(NOT status_num EQUAL 0 OR NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/${TEST_TAR})
+  if(NOT download_status_num EQUAL 0 OR NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
     # Remove empty file if download doesn't complete
     file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/${BUFR_TAR})
     message(STATUS "Could not download test files, not building tests")
     return()
   endif()
 
-  add_custom_target(get_bufr_test_data ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${TEST_TAR})
+  add_custom_target(get_bufr_test_data ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
   add_custom_command(
     TARGET get_bufr_test_data
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} tar xzf ${TEST_TAR}
+    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} tar xzf ${FILE_COLLECTION}
     COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} rm -rf testdata
     COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} rm -rf testoutput
     COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} mv remote_data/testdata testdata
@@ -93,92 +91,10 @@ list( APPEND test_input
   testinput/bufrtest_python_test.py
 )
 
-list(APPEND test_output
-  testoutput/bufrtest_adpsfc.nc
-  testoutput/bufrtest_adpupa.nc
-  testoutput/bufrtest_aircft_noamdar103.nc
-  testoutput/bufrtest_atms_n20.nc
-  testoutput/bufrtest_amua_metop-a_ta.nc
-  testoutput/bufrtest_split_15_seven.nc
-  testoutput/bufrtest_filter_split_15_7.nc
-  testoutput/bufrtest_long_strs.nc
-  testoutput/bufrtest_mtiasi_metop_a.nc
-  testoutput/bufrtest_read_2_dim_blocks.nc
-  testoutput/bufrtest_rtma_mesonet.nc
-  testoutput/bufrtest_sevcsr.nc
-  testoutput/bufrtest_adpsfc_cloud_rrfs_prepbufr.nc
-  testoutput/bufrtest_adpupa_prepbufr.nc
-  testoutput/bufrtest_aircft_prepbufr.nc
-  testoutput/bufrtest_empty_fields.nc
-  testoutput/bufrtest_filtering.nc
-  testoutput/bufrtest_mhs_metop-b.nc
-  testoutput/bufrtest_mtiasi_metop_b.nc
-  testoutput/bufrtest_rtma_adpsfc.nc
-  testoutput/bufrtest_satwnd_avhrr.nc
-  testoutput/bufrtest_sfcshp.nc
-  testoutput/bufrtest_wmo_amdar_multi.nc
-  testoutput/bufrtest_adpsfc_prepbufr.nc
-  testoutput/bufrtest_aircar.nc
-  testoutput/bufrtest_amua_n15.nc
-  testoutput/bufrtest_hrs_basic.nc
-  testoutput/bufrtest_mhs_basic.nc
-  testoutput/bufrtest_mtiasi_metop_c.nc
-  testoutput/bufrtest_rtma_aircft.nc
-  testoutput/bufrtest_satwnd_new_format.nc
-  testoutput/bufrtest_simple_groupby.nc
-  testoutput/bufrtest_wmo_radiosonde.nc
-  testoutput/bufrtest_adpsfc_snow.nc
-  testoutput/bufrtest_aircft_amdar103.nc
-  testoutput/bufrtest_esmhs_noaa-19.nc
-  testoutput/bufrtest_lgycld_rrfs.nc
-  testoutput/bufrtest_mtiasi_metop-c.nc
-  testoutput/bufrtest_rtma_aircft_NC004103.nc
-  testoutput/bufrtest_satwnd_old_format.nc
-  testoutput/bufrtest_specifying_subsets.nc
-  testoutput/bufrtest_esamua_n18.nc
-)
-
-list(APPEND test_data
-  testdata/amdar_wmo_multi.bufr
-  testdata/bufr_adpupa_prepbufr.bufr
-  testdata/bufr_empty_fields.bufr_d
-  testdata/bufr_read_2_dim_blocks.bufr
-  testdata/bufr_read_wmo_radiosonde.bufr
-  testdata/bufr_satwnd_new_format.bufr
-  testdata/bufr_satwnd_old_format.bufr
-  testdata/bufr_sfcshp.bufr
-  testdata/bufr_simple_groupby.bufr
-  testdata/gdas.t00z.1bhrs4.tm00.bufr_d
-  testdata/gdas.t00z.atms.tm00.bufr_d
-  testdata/gdas.t00z.sevcsr.tm00.bufr_d
-  testdata/gdas.t06z.adpsfc.tm00.bufr_d
-  testdata/gdas.t06z.snocvr.tm00.bufr_d
-  testdata/gdas.t12z.1bamua.tm00.bufr_d
-  testdata/gdas.t12z.adpsfc.tm00.bufr_d
-  testdata/gdas.t12z.adpupa.tm00.bufr_d
-  testdata/gdas.t12z.aircar.tm00.bufr_d
-  testdata/gdas.t12z.aircft.tm00.bufr_d
-  testdata/gdas.t12z.esamua.tm00.bufr_d
-  testdata/gdas.t12z.esmhs.tm00.bufr_d
-  testdata/gdas.t12z.mtiasi.tm00.bufr_d
-  testdata/gdas.t18z.1bmhs.tm00.bufr_d
-  testdata/gdas.t18z.satwnd_avhrr.tm00.bufr_d
-  testdata/rap.t06z.adpsfc.prepbufr.tm00.bufr
-  testdata/rap.t06z.lgycld.tm00.bufr_d
-  testdata/rtma_ru.t0000z.adpsfc_nc000101.tm00.bufr_d
-  testdata/rtma_ru.t0000z.aircft.tm00_nc004006.bufr_d
-  testdata/rtma_ru.t0000z.aircft.tm00_nc004103.bufr_d
-  testdata/rtma_ru.t00z.msonet.tm00.bufr_d
-  testdata/gdas.t12z.acft_profiles.prepbufr
-  testdata/gdas.t12z.adpsfc.prepbufr
-)
-
 # create test directories and make links to the input files
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/testinput)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/testdata)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/testoutput)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/testrun)
-foreach(FILENAME ${test_input} ${test_output} ${test_data})
+foreach(FILENAME ${test_input})
   execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink
     ${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}
     ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME} )
