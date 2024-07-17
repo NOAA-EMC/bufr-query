@@ -3,8 +3,7 @@
 # Download the test data if we don't have it.
 # Code borrowed from NCEPLIB-bufr project...
 
-#set(DOWNLOAD_URL "https://ftp.emc.ncep.noaa.gov/static_files/public")
-set(DOWNLOAD_URL "https://rmclaren.opalstacked.com/public")
+set(DOWNLOAD_URL "https://ftp.emc.ncep.noaa.gov/static_files/public")
 set(FILE_COLLECTION "bufr_query-0.0.1.tgz")
 
 # Get the test data if we don't have it.
