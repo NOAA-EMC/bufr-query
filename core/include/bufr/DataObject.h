@@ -566,17 +566,6 @@ namespace bufr {
             throw eckit::BadParameter(str.str());
           }
         }
-
-        for (const auto& path : other->dimPaths_)
-        {
-          if (std::find(dimPaths_.begin(), dimPaths_.end(), path) == dimPaths_.end())
-          {
-            std::ostringstream str;
-            str << "Cannot append data with different dimension paths.";
-            throw eckit::BadParameter(str.str());
-          }
-        }
-
         data_.insert(data_.end(), other->data_.begin(), other->data_.end());
       }
 
@@ -995,17 +984,6 @@ namespace bufr {
             throw eckit::BadParameter(str.str());
           }
         }
-
-        for (const auto& path : other->dimPaths_)
-        {
-          if (std::find(dimPaths_.begin(), dimPaths_.end(), path) == dimPaths_.end())
-          {
-            std::ostringstream str;
-            str << "Cannot append data with different dimension paths.";
-            throw eckit::BadParameter(str.str());
-          }
-        }
-
         data_.insert(data_.end(), other->data_.begin(), other->data_.end());
       }
 
