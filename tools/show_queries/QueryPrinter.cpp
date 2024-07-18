@@ -157,6 +157,12 @@ namespace bufr {
       descriptions.push_back(descStyledStr(leaf->typeInfo));
     }
 
+    if (queryDescs.size() == 0)
+    {
+      std::cout << "    WARNING: No queries found in the subset." << std::endl;
+      return;
+    }
+
     // Measure the longest query description
     auto maxLen = std::max_element(queryDescs.begin(), queryDescs.end(),
                                        [](const std::string& a, const std::string& b) {
