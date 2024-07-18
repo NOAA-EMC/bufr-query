@@ -155,7 +155,7 @@ static void showHelp()
               << " OUT_FILE\n"
               << "Options:\n"
               << "  -h,  Show this help message\n"
-              << "  --no-gather, don't gather the data into 1 output file. Makes 1 file per task.\n"
+              << "  --no-gather, Don't gather the data into 1 output file. Makes 1 file per task.\n"
               << "  -t TABLE_PATH,  Path to BUFR table files (use with WMO BUFR files)\n"
               << "  -n NUM_MESSAGES,  Number of BUFR messages to parse.\n"
               << "Example:\n"
