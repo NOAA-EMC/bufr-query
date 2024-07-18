@@ -5,3 +5,9 @@
 /CMakeSettings.json
 *~
 build
+
+.bufr
+.bufr_d
+.nc
+.nc4
+bufrtab.
