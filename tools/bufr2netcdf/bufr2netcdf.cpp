@@ -154,6 +154,7 @@ static void showHelp()
     std::cerr << "Usage: bufr2netcdf.x [-t TABLE_PATH] [-n NUM_MESSAGES] SRC_FILE MAPPING_FILE"
               << " OUT_FILE\n"
               << "Options:\n"
+              << "  --no-gather, don't gather the data into 1 output file. Makes 1 file per task.\n"
               << "  -h,  Show this help message\n"
               << "  -t TABLE_PATH,  Path to BUFR table files (use with WMO BUFR files)\n"
               << "  -n NUM_MESSAGES,  Number of BUFR messages to parse.\n"
@@ -184,6 +185,7 @@ int main(int argc, char **argv)
         OutputFile = 2
     };
 
+    bool separateFiles = false;
     auto reqArgIdx = ReqArgType::ObsFile;
     std::size_t argIdx = 1;
     while (argIdx < static_cast<std::size_t> (argc))
@@ -216,6 +218,10 @@ int main(int argc, char **argv)
             }
 
             argIdx += 2;
+        } else if (strcmp(argv[argIdx], "--no-gather") == 0)
+        {
+          separateFiles = true;
+          argIdx += 1;
         } else
         {
             switch (reqArgIdx)
@@ -246,7 +252,7 @@ int main(int argc, char **argv)
                      mappingFile,
                      outputFile,
                      tablePath,
-                     false);
+                     separateFiles);
     }
     else
     {
