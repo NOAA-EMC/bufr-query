@@ -1,5 +1,0 @@
-*.bufr filter=lfs diff=lfs merge=lfs -text
-*.bufr_d filter=lfs diff=lfs merge=lfs -text
-*.nc filter=lfs diff=lfs merge=lfs -text
-*.nc4 filter=lfs diff=lfs merge=lfs -text
-bufrtab.* filter=lfs diff=lfs merge=lfs -text
