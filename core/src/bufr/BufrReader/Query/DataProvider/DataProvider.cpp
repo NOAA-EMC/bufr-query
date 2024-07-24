@@ -38,33 +38,32 @@ namespace bufr {
 
         while (ireadmg_f(FileUnit, subsetChars, &iddate, SubsetLen) == 0)
         {
-          if (msgCnt < offset)
-          {
+            foundBufrMsg = true;
+            subset_ = std::string(subsetChars);
+            subset_.erase(std::remove_if(subset_.begin(), subset_.end(), isspace), subset_.end());
+
+            if (!querySet.includesSubset(subset_)) continue;
+
             msgCnt++;
-            continue;
-          }
+            if (msgCnt < offset)
+            {
+                processMsg();
+                if (!continueProcessing()) break;
+                continue;
+            }
 
-          msgCnt++;
+            while (ireadsb_f(FileUnit) == 0)
+            {
+                foundBufrSubset = true;
+                status_f(FileUnit, &bufrLoc, &il, &im);
+                updateData(bufrLoc);
 
-          foundBufrMsg = true;
-          subset_ = std::string(subsetChars);
-          subset_.erase(std::remove_if(subset_.begin(), subset_.end(), isspace), subset_.end());
+                processSubset();
+                if (!continueProcessing()) break;
+            }
 
-          if (querySet.includesSubset(subset_))
-          {
-              while (ireadsb_f(FileUnit) == 0)
-              {
-                  foundBufrSubset = true;
-                  status_f(FileUnit, &bufrLoc, &il, &im);
-                  updateData(bufrLoc);
-
-                  processSubset();
-                  if (!continueProcessing()) break;
-              }
-
-              processMsg();
-              if (!continueProcessing()) break;
-          }
+            processMsg();
+            if (!continueProcessing()) break;
         }
 
         deleteData();

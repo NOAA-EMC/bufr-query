@@ -96,11 +96,24 @@ namespace bufr {
 
     std::shared_ptr<DataContainer> BufrParser::parse(const eckit::mpi::Comm& comm)
     {
-      auto msgsToParse = std::floor(file_.size() / comm.size());
+      // Make the QuerySet
+      auto querySet = QuerySet(description_.getExport().getSubsets());
+      for (const auto &var : description_.getExport().getVariables())
+      {
+        for (const auto &queryPair : var->getQueryList())
+        {
+          querySet.add(queryPair.name, queryPair.query);
+        }
+      }
+
+      auto msgsInFile = file_.size(querySet);
+
+      // Distribute the messages to the tasks
+      auto msgsToParse = std::floor(msgsInFile / comm.size());
       size_t startOffset = comm.rank() * msgsToParse;
 
       // Messages may not split evenly among tasks, so distribute the remaining messages
-      if (auto remainder = file_.size() - comm.size() * msgsToParse)
+      if (auto remainder = msgsInFile - comm.size() * msgsToParse)
       {
         if (comm.rank() < remainder)
         {
@@ -114,16 +127,6 @@ namespace bufr {
       }
 
       auto startTime = std::chrono::steady_clock::now();
-
-      auto querySet = QuerySet(description_.getExport().getSubsets());
-
-      for (const auto &var : description_.getExport().getVariables())
-      {
-        for (const auto &queryPair : var->getQueryList())
-        {
-          querySet.add(queryPair.name, queryPair.query);
-        }
-      }
 
       log::info() << "MPI task: " << comm.rank() << " Executing Queries for message ";
       log::info() << startOffset << " to " << startOffset + msgsToParse - 1 << std::endl;
