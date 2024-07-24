@@ -45,7 +45,7 @@ namespace bufr {
             if (!querySet.includesSubset(subset_)) continue;
 
             msgCnt++;
-            if (msgCnt < offset)
+            if (msgCnt <= offset)
             {
                 processMsg();
                 if (!continueProcessing()) break;

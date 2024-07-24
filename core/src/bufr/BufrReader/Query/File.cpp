@@ -61,7 +61,7 @@ namespace bufr {
         {
             if (numMessages > 0 && msgCnt > offset)
             {
-              return  (msgCnt - offset) < numMessages;
+              return  (msgCnt - offset) <= numMessages;
             }
 
             return true;
