@@ -21,6 +21,14 @@ namespace bufr {
         isOpen_ = true;
     }
 
+    void NcepDataProvider::close()
+    {
+      closbf_f(FileUnit);
+      close_f(FileUnit);
+      isOpen_ = false;
+      currentTableData_ = nullptr;
+    }
+
     void NcepDataProvider::updateTableData(const std::string& subset)
     {
         int size = 0;

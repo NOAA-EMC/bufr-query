@@ -140,12 +140,7 @@ namespace bufr {
         virtual void open() = 0;
 
         /// \brief Close the currently open BUFR file.
-        void close()
-        {
-            closbf_f(FileUnit);
-            close_f(FileUnit);
-            isOpen_ = false;
-        }
+        virtual void close() = 0;
 
         /// \brief Rewind the current BUFR file (start over from the beginning).
         void rewind()

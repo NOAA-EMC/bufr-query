@@ -30,6 +30,13 @@ namespace bufr {
         isOpen_ = true;
     }
 
+    void WmoDataProvider::close()
+    {
+        closbf_f(FileUnit);
+        close_f(FileUnit);
+        isOpen_ = false;
+    }
+
     void WmoDataProvider::updateTableData(const std::string& subset)
     {
         deleteData();

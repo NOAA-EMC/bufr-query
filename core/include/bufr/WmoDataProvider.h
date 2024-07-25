@@ -32,6 +32,9 @@ namespace bufr {
         /// \brief Open the BUFR file with NCEPLIB-bufr
         void open() final;
 
+        /// \brief Close the currently open BUFR file.
+        void close() final;
+
         /// \brief Gets the variant number for the currently loaded subset.
         size_t variantId() const final;
 
