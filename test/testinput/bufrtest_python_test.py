@@ -1,4 +1,5 @@
 # (C) Copyright 2023 NOAA/NWS/NCEP/EMC
+import sys
 
 import bufr
 from bufr.encoders import netcdf
@@ -7,8 +8,6 @@ import numpy as np
 
 def test_basic_query():
     DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
-
-    print('***** ' + str(dir(bufr)) + ' *****')
 
     # Make the QuerySet for all the data we want
     q = bufr.QuerySet()
@@ -29,7 +28,6 @@ def test_basic_query():
 
 
     # Use the ResultSet returned to get numpy arrays of the data
-    print(type(r.get('latitude')))
     lat = r.get('latitude')
     rad = r.get('radiance')
     rad_all = r.get('radiance_all')
@@ -229,6 +227,20 @@ def test_highlevel_cache():
     if bufr.DataCache.has(DATA_PATH, YAML_PATH):
         assert False, "Data Cache still contains entry."
 
+def test_highlevel_mpi():
+    DATA_PATH = 'testinput/data/gdas.t18z.1bmhs.tm00.bufr_d'
+    YAML_PATH = 'testinput/bufrtest_mhs_basic_mapping.yaml'
+    OUTPUT_PATH = 'testrun/mhs_basic_parallel.nc'
+
+    bufr.mpi.App(sys.argv) # Don't do this if passing in MPI communicator
+    comm = bufr.mpi.Comm("world")
+
+    container = bufr.Parser(DATA_PATH, YAML_PATH).parse(comm)
+    container.gather(comm)
+
+    if comm.rank() == 0:
+        netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)
+
 
 if __name__ == '__main__':
     # Low level interface tests
@@ -244,3 +256,4 @@ if __name__ == '__main__':
     test_highlevel_w_category()
     test_highlevel_cache()
     test_highlevel_append()
+    test_highlevel_mpi()

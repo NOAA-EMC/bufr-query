@@ -7,7 +7,11 @@
 #include <string>
 #include <vector>
 
+#include <mpi.h>
+
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/mpi/Comm.h"
+
 
 #include "File.h"
 #include "BufrTypes.h"
@@ -37,6 +41,10 @@ namespace bufr {
         /// \brief Uses the provided description to parse the buffer file.
         /// \param maxMsgsToParse Messages to parse (0 for everything)
         std::shared_ptr<DataContainer> parse(const size_t maxMsgsToParse = 0);
+
+        /// \brief Uses the provided description to parse the BUFR file using MPI.
+        /// \param comm The eckit MPI comm object
+        std::shared_ptr<DataContainer> parse(const eckit::mpi::Comm&);
 
         /// \brief Start over from beginning of the BUFR file
         void reset();

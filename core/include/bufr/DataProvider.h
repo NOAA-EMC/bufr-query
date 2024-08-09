@@ -133,18 +133,14 @@ namespace bufr {
         void run(const QuerySet& querySet,
                  const std::function<void()> processSubset,
                  const std::function<void()> processMsg = [](){},
-                 const std::function<bool()> continueProcessing = [](){ return true; });
+                 const std::function<bool()> continueProcessing = [](){ return true; },
+                 size_t offset = 0);
 
         /// \brief Open the BUFR file with NCEPLIB-bufr
         virtual void open() = 0;
 
         /// \brief Close the currently open BUFR file.
-        void close()
-        {
-            closbf_f(FileUnit);
-            close_f(FileUnit);
-            isOpen_ = false;
-        }
+        virtual void close() = 0;
 
         /// \brief Rewind the current BUFR file (start over from the beginning).
         void rewind()
@@ -152,6 +148,8 @@ namespace bufr {
             close();
             open();
         }
+
+        size_t numMessages(const QuerySet& querySet);
 
         /// \brief Is the BUFR file open
         bool isFileOpen() { return isOpen_; }

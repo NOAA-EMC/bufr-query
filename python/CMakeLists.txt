@@ -24,6 +24,8 @@ list (APPEND PYTHON_SRCS DataObjectFunctions.h
 												py_data_cache.cpp
 											  py_encoder_description.cpp
 												py_netcdf_encoder.cpp
+												py_mpi.h
+												py_mpi.cpp
 												)
 
 # We cannot call ecbuild_add_library here since it conflicts with pybind11_add_module.

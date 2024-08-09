@@ -92,6 +92,10 @@ Here is what the DataContainer looks like:
 
           Append the other DataContainer to this one.
 
+      .. method:: gather(comm)
+
+          Gather the DataContainer data from all the ranks.
+
 
 So to replace a value in the DataContainer you would do something like this (assuming only 1 category):
 
@@ -158,6 +162,33 @@ So the code looks more like this:
 Adding a new variable is a little more involved. The most difficult part is to correctly configure a path for the
 variable. The easiest way to solve this is to copy the path from an existing variable otherwise you will have to
 think very carefully.
+
+MPI
+~~~
+
+It is possible to parse a BUFR file in parallel using MPI. The Parser and DataContainer have methods
+to make this easy. Please see the following example:
+
+.. code-block:: python
+
+  import bufr
+  from bufr.encoders import netcdf
+
+  def mpi_example():
+      DATA_PATH = 'testinput/data/gdas.t18z.1bmhs.tm00.bufr_d'
+      YAML_PATH = 'testinput/bufrtest_mhs_basic_mapping.yaml'
+      OUTPUT_PATH = 'testrun/mhs_basic_parallel.nc'
+
+      bufr.mpi.App(sys.argv)  # Initialize the MPI application (not needed if ioda script)
+      comm = bufr.mpi.Comm("world")  # Get the MPI communicator
+      container = bufr.Parser(DATA_PATH, YAML_PATH).parse(comm)  # Parse the BUFR file with mpi
+      container.gather(comm)  # (OPTIONAL) Gather the DataContainer data from all the ranks
+
+      if comm.rank() == 0:
+          netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH) # Encode the DataContainer object
+
+Please note that gathering the DataContainer data is optional. If you wanted to see the data from
+each rank you could skip the gather step and write out the data from each rank to a separate file.
 
 DataCache
 ~~~~~~~~~

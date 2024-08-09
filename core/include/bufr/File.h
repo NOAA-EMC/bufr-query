@@ -22,9 +22,14 @@ namespace bufr {
         /// \brief Execute the queries given in the query set over the BUFR file and accumulate the
         /// resulting data in the ResultSet.
         /// \param query_set The queryset object that contains the collection of desired queries
-        /// \param next The number of messages worth of data to run. 0 reads all messages in the
-        /// file.
-        ResultSet execute(const QuerySet& query_set, size_t next = 0);
+        /// \param offset The index of the message in the file to start reading from
+        /// \param numMessages The number of messages to read from the file
+        ResultSet execute(const QuerySet& query_set,
+                          size_t offset = 0,
+                          size_t numMessages = 0);
+
+        /// \brief Number of messages in the currently open file..
+        size_t size(const QuerySet& querySet = QuerySet());
 
         /// \brief Close the currently opened BUFR file.
         void close();

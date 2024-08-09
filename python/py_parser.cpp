@@ -10,8 +10,11 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <mpi.h>
 
 #include "bufr/BufrParser.h"
+
+#include "py_mpi.h"
 
 namespace py = pybind11;
 
@@ -26,6 +29,16 @@ void setupParser(py::module& m)
          py::arg("obsfile"),
          py::arg("mapping_path"),
          py::arg("table_path") = "")
-    .def("parse", &BufrParser::parse, py::arg("numMsgs") = 0,
-         "Get Parser to parse a config file and get the data container.");
+    .def("parse", [](BufrParser& self, size_t numMsgs = 0)
+         {
+           return self.parse(numMsgs);
+         },
+         py::arg("numMsgs") = 0,
+         "Get Parser to parse a config file and get the data container.")
+    .def("parse", [](BufrParser& self, bufr::mpi::Comm& comm)
+        {
+          return self.parse(comm.getComm());
+        },
+        py::arg("comm"),
+        "Get Parser to parse a config file and get the data container in parallel.");
 }

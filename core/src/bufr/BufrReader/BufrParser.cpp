@@ -6,6 +6,8 @@
 #include <iostream>
 #include <ostream>
 
+#include <unistd.h>
+
 #include "bufr/DataContainer.h"
 #include "bufr/DataObject.h"
 #include "bufr/QuerySet.h"
@@ -85,11 +87,74 @@ namespace bufr {
         auto timeElapsed = std::chrono::steady_clock::now() - startTime;
         auto timeElapsedDuration = std::chrono::duration_cast<std::chrono::milliseconds>
                 (timeElapsed);
-        log::info()  << "Finished "
+        log::info()  << "Parser Finished "
                            << "[" << timeElapsedDuration.count() / 1000.0 << "s]"
                            << std::endl;
 
         return exportedData;
+    }
+
+    std::shared_ptr<DataContainer> BufrParser::parse(const eckit::mpi::Comm& comm)
+    {
+      // Make the QuerySet
+      auto querySet = QuerySet(description_.getExport().getSubsets());
+      for (const auto &var : description_.getExport().getVariables())
+      {
+        for (const auto &queryPair : var->getQueryList())
+        {
+          querySet.add(queryPair.name, queryPair.query);
+        }
+      }
+
+      auto msgsInFile = file_.size(querySet);
+
+      // Distribute the messages to the tasks
+      auto msgsToParse = std::floor(msgsInFile / comm.size());
+      size_t startOffset = comm.rank() * msgsToParse;
+
+      // Messages may not split evenly among tasks, so distribute the remaining messages
+      if (auto remainder = msgsInFile - comm.size() * msgsToParse)
+      {
+        if (comm.rank() < remainder)
+        {
+          msgsToParse++;
+          startOffset += comm.rank();
+        }
+        else
+        {
+          startOffset += remainder;
+        }
+      }
+
+      auto startTime = std::chrono::steady_clock::now();
+
+      log::info() << "MPI task: " << comm.rank() << " Executing Queries for message ";
+      log::info() << startOffset << " to " << startOffset + msgsToParse - 1 << std::endl;
+
+      const auto resultSet = file_.execute(querySet, startOffset, msgsToParse);
+
+      log::info() << "MPI task: " << comm.rank() << " Building Bufr Data" << std::endl;
+      auto srcData = BufrDataMap();
+      for (const auto& var : description_.getExport().getVariables())
+      {
+        for (const auto& queryInfo : var->getQueryList())
+        {
+          srcData[queryInfo.name] = resultSet.get(
+            queryInfo.name, queryInfo.groupByField, queryInfo.type);
+        }
+      }
+
+      log::info() << "MPI task: " << comm.rank() << " Exporting Data" << std::endl;
+      auto exportedData = exportData(srcData);
+
+      auto timeElapsed = std::chrono::steady_clock::now() - startTime;
+      auto timeElapsedDuration = std::chrono::duration_cast<std::chrono::milliseconds>
+        (timeElapsed);
+      log::info()  << "MPI task: " << comm.rank()  << " Parser Finished "
+                   << "[" << timeElapsedDuration.count() / 1000.0 << "s]"
+                   << std::endl;
+
+      return exportedData;
     }
 
     std::shared_ptr<DataContainer> BufrParser::exportData(const BufrDataMap &srcData) {

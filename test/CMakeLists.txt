@@ -444,7 +444,7 @@ ecbuild_add_test( TARGET  test_bufr_specific_subsets_by_query
                           "${CMAKE_BINARY_DIR}/bin/bufr2netcdf.x testdata/gdas.t12z.aircft.tm00.bufr_d
                                                                  testinput/bufrtest_specific_subsets_by_query_mapping.yaml
                                                                  testrun/bufrtest_specific_subsets_by_query.nc"
-                          bufrtest_specifying_subsets.nc)
+                          bufrtest_specific_subsets_by_query.nc)
 
 ecbuild_add_test( TARGET  test_bufr_specifying_subsets
                   TYPE    SCRIPT

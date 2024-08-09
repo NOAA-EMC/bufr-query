@@ -2,6 +2,7 @@
 
 #include "bufr/encoders/netcdf/Encoder.h"
 
+#include <chrono>  // NOLINT
 #include <numeric>
 #include <map>
 #include <memory>
@@ -190,7 +191,7 @@ namespace netcdf {
         }
         else if (auto strobj = std::dynamic_pointer_cast<DataObject<std::string>>(object))
         {
-            // Can't compress string data
+            // Can not compress string data
             var = createVar(strobj, group, name, dimNames, chunks, 0);
         }
         else
@@ -221,6 +222,8 @@ namespace netcdf {
                     const Encoder::Backend &backend,
                     bool append)
     {
+        auto startTime = std::chrono::steady_clock::now();
+
         std::map<SubCategory, std::shared_ptr<nc::NcFile>> obsGroups;
 
         // Get the named dimensions
@@ -581,6 +584,12 @@ namespace netcdf {
             obsGroups.insert({categories, file});
         }
 
+        auto timeElapsed = std::chrono::steady_clock::now() - startTime;
+        auto timeElapsedDuration = std::chrono::duration_cast<std::chrono::milliseconds>
+          (timeElapsed);
+        eckit::Log::info() << "Encoder Finished "
+                           << "[" << timeElapsedDuration.count() / 1000.0 << "s]" << std::endl;
+
         return obsGroups;
     }
 
@@ -621,7 +630,7 @@ namespace netcdf {
             } else
             {
                 std::ostringstream errStr;
-                errStr << "Can't find " << subs.first << ". No category with that name.";
+                errStr << "Can not find " << subs.first << ". No category with that name.";
                 throw eckit::BadParameter(errStr.str());
             }
         }
