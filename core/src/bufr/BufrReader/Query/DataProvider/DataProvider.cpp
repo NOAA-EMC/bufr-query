@@ -12,11 +12,28 @@
 
 
 namespace bufr {
+
+    int timeToYYMMDDHH(std::time_t time) {
+      // Convert time_t to tm structure (using GMT)
+      std::tm* timeinfo = std::gmtime(&time);
+
+      // Extract the components
+      int year = (timeinfo->tm_year + 1900) % 100; // YY format
+      int month = timeinfo->tm_mon + 1;            // Month is 0-11, so add 1
+      int day = timeinfo->tm_mday;
+      int hour = timeinfo->tm_hour;
+
+      // Combine components into the required format
+      int result = year * 1000000 + month * 10000 + day * 100 + hour;
+
+      return result;
+    }
+
     void DataProvider::run(const QuerySet& querySet,
                            const std::function<void()> processSubset,
                            const std::function<void()> processMsg,
                            const std::function<bool()> continueProcessing,
-                           size_t offset)
+                           const RunParameters& params)
     {
         if (!isOpen_)
         {
@@ -36,16 +53,33 @@ namespace bufr {
         bool foundBufrMsg = false;
         bool foundBufrSubset = false;
 
+        int startIdDate = 0;
+        int endIdDate = 0;
+
+        if (auto startTime = params.startTime)
+        {
+            startIdDate = timeToYYMMDDHH(*startTime);
+        }
+
+        if (auto endTime = params.startTime)
+        {
+            endIdDate = timeToYYMMDDHH(*endTime);
+        }
+
         while (ireadmg_f(FileUnit, subsetChars, &iddate, SubsetLen) == 0)
         {
             foundBufrMsg = true;
+
+            if (startIdDate > 0 && iddate < startIdDate) continue;
+            if (endIdDate > 0 && iddate > endIdDate) break;
+
             subset_ = std::string(subsetChars);
             subset_.erase(std::remove_if(subset_.begin(), subset_.end(), isspace), subset_.end());
 
             if (!querySet.includesSubset(subset_)) continue;
 
             msgCnt++;
-            if (msgCnt <= offset)
+            if (msgCnt <= params.offset)
             {
                 processMsg();
                 if (!continueProcessing()) break;
@@ -63,6 +97,8 @@ namespace bufr {
             }
 
             processMsg();
+
+            if (params.numMessages > 0 && msgCnt - params.offset >= params.numMessages) break;
             if (!continueProcessing()) break;
         }
 

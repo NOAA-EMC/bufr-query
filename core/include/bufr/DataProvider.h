@@ -108,6 +108,14 @@ namespace bufr {
         int varientNumber;
     };
 
+    struct RunParameters
+    {
+        size_t offset = 0;
+        size_t numMessages = 0;
+        std::optional<std::time_t> startTime;
+        std::optional<std::time_t> stopTime;
+    };
+
     class DataProvider;
     typedef std::shared_ptr<DataProvider> DataProviderType;
 
@@ -134,7 +142,7 @@ namespace bufr {
                  const std::function<void()> processSubset,
                  const std::function<void()> processMsg = [](){},
                  const std::function<bool()> continueProcessing = [](){ return true; },
-                 size_t offset = 0);
+                 const RunParameters& params = RunParameters());
 
         /// \brief Open the BUFR file with NCEPLIB-bufr
         virtual void open() = 0;

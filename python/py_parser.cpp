@@ -13,6 +13,7 @@
 #include <mpi.h>
 
 #include "bufr/BufrParser.h"
+#include "bufr/DataProvider.h"
 
 #include "py_mpi.h"
 
@@ -31,7 +32,9 @@ void setupParser(py::module& m)
          py::arg("table_path") = "")
     .def("parse", [](BufrParser& self, size_t numMsgs = 0)
          {
-           return self.parse(numMsgs);
+           bufr::RunParameters params;
+           params.numMessages = numMsgs;
+           return self.parse(params);
          },
          py::arg("numMsgs") = 0,
          "Get Parser to parse a config file and get the data container.")

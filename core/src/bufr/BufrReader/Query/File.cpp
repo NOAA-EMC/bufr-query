@@ -41,15 +41,13 @@ namespace bufr {
         dataProvider_->rewind();
     }
 
-    ResultSet File::execute(const QuerySet &querySet, size_t offset, size_t numMessages)
+    ResultSet File::execute(const QuerySet &querySet, const RunParameters& params)
     {
-        size_t msgCnt = 0;
         auto resultSet = ResultSet();
         auto queryRunner = QueryRunner(querySet, resultSet, dataProvider_);
 
-        auto processMsg = [&msgCnt] () mutable
+        auto processMsg = [] () mutable
         {
-            msgCnt++;
         };
 
         auto processSubset = [&queryRunner]() mutable
@@ -57,21 +55,16 @@ namespace bufr {
             queryRunner.accumulate();
         };
 
-        auto continueProcessing = [numMessages, &msgCnt, offset]() -> bool
+        auto continueProcessing = []() -> bool
         {
-            if (numMessages > 0 && msgCnt > offset)
-            {
-              return  (msgCnt - offset) < numMessages;
-            }
-
-            return true;
+          return true;
         };
 
         dataProvider_->run(querySet,
                            processSubset,
                            processMsg,
                            continueProcessing,
-                           offset);
+                           params);
 
         return resultSet;
     }

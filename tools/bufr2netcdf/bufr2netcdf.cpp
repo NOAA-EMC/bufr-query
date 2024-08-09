@@ -82,8 +82,11 @@ namespace mpi {
 
     if (yaml->has("encoder"))
     {
+      RunParameters params;
+      params.numMessages = numMsgs;
+
       auto data = BufrParser(obsFile,
-                             yaml->getSubConfiguration("bufr"), tablePath).parse(numMsgs);
+                             yaml->getSubConfiguration("bufr"), tablePath).parse(params);
 
       auto backend = encoders::netcdf::Encoder::Backend(false, outputFile);
 

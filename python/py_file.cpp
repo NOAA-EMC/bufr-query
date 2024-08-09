@@ -22,10 +22,8 @@ void setupFile(py::module& m)
    .def(py::init<const std::string&, const std::string&>(),
         py::arg("filename"),
         py::arg("wmoTablePath") = std::string(""))
-   .def("execute", &File::execute,
+   .def("execute", [](File &f, bufr::QuerySet &querySet) { return f.execute(querySet); },
         py::arg("query_set"),
-        py::arg("offset") = static_cast<int>(0),
-        py::arg("numMsgs") = static_cast<int>(0),
         "Execute a query set on the file. Returns a ResultSet object.")
    .def("rewind", &File::rewind, "Rewind the file to the beginning.")
    .def("close", &File::close, "Close the file.")

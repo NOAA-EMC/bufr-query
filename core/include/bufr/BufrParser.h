@@ -6,6 +6,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <optional>
+#include <chrono>
 
 #include <mpi.h>
 
@@ -40,11 +42,12 @@ namespace bufr {
 
         /// \brief Uses the provided description to parse the buffer file.
         /// \param maxMsgsToParse Messages to parse (0 for everything)
-        std::shared_ptr<DataContainer> parse(const size_t maxMsgsToParse = 0);
+        std::shared_ptr<DataContainer> parse(const RunParameters& params = RunParameters());
 
         /// \brief Uses the provided description to parse the BUFR file using MPI.
         /// \param comm The eckit MPI comm object
-        std::shared_ptr<DataContainer> parse(const eckit::mpi::Comm&);
+        std::shared_ptr<DataContainer> parse(const eckit::mpi::Comm&,
+                                             const RunParameters& params = RunParameters());
 
         /// \brief Start over from beginning of the BUFR file
         void reset();

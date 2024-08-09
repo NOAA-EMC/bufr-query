@@ -53,7 +53,7 @@ namespace bufr {
         file_.close();
     }
 
-    std::shared_ptr<DataContainer> BufrParser::parse(const size_t maxMsgsToParse)
+    std::shared_ptr<DataContainer> BufrParser::parse(const RunParameters& params)
     {
         auto startTime = std::chrono::steady_clock::now();
 
@@ -68,7 +68,7 @@ namespace bufr {
         }
 
         log::info() << "Executing Queries" << std::endl;
-        const auto resultSet = file_.execute(querySet, maxMsgsToParse);
+        const auto resultSet = file_.execute(querySet, params);
 
         log::info() << "Building Bufr Data" << std::endl;
         auto srcData = BufrDataMap();
@@ -94,7 +94,8 @@ namespace bufr {
         return exportedData;
     }
 
-    std::shared_ptr<DataContainer> BufrParser::parse(const eckit::mpi::Comm& comm)
+    std::shared_ptr<DataContainer> BufrParser::parse(const eckit::mpi::Comm& comm,
+                                                     const RunParameters& params)
     {
       // Make the QuerySet
       auto querySet = QuerySet(description_.getExport().getSubsets());
@@ -109,15 +110,22 @@ namespace bufr {
       auto msgsInFile = file_.size(querySet);
 
       // Distribute the messages to the tasks
-      auto msgsToParse = std::floor(msgsInFile / comm.size());
-      size_t startOffset = comm.rank() * msgsToParse;
+      auto newParams = RunParameters(params);
+      size_t msgsToParse = std::floor(msgsInFile / comm.size());
+      if (params.numMessages > 0)
+      {
+        msgsToParse = std::min(msgsToParse, params.numMessages);
+      }
+      newParams.numMessages = msgsToParse;
+
+      size_t startOffset = comm.rank() * newParams.numMessages;
 
       // Messages may not split evenly among tasks, so distribute the remaining messages
-      if (auto remainder = msgsInFile - comm.size() * msgsToParse)
+      if (auto remainder = msgsInFile - comm.size() * newParams.numMessages)
       {
         if (comm.rank() < remainder)
         {
-          msgsToParse++;
+          newParams.numMessages++;
           startOffset += comm.rank();
         }
         else
@@ -131,7 +139,7 @@ namespace bufr {
       log::info() << "MPI task: " << comm.rank() << " Executing Queries for message ";
       log::info() << startOffset << " to " << startOffset + msgsToParse - 1 << std::endl;
 
-      const auto resultSet = file_.execute(querySet, startOffset, msgsToParse);
+      const auto resultSet = file_.execute(querySet, newParams);
 
       log::info() << "MPI task: " << comm.rank() << " Building Bufr Data" << std::endl;
       auto srcData = BufrDataMap();

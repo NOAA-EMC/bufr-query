@@ -25,8 +25,7 @@ namespace bufr {
         /// \param offset The index of the message in the file to start reading from
         /// \param numMessages The number of messages to read from the file
         ResultSet execute(const QuerySet& query_set,
-                          size_t offset = 0,
-                          size_t numMessages = 0);
+                          const RunParameters& params = RunParameters());
 
         /// \brief Number of messages in the currently open file..
         size_t size(const QuerySet& querySet = QuerySet());
