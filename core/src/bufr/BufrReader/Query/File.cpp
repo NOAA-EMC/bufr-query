@@ -26,9 +26,9 @@ namespace bufr {
         dataProvider_->open();
     }
 
-    size_t File::size(const QuerySet& querySet)
+    size_t File::size(const QuerySet& querySet, const RunParameters& params)
     {
-      return dataProvider_->numMessages(querySet);
+        return dataProvider_->numMessages(querySet, params);
     }
 
     void File::close()

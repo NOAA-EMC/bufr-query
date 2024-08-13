@@ -28,7 +28,10 @@ namespace bufr {
                           const RunParameters& params = RunParameters());
 
         /// \brief Number of messages in the currently open file..
-        size_t size(const QuerySet& querySet = QuerySet());
+        /// \param querySet The queryset object that contains the collection of desired queries
+        /// \param params The run parameters object that contains the collection of desired parameters
+        size_t size(const QuerySet& querySet = QuerySet(),
+                    const RunParameters& params = RunParameters());
 
         /// \brief Close the currently opened BUFR file.
         void close();

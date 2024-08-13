@@ -157,7 +157,7 @@ namespace bufr {
             open();
         }
 
-        size_t numMessages(const QuerySet& querySet);
+        size_t numMessages(const QuerySet& querySet, const RunParameters& params);
 
         /// \brief Is the BUFR file open
         bool isFileOpen() { return isOpen_; }

@@ -30,18 +30,17 @@ void setupParser(py::module& m)
          py::arg("obsfile"),
          py::arg("mapping_path"),
          py::arg("table_path") = "")
-    .def("parse", [](BufrParser& self, size_t numMsgs = 0)
+    .def("parse", [](BufrParser& self, const bufr::RunParameters& params)
          {
-           bufr::RunParameters params;
-           params.numMessages = numMsgs;
            return self.parse(params);
          },
-         py::arg("numMsgs") = 0,
+         py::arg("params") = bufr::RunParameters(),
          "Get Parser to parse a config file and get the data container.")
-    .def("parse", [](BufrParser& self, bufr::mpi::Comm& comm)
+    .def("parse", [](BufrParser& self, bufr::mpi::Comm& comm, const bufr::RunParameters& params)
         {
-          return self.parse(comm.getComm());
+          return self.parse(comm.getComm(), params);
         },
         py::arg("comm"),
+        py::arg("params") = bufr::RunParameters(),
         "Get Parser to parse a config file and get the data container in parallel.");
 }

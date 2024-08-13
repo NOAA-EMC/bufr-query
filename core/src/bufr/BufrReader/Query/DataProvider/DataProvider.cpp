@@ -56,14 +56,14 @@ namespace bufr {
         int startIdDate = 0;
         int endIdDate = 0;
 
-        if (auto startTime = params.startTime)
+        if (params.startTime)
         {
-            startIdDate = timeToYYMMDDHH(*startTime);
+            startIdDate = timeToYYMMDDHH(*params.startTime);
         }
 
-        if (auto endTime = params.startTime)
+        if (params.stopTime)
         {
-            endIdDate = timeToYYMMDDHH(*endTime);
+            endIdDate = timeToYYMMDDHH(*params.stopTime);
         }
 
         while (ireadmg_f(FileUnit, subsetChars, &iddate, SubsetLen) == 0)
@@ -124,13 +124,26 @@ namespace bufr {
         }
     }
 
-    size_t DataProvider::numMessages(const QuerySet& querySet)
+    size_t DataProvider::numMessages(const QuerySet& querySet, const RunParameters& params)
     {
       if (!isOpen_)
       {
         std::ostringstream errStr;
         errStr << "Tried to call DataProvider::numMessages, but the file is not open!";
         throw eckit::BadParameter(errStr.str());
+      }
+
+      int startIdDate = 0;
+      int endIdDate = 0;
+
+      if (params.startTime)
+      {
+        startIdDate = timeToYYMMDDHH(*params.startTime);
+      }
+
+      if (params.stopTime)
+      {
+        endIdDate = timeToYYMMDDHH(*params.stopTime);
       }
 
       static int SubsetLen = 9;
@@ -140,6 +153,9 @@ namespace bufr {
       size_t numMsgs = 0;
       while (ireadmg_f(FileUnit, subsetChars, &iddate, SubsetLen) == 0)
       {
+        if (startIdDate > 0 && iddate < startIdDate) continue;
+        if (endIdDate > 0 && iddate > endIdDate) break;
+
         subset_ = std::string(subsetChars);
         subset_.erase(std::remove_if(subset_.begin(), subset_.end(), isspace), subset_.end());
 

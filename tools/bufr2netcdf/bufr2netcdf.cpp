@@ -205,11 +205,13 @@ int main(int argc, char **argv)
             }
 
             argIdx += 2;
-        } else if (strcmp(argv[argIdx], "-h") == 0)
+        }
+        else if (strcmp(argv[argIdx], "-h") == 0)
         {
             showHelp();
             return 0;
-        } else if (strcmp(argv[argIdx], "-t") == 0)
+        }
+        else if (strcmp(argv[argIdx], "-t") == 0)
         {
             if (static_cast<std::size_t> (argc) > argIdx + 1)
             {
@@ -221,7 +223,8 @@ int main(int argc, char **argv)
             }
 
             argIdx += 2;
-        } else if (strcmp(argv[argIdx], "--no-gather") == 0)
+        }
+        else if (strcmp(argv[argIdx], "--no-gather") == 0)
         {
           separateFiles = true;
           argIdx += 1;
