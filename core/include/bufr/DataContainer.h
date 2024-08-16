@@ -96,6 +96,10 @@ namespace bufr {
     /// \param comm MPI communicator to use.
     void gather(const eckit::mpi::Comm& comm);
 
+    /// \brief Gather data to all the ranks soo they all have the same data.
+    /// \param comm MPI communicator to use.
+    void allGather(const eckit::mpi::Comm& comm);
+
   private:
     /// Category map given (see constructor).
     CategoryMap categoryMap_;
