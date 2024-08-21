@@ -104,17 +104,17 @@ macro(AddPyLib libname pyname pybasename)
     ApplyBaseSettings(${libname})
     set_target_properties( ${libname} PROPERTIES FOLDER "Libs/Python/${pybasename}")
     set_target_properties( ${libname} PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/${pybasename}/${pyname}"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/${pybasename}/${pyname}"
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/${pybasename}/${pyname}"
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/${pybasename}/site-packages/${pyname}"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/${pybasename}/site-packages/${pyname}"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/${pybasename}/site-packages/${pyname}"
         INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
         )
     export( TARGETS ${libname} APPEND FILE "${PROJECT_TARGETS_FILE}" )
     install( TARGETS ${libname}
         EXPORT ${PROJECT_NAME}-targets
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/${pybasename}/${pyname}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/${pybasename}/${pyname}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/${pybasename}/site-packages/${pyname}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/${pybasename}/site-packages/${pyname}
         COMPONENT Python)
 endmacro(AddPyLib)
 
