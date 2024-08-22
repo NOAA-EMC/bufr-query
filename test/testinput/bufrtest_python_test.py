@@ -7,7 +7,7 @@ import numpy as np
 
 
 def test_basic_query():
-    DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
+    DATA_PATH = 'testdata/gdas.t00z.1bhrs4.tm00.bufr_d'
 
     # Make the QuerySet for all the data we want
     q = bufr.QuerySet()
@@ -43,7 +43,7 @@ def test_basic_query():
 
 
 def test_string_field():
-    DATA_PATH = 'testinput/data/gdas.t12z.adpupa.tm00.bufr_d'
+    DATA_PATH = 'testdata/gdas.t12z.adpupa.tm00.bufr_d'
 
     # Make the QuerySet for all the data we want
     q = bufr.QuerySet()
@@ -61,7 +61,7 @@ def test_string_field():
 
 
 def test_long_str_field():
-    DATA_PATH ='testinput/data/gdas.t06z.snocvr.tm00.bufr_d'
+    DATA_PATH ='testdata/gdas.t06z.snocvr.tm00.bufr_d'
 
     # Make the QuerySet for all the data we want
     q = bufr.QuerySet()
@@ -80,7 +80,7 @@ def test_long_str_field():
     assert (np.all(lid[0:7].mask == [False, True, True, True, True, True, False]))
 
 def test_type_override():
-    DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
+    DATA_PATH = 'testdata/gdas.t00z.1bhrs4.tm00.bufr_d'
 
     # Make the QuerySet for all the data we want
     q = bufr.QuerySet()
@@ -116,7 +116,7 @@ def test_invalid_query():
 
 
 def test_highlevel_replace():
-    DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
+    DATA_PATH = 'testdata/gdas.t00z.1bhrs4.tm00.bufr_d'
     YAML_PATH = 'testinput/bufrtest_hrs_basic_mapping.yaml'
     OUTPUT_PATH = 'testrun/bufrtest_python_test.nc'
 
@@ -133,7 +133,7 @@ def test_highlevel_replace():
     assert np.allclose(obs_temp[:, :], data * 1.1)
 
 def test_highlevel_add():
-    DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
+    DATA_PATH = 'testdata/gdas.t00z.1bhrs4.tm00.bufr_d'
     YAML_PATH = 'testinput/bufrtest_hrs_basic_mapping.yaml'
     OUTPUT_PATH = 'testrun/bufrtest_python_test.nc'
 
@@ -158,7 +158,7 @@ def test_highlevel_add():
     assert obs_temp.shape == data.shape
 
 def test_highlevel_append():
-    DATA_PATH = 'testinput/data/gdas.t00z.1bhrs4.tm00.bufr_d'
+    DATA_PATH = 'testdata/gdas.t00z.1bhrs4.tm00.bufr_d'
     YAML_PATH = 'testinput/bufrtest_hrs_basic_mapping.yaml'
 
     container = bufr.Parser(DATA_PATH, YAML_PATH).parse()
@@ -177,7 +177,7 @@ def test_highlevel_append():
     assert np.allclose(orig_data, data)
 
 def test_highlevel_w_category():
-    DATA_PATH = 'testinput/data/gdas.t12z.1bamua.tm00.bufr_d'
+    DATA_PATH = 'testdata/gdas.t12z.1bamua.tm00.bufr_d'
     YAML_PATH = 'testinput/bufrtest_amua_ta_mapping.yaml'
     OUTPUT_PATH = 'testrun/bufrtest_python_test_{splits/satId}.nc'
 
@@ -202,7 +202,7 @@ def test_highlevel_w_category():
         assert np.allclose(obs_orig, obs_new)
 
 def test_highlevel_cache():
-    DATA_PATH = 'testinput/data/gdas.t12z.1bamua.tm00.bufr_d'
+    DATA_PATH = 'testdata/gdas.t12z.1bamua.tm00.bufr_d'
     YAML_PATH = 'testinput/bufrtest_amua_ta_mapping.yaml'
 
     if not bufr.DataCache.has(DATA_PATH, YAML_PATH):
@@ -228,7 +228,7 @@ def test_highlevel_cache():
         assert False, "Data Cache still contains entry."
 
 def test_highlevel_mpi():
-    DATA_PATH = 'testinput/data/gdas.t18z.1bmhs.tm00.bufr_d'
+    DATA_PATH = 'testdata/gdas.t18z.1bmhs.tm00.bufr_d'
     YAML_PATH = 'testinput/bufrtest_mhs_basic_mapping.yaml'
     OUTPUT_PATH = 'testrun/mhs_basic_parallel.nc'
 

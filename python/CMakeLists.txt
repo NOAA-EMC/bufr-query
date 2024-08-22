@@ -5,29 +5,22 @@ include(Targets)
 # Location of .pycodestyle for norm checking within IODA-converters
 set( BUFR_PYLINT_CFG_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
 
-set(pyver python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
-set(PYDIR ${pyver}/bufr)
-
-# Location of installed python iodaconv libraries
-set( PYIODACONV_BUILD_LIBDIR   ${CMAKE_BINARY_DIR}/lib/${PYDIR} )
-set( PYIODACONV_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib/${PYDIR} )
-
-
-list (APPEND PYTHON_SRCS DataObjectFunctions.h
-												DataObjectFunctions.cpp
-												py_bufr.cpp
-												py_result_set.cpp
-												py_data_container.cpp
-												py_query_set.cpp
-												py_file.cpp
-												py_parser.cpp
-												py_data_cache.cpp
-											  py_encoder_description.cpp
-												py_netcdf_encoder.cpp
-												py_mpi.h
-												py_mpi.cpp
-											  py_run_parameters.cpp
-												)
+list (APPEND PYTHON_SRCS
+  DataObjectFunctions.h
+  DataObjectFunctions.cpp
+  py_bufr.cpp
+  py_result_set.cpp
+  py_data_container.cpp
+  py_query_set.cpp
+  py_file.cpp
+  py_parser.cpp
+  py_data_cache.cpp
+  py_encoder_description.cpp
+  py_netcdf_encoder.cpp
+  py_mpi.h
+  py_mpi.cpp
+  py_run_parameters.cpp
+)
 
 # We cannot call ecbuild_add_library here since it conflicts with pybind11_add_module.
 pybind11_add_module(bufr_python ${PYTHON_SRCS})
@@ -52,13 +45,15 @@ else()
 		)
 endif()
 
-add_custom_command(TARGET bufr_python
-									 POST_BUILD
-									 COMMAND ${CMAKE_COMMAND} -E copy_directory
-	                 				 ${CMAKE_CURRENT_SOURCE_DIR}/bufr
-													 $<TARGET_FILE_DIR:bufr_python>)
+add_custom_command(
+    TARGET bufr_python
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/bufr
+            $<TARGET_FILE_DIR:bufr_python>
+    )
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bufr
-	      DESTINATION ${CMAKE_INSTALL_LIBDIR}/${pyver}
-			  COMPONENT Python
-	      FILES_MATCHING PATTERN "*.py")
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/${pyver}/site-packages
+        COMPONENT Python
+        FILES_MATCHING PATTERN "*.py")
