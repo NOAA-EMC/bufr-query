@@ -125,7 +125,7 @@ namespace bufr {
       subCategory = std::make_shared<DataContainer>(categoryMap_);
       for (const auto& field : dataSets_.at(categoryId))
       {
-        subCategory->add(field.first, field.second->copy(), categoryId);
+        subCategory->add(field.first, field.second, categoryId);
       }
     }
     else
