@@ -135,5 +135,11 @@ void setupDataContainer(py::module& m)
           return self.gather(comm.getComm());
         },
         py::arg("comm"),
-        "Gather data from all processes.");
+        "Gather data from all tasks into rank 0 task.")
+   .def("all_gather", [](DataContainer& self, bufr::mpi::Comm& comm)
+        {
+          return self.allGather(comm.getComm());
+        },
+        py::arg("comm"),
+        "Gather data from all tasks into all tasks. Each task will have the complete record.");
 }
