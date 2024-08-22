@@ -117,6 +117,29 @@ namespace bufr {
     return hasCat;
   }
 
+  std::shared_ptr<DataContainer> DataContainer::getSubContainer(const SubCategory& categoryId) const
+  {
+    std::shared_ptr<DataContainer> subCategory = nullptr;
+    if (dataSets_.find(categoryId) != dataSets_.end())
+    {
+      subCategory = std::make_shared<DataContainer>(categoryMap_);
+      for (const auto& field : dataSets_.at(categoryId))
+      {
+        subCategory->add(field.first, field.second->copy(), categoryId);
+      }
+    }
+    else
+    {
+      std::ostringstream errStr;
+      errStr << "ERROR: Category called " << makeSubCategoryStr(categoryId);
+      errStr << " does not exist.";
+
+      throw eckit::BadParameter(errStr.str());
+    }
+
+    return subCategory;
+  }
+
   size_t DataContainer::size(const SubCategory& categoryId) const {
     if (dataSets_.find(categoryId) == dataSets_.end()) {
       std::ostringstream errStr;

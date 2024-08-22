@@ -71,6 +71,8 @@ namespace bufr {
 
     bool hasCategory(const SubCategory& categoryId) const;
 
+    std::shared_ptr<DataContainer> getSubContainer(const SubCategory& categoryId) const;
+
     /// \brief Get the number of rows of the specified sub category
     /// \param categoryId The vector<string> for the subcategory
     size_t size(const SubCategory& categoryId = {}) const;

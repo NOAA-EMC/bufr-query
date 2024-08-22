@@ -126,6 +126,9 @@ void setupDataContainer(py::module& m)
    .def("get_category_map", &DataContainer::getCategoryMap, "Get the map.")
    .def("all_sub_categories", &DataContainer::allSubCategories,
         "Get the sub categories for the satellite.")
+   .def("get_sub_container", &DataContainer::getSubContainer,
+        py::arg("category"),
+        "Get the data container for the sub category.")
    .def("list", &DataContainer::getFieldNames, "Get the field names.")
    .def("append", &DataContainer::append,
         py::arg("other"),
