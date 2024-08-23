@@ -122,7 +122,15 @@ namespace bufr {
     std::shared_ptr<DataContainer> subCategory = nullptr;
     if (dataSets_.find(categoryId) != dataSets_.end())
     {
-      subCategory = std::make_shared<DataContainer>(categoryMap_);
+      auto newCategoryMap = CategoryMap();
+      size_t catIdx = 0;
+      for (const auto& category : categoryMap_)
+      {
+        newCategoryMap[category.first] = {categoryId[catIdx]};
+        catIdx++;
+      }
+
+      subCategory = std::make_shared<DataContainer>(newCategoryMap);
       for (const auto& field : dataSets_.at(categoryId))
       {
         subCategory->add(field.first, field.second, categoryId);
