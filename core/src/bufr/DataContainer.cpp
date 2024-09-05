@@ -117,6 +117,37 @@ namespace bufr {
     return hasCat;
   }
 
+  std::shared_ptr<DataContainer> DataContainer::getSubContainer(const SubCategory& categoryId) const
+  {
+    std::shared_ptr<DataContainer> subCategory = nullptr;
+    if (dataSets_.find(categoryId) != dataSets_.end())
+    {
+      auto newCategoryMap = CategoryMap();
+      size_t catIdx = 0;
+      for (const auto& category : categoryMap_)
+      {
+        newCategoryMap[category.first] = {categoryId[catIdx]};
+        catIdx++;
+      }
+
+      subCategory = std::make_shared<DataContainer>(newCategoryMap);
+      for (const auto& field : dataSets_.at(categoryId))
+      {
+        subCategory->add(field.first, field.second, categoryId);
+      }
+    }
+    else
+    {
+      std::ostringstream errStr;
+      errStr << "ERROR: Category called " << makeSubCategoryStr(categoryId);
+      errStr << " does not exist.";
+
+      throw eckit::BadParameter(errStr.str());
+    }
+
+    return subCategory;
+  }
+
   size_t DataContainer::size(const SubCategory& categoryId) const {
     if (dataSets_.find(categoryId) == dataSets_.end()) {
       std::ostringstream errStr;
@@ -248,6 +279,18 @@ namespace bufr {
       {
         auto data = get(field, subCat);
         data->gather(comm);
+      }
+    }
+  }
+
+  void DataContainer::allGather(const eckit::mpi::Comm& comm)
+  {
+    for (const auto &subCat: allSubCategories())
+    {
+      for (const auto &field: getFieldNames())
+      {
+        auto data = get(field, subCat);
+        data->allGather(comm);
       }
     }
   }

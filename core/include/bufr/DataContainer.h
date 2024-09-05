@@ -71,6 +71,8 @@ namespace bufr {
 
     bool hasCategory(const SubCategory& categoryId) const;
 
+    std::shared_ptr<DataContainer> getSubContainer(const SubCategory& categoryId) const;
+
     /// \brief Get the number of rows of the specified sub category
     /// \param categoryId The vector<string> for the subcategory
     size_t size(const SubCategory& categoryId = {}) const;
@@ -95,6 +97,10 @@ namespace bufr {
     /// \brief Gather data from all ranks into rank 0.
     /// \param comm MPI communicator to use.
     void gather(const eckit::mpi::Comm& comm);
+
+    /// \brief Gather data to all the ranks soo they all have the same data.
+    /// \param comm MPI communicator to use.
+    void allGather(const eckit::mpi::Comm& comm);
 
   private:
     /// Category map given (see constructor).
