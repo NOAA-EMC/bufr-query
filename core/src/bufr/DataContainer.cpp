@@ -239,6 +239,11 @@ namespace bufr {
   {
     bool isEmpty = getFieldNames().empty();
 
+    if (isEmpty)
+    {
+      dataSets_.clear();
+    }
+
     for (const auto &subCat: other.allSubCategories())
     {
       if (isEmpty)

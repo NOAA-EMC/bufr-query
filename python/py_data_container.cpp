@@ -125,7 +125,7 @@ void setupDataContainer(py::module& m)
         "Replace the variable with the given name.")
    .def("get_category_map", &DataContainer::getCategoryMap, "Get the map.")
    .def("all_sub_categories", &DataContainer::allSubCategories,
-        "Get the sub categories for the satellite.")
+        "Get the sub categories.")
    .def("get_sub_container", &DataContainer::getSubContainer,
         py::arg("category"),
         "Get the data container for the sub category.")
