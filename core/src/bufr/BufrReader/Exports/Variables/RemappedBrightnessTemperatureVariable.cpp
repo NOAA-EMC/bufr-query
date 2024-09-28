@@ -194,6 +194,7 @@ namespace bufr {
 	    // 2. Get the obstime from the first existing fov 
             int64_t first_time = !time_set.empty() ? time_set[0] : 0;
             int64_t adjusted_first_time = first_time;
+            int64_t scan_interval = 18; // milliseconds
 
             // 3. Complete set: replace all times with the first time element
             if (missing.empty()) {
@@ -203,7 +204,7 @@ namespace bufr {
                 }
             // 4. Corrected adjustment logic for incomplete sets
             } else {
-                adjusted_first_time = first_time - (*min_element(fovn_set.begin(), fovn_set.end()) - 1) * 18;
+                adjusted_first_time = first_time - (*min_element(fovn_set.begin(), fovn_set.end()) - 1) * scan_interval;
                 for (const auto& [f, t] : fovn_time_set) {
                     modified_combined.emplace_back(f, slnm_val, adjusted_first_time);
                 }
