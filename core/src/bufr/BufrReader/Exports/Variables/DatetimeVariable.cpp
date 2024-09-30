@@ -102,7 +102,6 @@ namespace bufr {
       int day     = map.at(getExportKey(ConfKeys::Day))->getAsInt(idx);
       int hour    = map.at(getExportKey(ConfKeys::Hour))->getAsInt(idx);
       int minutes = 0;
-//    int seconds = 0;
       float seconds = 0.0;
       auto diff_time = DataObject<int64_t>::missingValue();
       if (year != missingInt && month != missingInt && day != missingInt && hour != missingInt) {
