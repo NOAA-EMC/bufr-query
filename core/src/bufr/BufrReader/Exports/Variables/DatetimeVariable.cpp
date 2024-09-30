@@ -122,7 +122,6 @@ namespace bufr {
         }
 
         if (!secondQuery_.empty()) {
-//        seconds = map.at(getExportKey(ConfKeys::Second))->getAsInt(idx);
           seconds = map.at(getExportKey(ConfKeys::Second))->getAsFloat(idx);
 
           if (seconds >= 0 && seconds < 60) {
