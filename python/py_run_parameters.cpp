@@ -49,5 +49,21 @@ void setupRunParameters(py::module& m)
                   },
                   [](RunParameters &rp, const std::chrono::system_clock::time_point &tp) {
                     rp.stopTime = std::chrono::system_clock::to_time_t(tp);
+                  })
+    .def_property("var_list",
+                  [](const RunParameters &rp) -> py::list {
+                    py::list varList;
+                    for (const auto &var : rp.varList)
+                    {
+                      varList.append(var);
+                    }
+                    return varList;
+                  },
+                  [](RunParameters &rp, const py::list &varList) {
+                   rp.varList.clear();
+                    for (const auto &var : varList)
+                    {
+                      rp.varList.push_back(var.cast<std::string>());
+                    }
                   });
 }

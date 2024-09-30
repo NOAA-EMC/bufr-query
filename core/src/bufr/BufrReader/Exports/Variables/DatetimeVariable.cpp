@@ -215,6 +215,7 @@ namespace bufr {
       info.name         = getExportKey(ConfKeys::Second);
       info.query        = secondQuery_;
       info.groupByField = groupByField_;
+      info.type = "float";
       queries.push_back(info);
     }
 

@@ -114,6 +114,7 @@ namespace bufr {
         size_t numMessages = 0;
         std::optional<std::time_t> startTime;
         std::optional<std::time_t> stopTime;
+        std::vector<std::string> varList;
     };
 
     class DataProvider;

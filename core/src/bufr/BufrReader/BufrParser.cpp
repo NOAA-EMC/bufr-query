@@ -57,12 +57,39 @@ namespace bufr {
     {
         auto startTime = std::chrono::steady_clock::now();
 
-        auto querySet = QuerySet(description_.getExport().getSubsets());
+        // Validate the varList
+        for (const auto &var : params.varList)
+        {
+          bool found = false;
+          for (const auto &varDesc : description_.getExport().getVariables())
+          {
+            for (const auto &queryPair : varDesc->getQueryList())
+            {
+              if (var == queryPair.name)
+              {
+                found = true;
+                break;
+              }
+            }
+          }
+          if (!found)
+          {
+            log::warning() << "Variable " << var << " not found in the description" << std::endl;
+          }
+        }
 
+        auto querySet = QuerySet(description_.getExport().getSubsets());
         for (const auto &var : description_.getExport().getVariables())
         {
             for (const auto &queryPair : var->getQueryList())
             {
+                if (!params.varList.empty() && std::find(params.varList.begin(),
+                                                         params.varList.end(),
+                                                         queryPair.name) == params.varList.end())
+                {
+                  continue;
+                }
+
                 querySet.add(queryPair.name, queryPair.query);
             }
         }
@@ -76,6 +103,13 @@ namespace bufr {
         {
             for (const auto& queryInfo : var->getQueryList())
             {
+                if (!params.varList.empty() && std::find(params.varList.begin(),
+                                                         params.varList.end(),
+                                                         queryInfo.name) == params.varList.end())
+                {
+                  continue;
+                }
+
                 srcData[queryInfo.name] = resultSet.get(
                     queryInfo.name, queryInfo.groupByField, queryInfo.type);
             }
@@ -97,12 +131,41 @@ namespace bufr {
     std::shared_ptr<DataContainer> BufrParser::parse(const eckit::mpi::Comm& comm,
                                                      const RunParameters& params)
     {
+      // Validate the varList
+      for (const auto &var : params.varList)
+      {
+        bool found = false;
+        for (const auto &varDesc : description_.getExport().getVariables())
+        {
+          for (const auto &queryPair : varDesc->getQueryList())
+          {
+            if (var == queryPair.name)
+            {
+              found = true;
+              break;
+            }
+          }
+        }
+        if (!found)
+        {
+          log::warning() << "Variable " << var << " not found in the description" << std::endl;
+        }
+      }
+
+
       // Make the QuerySet
       auto querySet = QuerySet(description_.getExport().getSubsets());
       for (const auto &var : description_.getExport().getVariables())
       {
         for (const auto &queryPair : var->getQueryList())
         {
+          if (!params.varList.empty() && std::find(params.varList.begin(),
+                                                    params.varList.end(),
+                                                    queryPair.name) == params.varList.end())
+          {
+            continue;
+          }
+
           querySet.add(queryPair.name, queryPair.query);
         }
       }
@@ -147,6 +210,13 @@ namespace bufr {
       {
         for (const auto& queryInfo : var->getQueryList())
         {
+          if (!params.varList.empty() && std::find(params.varList.begin(),
+                                                   params.varList.end(),
+                                                   queryInfo.name) == params.varList.end())
+          {
+            continue;
+          }
+
           srcData[queryInfo.name] = resultSet.get(
             queryInfo.name, queryInfo.groupByField, queryInfo.type);
         }
