@@ -125,7 +125,7 @@ namespace bufr {
           seconds = map.at(getExportKey(ConfKeys::Second))->getAsFloat(idx);
 
           if (seconds >= 0 && seconds < 60) {
-            tm.tm_sec = seconds;
+            tm.tm_sec = static_cast<int>(seconds);
           }
         }
 
