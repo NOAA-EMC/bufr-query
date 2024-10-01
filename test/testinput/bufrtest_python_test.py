@@ -227,55 +227,19 @@ def test_highlevel_cache():
     if bufr.DataCache.has(DATA_PATH, YAML_PATH):
         assert False, "Data Cache still contains entry."
 
-def test_mpi_basic():
-    DATA_PATH = 'testdata/gdas.t18z.1bmhs.tm00.bufr_d'
-    YAML_PATH = 'testinput/bufrtest_mhs_basic_mapping.yaml'
-    OUTPUT_PATH = 'testrun/mhs_basic_parallel.nc'
-
-    bufr.mpi.App(sys.argv) # Don't do this if passing in MPI communicator
-    comm = bufr.mpi.Comm("world")
-
-    container = bufr.Parser(DATA_PATH, YAML_PATH).parse(comm)
-    container.gather(comm)
-
-    if comm.rank() == 0:
-        netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)
-
-def test_mpi_gather_all():
-
-    # DATA_PATH = 'testdata/gdas.t18z.1bmhs.tm00.bufr_d'
-    # YAML_PATH = 'testinput/bufrtest_mhs_basic_mapping.yaml'
-    # OUTPUT_PATH = 'testrun/mhs_basic_parallel.nc'
-
-    DATA_PATH = 'testdata/gdas.t06z.snocvr.tm00.bufr_d'
-    YAML_PATH = 'testinput/bufrtest_long_strs_mapping.yaml'
-    OUTPUT_PATH = 'testrun/bufrtest_long_strs.nc'
-
-    bufr.mpi.App(sys.argv) # Don't do this if passing in MPI communicator
-    comm = bufr.mpi.Comm("world")
-
-    container = bufr.Parser(DATA_PATH, YAML_PATH).parse(comm)
-    container.all_gather(comm)
-
-    if comm.rank() == 0:
-        netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)
-
 
 if __name__ == '__main__':
-    # # Low level interface tests
-    # test_basic_query()
-    # test_string_field()
-    # test_long_str_field()
-    # test_type_override()
-    # test_invalid_query()
-    #
-    # # High level interface tests
-    # test_highlevel_replace()
-    # test_highlevel_add()
-    # test_highlevel_w_category()
-    # test_highlevel_cache()
-    # test_highlevel_append()
-    #
-    # # MPI tests
-    # test_mpi_basic()
-    test_mpi_gather_all()
+    # Low level interface tests
+    test_basic_query()
+    test_string_field()
+    test_long_str_field()
+    test_type_override()
+    test_invalid_query()
+
+    # High level interface tests
+    test_highlevel_replace()
+    test_highlevel_add()
+    test_highlevel_w_category()
+    test_highlevel_cache()
+    test_highlevel_append()
+

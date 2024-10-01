@@ -552,7 +552,6 @@ namespace bufr {
       /// \param comm The MPI communicator to use.
       void allGather(const eckit::mpi::Comm& comm) final
       {
-        std::cout << "All gather numeric variable" << std::endl;
         size_t numDims = dims_.size();
         comm.allReduce(numDims, numDims, eckit::mpi::Operation::MAX);
 

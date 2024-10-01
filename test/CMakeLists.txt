@@ -88,6 +88,7 @@ list( APPEND test_input
   testinput/bufrtest_wmo_amdar_multi_mapping.yaml
   testinput/bufrtest_fieldname_validation.py
   testinput/bufrtest_python_test.py
+  testinput/bufrtest_python_mpi_test.py
 )
 
 # create test directories and make links to the input files
@@ -548,7 +549,7 @@ if (${BUILD_PYTHON_BINDINGS})
                     MPI 4
                     TYPE    SCRIPT
                     COMMAND python3
-                    ARGS    testinput/bufrtest_python_test.py
+                    ARGS    testinput/bufrtest_python_mpi_test.py
                     ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}:$ENV{PYTHONPATH})
 
 endif()
