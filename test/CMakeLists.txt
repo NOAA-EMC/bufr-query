@@ -537,19 +537,19 @@ if (${BUILD_PYTHON_BINDINGS})
                     TYPE    SCRIPT
                     COMMAND python3
                     ARGS    testinput/bufrtest_fieldname_validation.py
-                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
+                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}:$ENV{PYTHONPATH})
 
   ecbuild_add_test( TARGET  test_bufr_python_test
                     TYPE    SCRIPT
                     COMMAND python3
                     ARGS    testinput/bufrtest_python_test.py
-                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
+                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}:$ENV{PYTHONPATH})
 
   ecbuild_add_test( TARGET  test_bufr_python_mpi_test
                     MPI 4
                     TYPE    SCRIPT
                     COMMAND python3
                     ARGS    testinput/bufrtest_python_mpi_test.py
-                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
+                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}:$ENV{PYTHONPATH})
 
 endif()

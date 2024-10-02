@@ -44,8 +44,6 @@ else()
 		)
 endif()
 
-set_target_properties(bufr_python PROPERTIES INSTALL_RPATH "/opt/local/lib/libgcc")
-
 add_custom_command(
     TARGET bufr_python
     POST_BUILD
