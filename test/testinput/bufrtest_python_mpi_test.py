@@ -77,7 +77,7 @@ def test_mpi_gather_all():
 
 
 if __name__ == '__main__':
-    # test_mpi_basic()
+    test_mpi_basic()
     test_mpi_categories()
-    # test_mpi_sub_container()
-    # test_mpi_gather_all()
+    test_mpi_sub_container()
+    test_mpi_gather_all()
