@@ -3,7 +3,7 @@
 # Download the test data if we don't have it.
 # Code borrowed from NCEPLIB-bufr project...
 
-set(DOWNLOAD_URL "https://ftp.emc.ncep.noaa.gov/static_files/public")
+set(DOWNLOAD_URL "https://ftp.emc.ncep.noaa.gov/static_files/public/bufr-query")
 set(FILE_COLLECTION "bufr_query-0.0.1.tgz")
 
 # Get the test data if we don't have it.
@@ -88,6 +88,7 @@ list( APPEND test_input
   testinput/bufrtest_wmo_amdar_multi_mapping.yaml
   testinput/bufrtest_fieldname_validation.py
   testinput/bufrtest_python_test.py
+  testinput/bufrtest_python_mpi_test.py
 )
 
 # create test directories and make links to the input files
@@ -99,10 +100,6 @@ foreach(FILENAME ${test_input})
     ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME} )
 endforeach(FILENAME)
 
-# link the bufr_tables directory
-execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink
-  ${CMAKE_CURRENT_SOURCE_DIR}/testdata/bufr_tables
-  ${CMAKE_CURRENT_BINARY_DIR}/testdata/bufr_tables )
 
 ecbuild_add_test( TARGET  test_bufr_filtering
                   TYPE    SCRIPT
@@ -540,12 +537,19 @@ if (${BUILD_PYTHON_BINDINGS})
                     TYPE    SCRIPT
                     COMMAND python3
                     ARGS    testinput/bufrtest_fieldname_validation.py
-                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}:$ENV{PYTHONPATH})
+                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
 
   ecbuild_add_test( TARGET  test_bufr_python_test
                     TYPE    SCRIPT
                     COMMAND python3
                     ARGS    testinput/bufrtest_python_test.py
-                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}:$ENV{PYTHONPATH})
+                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
+
+  ecbuild_add_test( TARGET  test_bufr_python_mpi_test
+                    MPI 4
+                    TYPE    SCRIPT
+                    COMMAND python3
+                    ARGS    testinput/bufrtest_python_mpi_test.py
+                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
 
 endif()

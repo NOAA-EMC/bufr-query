@@ -1165,7 +1165,7 @@ namespace bufr {
         }
 
         size_t charsToReceive = charsToSend;
-        comm.reduce(charsToReceive, charsToReceive, eckit::mpi::Operation::SUM, 0);
+        comm.allReduce(charsToReceive, charsToReceive, eckit::mpi::Operation::SUM);
 
         auto sizeArray = std::vector<int>(comm.size());
         comm.allGather(static_cast<int>(charsToSend), sizeArray.begin(), sizeArray.end());

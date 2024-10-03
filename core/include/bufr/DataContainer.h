@@ -46,20 +46,27 @@ namespace bufr {
     void add(const std::string& fieldName, std::shared_ptr<DataObjectBase> data,
              const SubCategory& categoryId = {});
 
+    /// \brief Replace a DataObject in the collection
+    /// \param data The DataObject to store
+    /// \param fieldName The name of the data object to replace
+    /// \param categoryId The vector<string> for the subcategory
     void set(std::shared_ptr<DataObjectBase> data, const std::string& fieldName,
              const SubCategory& categoryId = {});
 
     /// \brief Get a DataObject from the collection
-    /// \param fieldName The name of the data object ot get
+    /// \param fieldName The name of the data object to get
     /// \param categoryId The vector<string> for the subcategory
     std::shared_ptr<DataObjectBase> get(const std::string& fieldName,
                                         const SubCategory& categoryId = {}) const;
 
+    /// \brief Get list of dimensioning paths for the field
+    /// \param fieldName The name of the data object to get
+    /// \param categoryId The vector<string> for the subcategory
     std::vector<std::string> getPaths(const std::string& fieldName,
                                       const SubCategory& categoryId = {}) const;
 
     /// \brief Get a DataObject for the group by field
-    /// \param fieldName The name of the data object ot get
+    /// \param fieldName The name of the data object to get
     /// \param categoryId The vector<string> for the subcategory
     std::shared_ptr<DataObjectBase> getGroupByObject(const std::string& fieldName,
                                                      const SubCategory& categoryId = {}) const;
@@ -69,8 +76,12 @@ namespace bufr {
     /// \param categoryId The vector<string> for the subcategory
     bool hasKey(const std::string& fieldName, const SubCategory& categoryId = {}) const;
 
+    /// \brief Check if a category is available
+    /// \param categoryId The vector<string> for the subcategory
     bool hasCategory(const SubCategory& categoryId) const;
 
+    /// \brief Get a new data-container for the specified sub-category
+    /// \param categoryId The vector<string> for the subcategory
     std::shared_ptr<DataContainer> getSubContainer(const SubCategory& categoryId) const;
 
     /// \brief Get the number of rows of the specified sub category

@@ -55,8 +55,10 @@ namespace bufr {
   std::vector<std::pair<int, std::string>> QueryPrinter::getDimPaths(const SubsetTableType& table) {
     std::map<std::string, std::pair<int, std::string>> dimPathMap;
     for (const auto& leaf : table->getLeaves()) {
-      for (const auto& path : leaf->getDimPaths()) {
-        dimPathMap[path] = std::make_pair(leaf->getDimIdxs().size(), path);
+      const auto dimPaths = leaf->getDimPaths();
+      for (size_t dimIdx = 0; dimIdx < dimPaths.size(); ++dimIdx) {
+        const auto path = dimPaths[dimIdx];
+        dimPathMap[path] = std::make_pair(dimIdx + 1, path);
       }
     }
 
