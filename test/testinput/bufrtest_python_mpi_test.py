@@ -59,7 +59,7 @@ def test_mpi_sub_container():
         assert(os.system(f'nccmp -d -m -g -f -S testrun/bufrtest_mtiasi_metop-c_sub_container.nc {COMP_PATH}') == 0)
 
 
-def test_mpi_gather_all():
+def test_mpi_all_gather():
     DATA_PATH = 'testdata/gdas.t06z.snocvr.tm00.bufr_d'
     YAML_PATH = 'testinput/bufrtest_long_strs_mapping.yaml'
     OUTPUT_PATH = 'testrun/bufrtest_long_strs.nc'
@@ -80,4 +80,4 @@ if __name__ == '__main__':
     test_mpi_basic()
     test_mpi_categories()
     test_mpi_sub_container()
-    test_mpi_gather_all()
+    test_mpi_all_gather()
