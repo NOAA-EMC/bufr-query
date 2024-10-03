@@ -1,4 +1,4 @@
-# (C) Copyright 2023 NOAA/NWS/NCEP/EMC
+# (C) Copyright 2024 NOAA/NWS/NCEP/EMC
 import sys
 import os
 
@@ -71,7 +71,7 @@ def test_mpi_gather_all():
     container = bufr.Parser(DATA_PATH, YAML_PATH).parse(comm)
     container.all_gather(comm)
 
-    if comm.rank() == 0:
+    if comm.rank() == 1:
         netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)
         assert(os.system(f'nccmp -d -m -g -f -S  {OUTPUT_PATH} {COMP_PATH}') == 0)
 
