@@ -163,6 +163,10 @@ namespace bufr {
       /// \param comm The MPI communicator to use.
       virtual void gather(const eckit::mpi::Comm& comm) = 0;
 
+      /// \brief Do an MPI Gather All operation to distribute all the data.
+      /// \param comm The MPI communicator to use.
+      virtual void allGather(const eckit::mpi::Comm& comm) = 0;
+
       /// \brief Makes a new dimension scale using this data object as the source
       /// \param name The name of the dimension variable.
       /// \param dimIdx The idx of the data dimension to use.
@@ -542,6 +546,125 @@ namespace bufr {
           dims_ = rcvDims;
           data_ = std::move(rcvBuffer);
         }
+      }
+
+      /// \brief Do an MPI Gather All operation to distribute all the data.
+      /// \param comm The MPI communicator to use.
+      void allGather(const eckit::mpi::Comm& comm) final
+      {
+        size_t numDims = dims_.size();
+        comm.allReduce(numDims, numDims, eckit::mpi::Operation::MAX);
+
+        // Ensure all ranks have the same number of dimensions
+        if (numDims != dims_.size())
+        {
+          int missingDims = numDims - dims_.size();
+          for (int idx = 0; idx < missingDims; ++idx)
+          {
+            dims_.insert(dims_.end() - 1, 1);
+          }
+        }
+
+        std::vector<int> rcvDims = dims_;
+        comm.allReduce(rcvDims[0], rcvDims[0], eckit::mpi::Operation::SUM);
+
+        for (size_t i = 1; i < numDims; ++i)
+        {
+          comm.allReduce(rcvDims[i], rcvDims[i], eckit::mpi::Operation::MAX);
+        }
+
+        size_t sendSize = dims_[0];
+        for (size_t idx = 1; idx < rcvDims.size(); idx++)
+        {
+          sendSize *= rcvDims[idx];
+        }
+
+        size_t rcvSize = 1;
+        for (size_t idx = 0; idx < rcvDims.size(); idx++)
+        {
+          rcvSize *= rcvDims[idx];
+        }
+
+        // Fix my send buffer if the global extra dimensions (not the first one) differ from my own
+        // (resize and fill with missing values where necessary). This will involve creating a send
+        // array and copying data into the correct indices.
+
+        // Do the extra dimensions from the different ranks match?
+        bool adjustDims = false;
+        for (size_t idx = 1; idx < rcvDims.size(); idx++)
+        {
+          adjustDims = (rcvDims[idx] != getDims()[idx]);
+        }
+
+        // Resize the dimensions to match the global dimensions
+        if (adjustDims)
+        {
+          std::vector<T> sendBuffer(sendSize, missingValue());
+
+          // Map the local data into the sendBuffer using the dimensions
+          for (size_t i = 0; i < data_.size(); ++i)
+          {
+            Location loc;
+
+            // Compute the location coordinate in the old data
+            size_t idx = i;
+            for (size_t dimIdx = 0; dimIdx < dims_.size(); ++dimIdx)
+            {
+              loc.push_back(idx % dims_[dimIdx]);
+              idx /= dims_[dimIdx];
+            }
+
+            // Map that location into the new data (compute the new index)
+            idx = 0;
+            for (size_t dimIdx = 0; dimIdx < rcvDims.size(); ++dimIdx)
+            {
+              idx += loc[dimIdx] * rcvDims[dimIdx];
+            }
+
+            sendBuffer[idx] = data_[i];
+          }
+
+          data_ = std::move(sendBuffer);
+        }
+
+        auto sizeArray = std::vector<int>(comm.size());
+        comm.allGather(static_cast<int>(size()), sizeArray.begin(), sizeArray.end());
+
+        std::vector<T> rcvBuffer(rcvSize, missingValue());
+        auto rcvCounts = std::vector<int>(comm.size());
+
+        std::vector<int> displacement(comm.size(), 0);
+        for (size_t i = 1; i < comm.size(); i++)
+        {
+          displacement[i] =  displacement[i - 1] + sizeArray[i - 1];
+        }
+
+        if constexpr (!std::is_same_v<T, unsigned long long> && !std::is_same_v<T, unsigned int>)
+        {
+          comm.allGatherv(data_.begin(), data_.end(), rcvBuffer.begin(),
+                          sizeArray.data(), displacement.data());
+        }
+        else
+        {
+          // Use unsigned long as the type and use that to gatherv back to the correct type. This is
+          // necessary because eckit MPI does not support unsigned long long or unsigned int
+          std::vector<unsigned long> ulData(data_.begin(), data_.end());
+          std::vector<unsigned long> ulRcvBuffer(rcvSize, DataObject<unsigned long>::missingValue());
+          comm.allGatherv(ulData.begin(), ulData.end(), ulRcvBuffer.begin(),
+                          sizeArray.data(), displacement.data());
+
+          // manually copy preserving missing values
+          for (size_t i = 0; i < rcvSize; i++)
+          {
+            if (ulRcvBuffer[i] != DataObject<unsigned long>::missingValue())
+            {
+              rcvBuffer[i] = static_cast<T>(ulRcvBuffer[i]);
+            }
+          }
+        }
+
+        dims_ = rcvDims;
+        data_ = std::move(rcvBuffer);
       }
 
       /// \brief Append the data from another DataObject to this one.
@@ -959,6 +1082,141 @@ namespace bufr {
             data_[idx] = str;
             offset += strSizes[idx];
           }
+        }
+      }
+
+      /// \brief Do an MPI Gather operation and accumalate the data into the root process.
+      /// \param comm The MPI communicator to use.
+      void allGather(const eckit::mpi::Comm& comm) final
+      {
+        size_t numDims = dims_.size();
+        comm.allReduce(numDims, numDims, eckit::mpi::Operation::MAX);
+
+        // Ensure all ranks have the same number of dimensions
+        if (numDims != dims_.size())
+        {
+          int missingDims = numDims - dims_.size();
+          for (int idx = 0; idx < missingDims; ++idx)
+          {
+            dims_.insert(dims_.end() - 1, 1);
+          }
+        }
+
+        std::vector<int> rcvDims = dims_;
+        comm.allReduce(rcvDims[0], rcvDims[0], eckit::mpi::Operation::SUM);
+
+        for (size_t i = 1; i < numDims; ++i)
+        {
+          comm.allReduce(rcvDims[i], rcvDims[i], eckit::mpi::Operation::MAX);
+        }
+
+        size_t sendSize = dims_[0];
+        for (size_t idx = 1; idx < rcvDims.size(); idx++)
+        {
+          sendSize *= rcvDims[idx];
+        }
+
+        // Fix my send buffer if the global extra dimensions (not the first one) differ from my own
+        // (resize and fill with missing values where necessary). This will involve creating a send
+        // array and copying data into the correct indices.
+
+        // Do the extra dimensions from the different ranks match?
+        bool adjustDims = false;
+        for (size_t idx = 1; idx < rcvDims.size(); idx++)
+        {
+          adjustDims = (rcvDims[idx] != getDims()[idx]);
+        }
+
+        // Resize the dimensions to match the global dimensions
+        if (adjustDims)
+        {
+          std::vector<std::string> sendBuffer(sendSize, missingValue());
+
+          // Map the local data into the sendBuffer using the dimensions
+          for (size_t i = 0; i < data_.size(); ++i)
+          {
+            Location loc;
+
+            // Compute the location coordinate in the old data
+            size_t idx = i;
+            for (size_t dimIdx = 0; dimIdx < dims_.size(); ++dimIdx)
+            {
+              loc.push_back(idx % dims_[dimIdx]);
+              idx /= dims_[dimIdx];
+            }
+
+            // Map that location into the new data (compute the new index)
+            idx = 0;
+            for (size_t dimIdx = 0; dimIdx < rcvDims.size(); ++dimIdx)
+            {
+              idx += loc[dimIdx] * rcvDims[dimIdx];
+            }
+
+            sendBuffer[idx] = data_[i];
+          }
+
+          data_ = std::move(sendBuffer);
+        }
+
+        size_t charsToSend = 0;
+        for (const auto& str : data_)
+        {
+          charsToSend += str.size();
+        }
+
+        size_t charsToReceive = charsToSend;
+        comm.allReduce(charsToReceive, charsToReceive, eckit::mpi::Operation::SUM);
+
+        auto sizeArray = std::vector<int>(comm.size());
+        comm.allGather(static_cast<int>(charsToSend), sizeArray.begin(), sizeArray.end());
+
+        std::vector<char> rcvBuffer(charsToReceive, 0);
+        auto rcvCounts = std::vector<int>(comm.size());
+
+        std::vector<int> displacement(comm.size(), 0);
+        for (size_t i = 1; i < comm.size(); i++)
+        {
+          displacement[i] =  displacement[i - 1] + sizeArray[i - 1];
+        }
+
+        std::vector<char> charSendBuffer;
+        for (const auto& str : data_)
+        {
+          charSendBuffer.insert(charSendBuffer.end(), str.begin(), str.end());
+        }
+
+        comm.allGatherv(charSendBuffer.begin(), charSendBuffer.end(), rcvBuffer.begin(),
+                        sizeArray.data(), displacement.data());
+
+        std::vector<int> myStrSizes(data_.size());
+        for (size_t idx=0; idx < data_.size(); ++idx)
+        {
+          myStrSizes[idx] = data_[idx].size();
+        }
+
+        comm.allGather(static_cast<int>(myStrSizes.size()), sizeArray.begin(), sizeArray.end());
+
+        for (size_t i = 1; i < comm.size(); i++)
+        {
+          displacement[i] =  displacement[i - 1] + sizeArray[i - 1];
+        }
+
+        size_t numStrs = data_.size();
+        comm.allReduce(numStrs, numStrs, eckit::mpi::Operation::SUM);
+        std::vector<int> strSizes(numStrs);
+        comm.allGatherv(myStrSizes.begin(), myStrSizes.end(), strSizes.begin(),
+                        sizeArray.data(), displacement.data());
+
+        dims_ = rcvDims;
+
+        // write rcvBuffer back to data
+        data_.resize(numStrs);
+        size_t offset = 0;
+        for (size_t idx = 0; idx < numStrs; ++idx)
+        {
+          std::string str(rcvBuffer.begin() + offset, rcvBuffer.begin() + offset + strSizes[idx]);
+          data_[idx] = str;
+          offset += strSizes[idx];
         }
       }
 
