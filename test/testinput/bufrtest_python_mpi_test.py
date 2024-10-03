@@ -1,10 +1,15 @@
 # (C) Copyright 2024 NOAA/NWS/NCEP/EMC
 import sys
 import os
+import subprocess
 
 import bufr
 from bufr.encoders import netcdf
 import numpy as np
+
+def run_compare(input_path, comp_path):
+    result = subprocess.Popen(f'nccmp -d -m -g -f -S {input_path} {comp_path}', shell=True).wait()
+    assert result == 0, f"Comparison failed for {input_path} and {comp_path}."
 
 
 def test_mpi_basic():
@@ -21,7 +26,7 @@ def test_mpi_basic():
 
     if comm.rank() == 0:
         netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)
-        assert(os.system(f'nccmp -d -m -g -f -S  {OUTPUT_PATH} {COMP_PATH}') == 0)
+        run_compare(OUTPUT_PATH, COMP_PATH)
 
 
 def test_mpi_categories():
@@ -38,7 +43,7 @@ def test_mpi_categories():
 
     if comm.rank() == 0:
         netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)
-        assert(os.system(f'nccmp -d -m -g -f -S testrun/bufrtest_mtiasi_metop-c_cats.nc {COMP_PATH}') == 0)
+        run_compare('testrun/bufrtest_mtiasi_metop-c_cats.nc', COMP_PATH)
 
 
 def test_mpi_sub_container():
@@ -56,13 +61,13 @@ def test_mpi_sub_container():
 
     if comm.rank() == 0:
         netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)
-        assert(os.system(f'nccmp -d -m -g -f -S testrun/bufrtest_mtiasi_metop-c_sub_container.nc {COMP_PATH}') == 0)
+        run_compare('testrun/bufrtest_mtiasi_metop-c_sub_container.nc', COMP_PATH)
 
 
 def test_mpi_all_gather():
     DATA_PATH = 'testdata/gdas.t06z.snocvr.tm00.bufr_d'
     YAML_PATH = 'testinput/bufrtest_long_strs_mapping.yaml'
-    OUTPUT_PATH = 'testrun/bufrtest_long_strs.nc'
+    OUTPUT_PATH = 'testrun/bufrtest_mpi_all_gather.nc'
     COMP_PATH = 'testoutput/bufrtest_long_strs.nc'
 
     bufr.mpi.App(sys.argv) # Don't do this if passing in MPI communicator
@@ -73,7 +78,7 @@ def test_mpi_all_gather():
 
     if comm.rank() == 1:
         netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)
-        assert(os.system(f'nccmp -d -m -g -f -S  {OUTPUT_PATH} {COMP_PATH}') == 0)
+        run_compare(OUTPUT_PATH, COMP_PATH)
 
 
 if __name__ == '__main__':
