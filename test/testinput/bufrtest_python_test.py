@@ -227,6 +227,27 @@ def test_highlevel_cache():
     if bufr.DataCache.has(DATA_PATH, YAML_PATH):
         assert False, "Data Cache still contains entry."
 
+def test_highlevel_deduplicate():
+    DATA_PATH = 'testdata/gdas.t00z.1bhrs4.tm00.bufr_d'
+    YAML_PATH = 'testinput/bufrtest_hrs_basic_mapping.yaml'
+
+    container = bufr.Parser(DATA_PATH, YAML_PATH).parse()
+
+    new_container = bufr.DataContainer()
+    new_container.append(container)
+    new_container.append(container)
+
+    orig_data = container.get('variables/brightnessTemp')
+
+    new_container.deduplicate(['variables/timestamp',
+                               'variables/latitude',
+                               'variables/longitude'])
+
+    data = new_container.get('variables/brightnessTemp')
+
+    assert orig_data.shape == data.shape
+    assert np.allclose(orig_data, data)
+
 
 if __name__ == '__main__':
     # Low level interface tests
@@ -242,4 +263,5 @@ if __name__ == '__main__':
     test_highlevel_w_category()
     test_highlevel_cache()
     test_highlevel_append()
+    test_highlevel_deduplicate()
 

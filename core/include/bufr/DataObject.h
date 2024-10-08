@@ -178,6 +178,8 @@ namespace bufr {
 
       virtual size_t size() const = 0;
 
+      virtual size_t hash(size_t row) const = 0;
+
       size_t idxFromLoc(const Location& loc) const
       {
         size_t dim_prod = 1;
@@ -736,6 +738,11 @@ namespace bufr {
       size_t size() const final
       {
         return data_.size();
+      }
+
+      size_t hash(size_t row) const final
+      {
+          return std::hash<T>{}(data_[row]);
       }
 
       /// \brief Slice the data object according to a list of indices.
@@ -1321,6 +1328,11 @@ namespace bufr {
       size_t size() const final
       {
         return data_.size();
+      }
+
+      size_t hash(size_t row) const final
+      {
+        return std::hash<std::string>{}(data_[row]);
       }
 
       friend class DataObjectBuilder;

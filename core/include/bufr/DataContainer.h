@@ -105,6 +105,13 @@ namespace bufr {
     /// \param other DataContainer to append.
     void append(const DataContainer& other);
 
+//    /// \brief Append contents of other data container to this one and deduplicate the data.
+//    /// \param other DataContainer to append.
+//    /// \param dedupFields Fields to use for deduplication.`
+//    void append(const DataContainer& other, std::vector<std::string> dedupFields);
+
+    void deduplicate(const std::vector<std::string>& dedupFields);
+
     /// \brief Gather data from all ranks into rank 0.
     /// \param comm MPI communicator to use.
     void gather(const eckit::mpi::Comm& comm);

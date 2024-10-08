@@ -220,7 +220,8 @@ namespace netcdf {
     std::map<SubCategory, std::shared_ptr<nc::NcFile>>
     Encoder::encode(const std::shared_ptr<DataContainer> &dataContainer,
                     const Encoder::Backend &backend,
-                    bool append)
+                    bool append,
+                    const RunParameters& params)
     {
         auto startTime = std::chrono::steady_clock::now();
 
@@ -499,6 +500,13 @@ namespace netcdf {
             std::set<std::string> groupNames;
             for (const auto &varDesc: description_.getVariables())
             {
+                if (!params.varList.empty() && std::find(params.varList.begin(),
+                                                         params.varList.end(),
+                                                         varDesc.name) == params.varList.end())
+                {
+                  continue;
+                }
+
                 auto[groupName, varName] = splitName(varDesc.name);
                 if (groupNames.find(groupName) == groupNames.end())
                 {

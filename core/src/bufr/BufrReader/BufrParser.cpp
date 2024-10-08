@@ -116,7 +116,7 @@ namespace bufr {
         }
 
         log::info()  << "Exporting Data" << std::endl;
-        auto exportedData = exportData(srcData);
+        auto exportedData = exportData(srcData, params);
 
         auto timeElapsed = std::chrono::steady_clock::now() - startTime;
         auto timeElapsedDuration = std::chrono::duration_cast<std::chrono::milliseconds>
@@ -223,7 +223,7 @@ namespace bufr {
       }
 
       log::info() << "MPI task: " << comm.rank() << " Exporting Data" << std::endl;
-      auto exportedData = exportData(srcData);
+      auto exportedData = exportData(srcData, params);
 
       auto timeElapsed = std::chrono::steady_clock::now() - startTime;
       auto timeElapsedDuration = std::chrono::duration_cast<std::chrono::milliseconds>
@@ -235,7 +235,8 @@ namespace bufr {
       return exportedData;
     }
 
-    std::shared_ptr<DataContainer> BufrParser::exportData(const BufrDataMap &srcData) {
+    std::shared_ptr<DataContainer> BufrParser::exportData(const BufrDataMap &srcData,
+                                                          const RunParameters& params) {
         auto exportDescription = description_.getExport();
 
         auto filters = exportDescription.getFilters();
@@ -271,6 +272,13 @@ namespace bufr {
         {
             for (const auto &var : vars)
             {
+                if (!params.varList.empty() && std::find(params.varList.begin(),
+                                                         params.varList.end(),
+                                                         var->getExportName()) == params.varList.end())
+                {
+                  continue;
+                }
+
                 std::ostringstream pathStr;
                 pathStr << "variables/" << var->getExportName();
 

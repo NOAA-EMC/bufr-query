@@ -7,6 +7,7 @@
 #include "eckit/config/LocalConfiguration.h"
 #include <netcdf>
 
+#include "bufr/DataProvider.h"
 #include "bufr/DataContainer.h"
 #include "bufr/encoders/Description.h"
 
@@ -44,7 +45,8 @@ namespace netcdf {
         std::map<SubCategory, std::shared_ptr<nc::NcFile>>
             encode(const std::shared_ptr<DataContainer> &data,
                    const Backend &backend = Backend(),
-                   bool append = false);
+                   bool append = false,
+                   const RunParameters& params = RunParameters());
 
     private:
         typedef std::map<std::vector<Query>, DimensionDescription> NamedPathDims;

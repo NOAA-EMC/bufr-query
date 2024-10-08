@@ -133,6 +133,9 @@ void setupDataContainer(py::module& m)
    .def("append", &DataContainer::append,
         py::arg("other"),
         "Append contents of another container. Must have the same category map and fields.")
+    .def("deduplicate", &DataContainer::deduplicate,
+         py::arg("dedupFields"),
+         "Remove duplicate rows.")
    .def("gather", [](DataContainer& self, bufr::mpi::Comm& comm)
         {
           return self.gather(comm.getComm());

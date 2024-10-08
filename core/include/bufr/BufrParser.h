@@ -63,7 +63,8 @@ namespace bufr {
 
         /// \brief Exports collected data into a DataContainer
         /// \param srcData Data to export
-        std::shared_ptr<DataContainer> exportData(const BufrDataMap& srcData);
+        std::shared_ptr<DataContainer> exportData(const BufrDataMap& srcData,
+                                                  const RunParameters& params);
 
         /// \brief Function responsible for dividing the data into subcategories.
         /// \details This function is intended to be called over and over for each specified Split

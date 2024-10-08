@@ -4,6 +4,7 @@
 
 #include <string>
 #include <ostream>
+#include <unordered_set>
 
 #include "eckit/exception/Exceptions.h"
 
@@ -275,6 +276,108 @@ namespace bufr {
     }
   }
 
+//  void DataContainer::append(const DataContainer& other, std::vector<std::string> dedupFields)
+//  {
+//    bool isEmpty = getFieldNames().empty();
+//
+//    if (isEmpty)
+//    {
+//      dataSets_.clear();
+//    }
+//
+//    for (const auto &subCat: other.allSubCategories())
+//    {
+//      if (isEmpty)
+//      {
+//        categoryMap_ = other.categoryMap_;
+//        dataSets_.insert({subCat, DataSetMap()});
+//      }
+//
+//      for (const auto &field: other.getFieldNames())
+//      {
+//        if (isEmpty)
+//        {
+//          add(field, other.get(field, subCat)->copy(), subCat);
+//        }
+//        else
+//        {
+//          if (!hasKey(field, subCat))
+//          {
+//            std::ostringstream errStr;
+//            errStr << "Error: encountered mismatch when combining DataContainers.";
+//            errStr << " Field \"" << field << "\" category \"" << makeSubCategoryStr(subCat)
+//                   << "\"";
+//            throw eckit::BadParameter(errStr.str());
+//          }
+//
+//          get(field, subCat)->append(other.get(field, subCat));
+//        }
+//      }
+//    }
+//  }
+
+  void DataContainer::deduplicate(const std::vector<std::string>& dedupFields)
+  {
+    for (const auto &subCat: allSubCategories())
+    {
+      std::vector<std::shared_ptr<DataObjectBase>> indices(dedupFields.size());
+      for (auto idx = 0; idx < dedupFields.size(); idx++)
+      {
+        indices[idx] = get(dedupFields[idx], subCat);
+      }
+
+      std::unordered_set<size_t> uniqueKeys;
+      uniqueKeys.reserve(indices[0]->getDims().at(0));
+
+      const auto numRows = indices[0]->getDims().at(0);
+      std::vector<size_t> duplicates;
+      duplicates.reserve(numRows);
+
+      for (size_t row = 0; row < numRows; row++)
+      {
+        auto rowHash = indices[0]->hash(row);
+        for (auto idx = 1; idx < dedupFields.size(); idx++)
+        {
+          rowHash ^= (indices[idx]->hash(row) << idx);
+        }
+
+        if (uniqueKeys.find(rowHash) == uniqueKeys.end())
+        {
+          uniqueKeys.insert(rowHash);
+        }
+        else
+        {
+          for (auto idx = 0; idx < dedupFields.size(); idx++)
+          {
+            indices[idx].get()
+          }
+
+          duplicates.push_back(row);
+        }
+      }
+
+      std::vector<size_t> sliceIndices(numRows - duplicates.size());
+      size_t dupIdx = 0;
+      size_t sliceIdx = 0;
+      for (size_t row = 0; row < numRows; row++)
+      {
+        if (dupIdx < duplicates.size() && row == duplicates[dupIdx])
+        {
+          dupIdx++;
+        }
+        else
+        {
+          sliceIndices[sliceIdx] = row;
+          sliceIdx++;
+        }
+      }
+
+      for (const auto &field: getFieldNames())
+      {
+        set(get(field, subCat)->slice(sliceIndices), field, subCat);
+      }
+    }
+  }
 
   void DataContainer::gather(const eckit::mpi::Comm& comm)
   {
