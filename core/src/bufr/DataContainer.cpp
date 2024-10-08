@@ -366,6 +366,11 @@ namespace bufr {
         }
       }
 
+      if (duplicates.empty())
+      {
+        continue;
+      }
+
       std::vector<size_t> sliceIndices(numRows - duplicates.size());
       size_t dupIdx = 0;
       size_t sliceIdx = 0;
