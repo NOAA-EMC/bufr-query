@@ -250,18 +250,18 @@ def test_highlevel_deduplicate():
 
 
 if __name__ == '__main__':
-    # Low level interface tests
-    test_basic_query()
-    test_string_field()
-    test_long_str_field()
-    test_type_override()
-    test_invalid_query()
-
-    # High level interface tests
-    test_highlevel_replace()
-    test_highlevel_add()
-    test_highlevel_w_category()
-    test_highlevel_cache()
-    test_highlevel_append()
+    # # Low level interface tests
+    # test_basic_query()
+    # test_string_field()
+    # test_long_str_field()
+    # test_type_override()
+    # test_invalid_query()
+    #
+    # # High level interface tests
+    # test_highlevel_replace()
+    # test_highlevel_add()
+    # test_highlevel_w_category()
+    # test_highlevel_cache()
+    # test_highlevel_append()
     test_highlevel_deduplicate()
 

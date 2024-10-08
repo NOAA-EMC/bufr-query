@@ -326,7 +326,7 @@ namespace bufr {
         indices[idx] = get(dedupFields[idx], subCat);
       }
 
-      std::unordered_set<size_t> uniqueKeys;
+      std::unordered_map<size_t, size_t> uniqueKeys;
       uniqueKeys.reserve(indices[0]->getDims().at(0));
 
       const auto numRows = indices[0]->getDims().at(0);
@@ -343,16 +343,26 @@ namespace bufr {
 
         if (uniqueKeys.find(rowHash) == uniqueKeys.end())
         {
-          uniqueKeys.insert(rowHash);
+          uniqueKeys[rowHash] = row;
         }
         else
         {
+          bool isDuplicate = true;
+
+          // check for hash collisions
           for (auto idx = 0; idx < dedupFields.size(); idx++)
           {
-            indices[idx].get()
+            if (!indices[idx]->compare(row, uniqueKeys[rowHash]))
+            {
+              isDuplicate = false;
+              break;
+            }
           }
 
-          duplicates.push_back(row);
+          if (isDuplicate)
+          {
+            duplicates.push_back(row);
+          }
         }
       }
 
