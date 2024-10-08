@@ -352,7 +352,7 @@ namespace bufr {
           // check for hash collisions
           for (auto idx = 0; idx < dedupFields.size(); idx++)
           {
-            if (!indices[idx]->compare(row, uniqueKeys[rowHash]))
+            if (!indices[idx]->compareRows(row, uniqueKeys[rowHash]))
             {
               isDuplicate = false;
               break;

@@ -180,7 +180,7 @@ namespace bufr {
 
       virtual size_t hash(size_t row) const = 0;
 
-      virtual bool compare(size_t row1, size_t row2) const = 0;
+      virtual bool compareRows(size_t row1, size_t row2) const = 0;
 
       size_t idxFromLoc(const Location& loc) const
       {
@@ -747,7 +747,7 @@ namespace bufr {
           return std::hash<T>{}(data_[row]);
       }
 
-      bool compare(size_t row1, size_t row2) const final
+      bool compareRows(size_t row1, size_t row2) const final
       {
         return data_[row1] == data_[row2];
       }
@@ -1342,7 +1342,7 @@ namespace bufr {
         return std::hash<std::string>{}(data_[row]);
       }
 
-      bool compare(size_t row1, size_t row2) const final
+      bool compareRows(size_t row1, size_t row2) const final
       {
         return data_[row1] == data_[row2];
       }
