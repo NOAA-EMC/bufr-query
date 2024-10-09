@@ -276,7 +276,8 @@ namespace bufr {
     }
   }
 
-//  void DataContainer::append(const DataContainer& other, std::vector<std::string> dedupFields)
+//  void DataContainer::append(const DataContainer& other,
+//                             const std::vector<std::string>& dedupFields)
 //  {
 //    bool isEmpty = getFieldNames().empty();
 //
@@ -285,35 +286,118 @@ namespace bufr {
 //      dataSets_.clear();
 //    }
 //
+//    auto newContainer = other;
+//
 //    for (const auto &subCat: other.allSubCategories())
 //    {
+//      auto numRows = 0;
+//
 //      if (isEmpty)
 //      {
 //        categoryMap_ = other.categoryMap_;
 //        dataSets_.insert({subCat, DataSetMap()});
+//        numRows =  other.size(subCat);
+//      }
+//      else
+//      {
+//        numRows = size(subCat) + other.size(subCat);
 //      }
 //
-//      for (const auto &field: other.getFieldNames())
+//      std::unordered_map<size_t, size_t> uniqueKeys;
+//      uniqueKeys.reserve(numRows);
+//
+//      // Record all my fields as unique keys
 //      {
-//        if (isEmpty)
+//        std::vector<std::shared_ptr<DataObjectBase>> indices(dedupFields.size());
+//        for (auto idx = 0; idx < dedupFields.size(); idx++)
 //        {
-//          add(field, other.get(field, subCat)->copy(), subCat);
+//          indices[idx] = get(dedupFields[idx], subCat);
 //        }
-//        else
+//
+//        for (size_t row = 0; row < indices[0]->getDims().at(0); row++)
 //        {
-//          if (!hasKey(field, subCat))
+//          auto rowHash = indices[0]->hash(row);
+//          for (auto idx = 1; idx < dedupFields.size(); idx++)
 //          {
-//            std::ostringstream errStr;
-//            errStr << "Error: encountered mismatch when combining DataContainers.";
-//            errStr << " Field \"" << field << "\" category \"" << makeSubCategoryStr(subCat)
-//                   << "\"";
-//            throw eckit::BadParameter(errStr.str());
+//            rowHash ^= (indices[idx]->hash(row) << idx);
 //          }
 //
-//          get(field, subCat)->append(other.get(field, subCat));
+//          uniqueKeys[rowHash] = row;
+//        }
+//      }
+//
+//      std::cout << "AA: " << std::endl;
+//
+//      // Slice out duplicates from the added data
+//      std::vector<size_t> duplicates;
+//      duplicates.reserve(numRows);
+//
+//      {
+//        std::vector<std::shared_ptr<DataObjectBase>> indices(dedupFields.size());
+//        for (auto idx = 0; idx < dedupFields.size(); idx++)
+//        {
+//          indices[idx] = other.get(dedupFields[idx], subCat);
+//        }
+//
+//        for (size_t row = 0; row < numRows; row++)
+//        {
+//          auto rowHash = indices[0]->hash(row);
+//          for (auto idx = 1; idx < dedupFields.size(); idx++)
+//          {
+//            rowHash ^= (indices[idx]->hash(row) << idx);
+//          }
+//
+//          if (uniqueKeys.find(rowHash) != uniqueKeys.end())
+//          {
+//            bool isDuplicate = true;
+//            auto dupRow = uniqueKeys[rowHash];
+//
+//            // check for hash collisions
+//            for (auto idx = 0; idx < dedupFields.size(); idx++)
+//            {
+//              if (!indices[idx]->compareRows(row, dupRow))
+//              {
+//                isDuplicate = false;
+//                break;
+//              }
+//            }
+//
+//            if (isDuplicate)
+//            {
+//              duplicates.push_back(row);
+//            }
+//          }
+//        }
+//      }
+//
+//      std::cout << "BB: " << duplicates.size() << std::endl;
+//
+//      if (!duplicates.empty())
+//      {
+//        std::vector<size_t> sliceIndices(numRows - duplicates.size());
+//        size_t dupIdx = 0;
+//        size_t sliceIdx = 0;
+//        for (size_t row = 0; row < numRows; row++)
+//        {
+//          if (dupIdx < duplicates.size() && row == duplicates[dupIdx])
+//          {
+//            dupIdx++;
+//          }
+//          else
+//          {
+//            sliceIndices[sliceIdx] = row;
+//            sliceIdx++;
+//          }
+//        }
+//
+//        for (const auto &field: getFieldNames())
+//        {
+//          newContainer.set(other.get(field, subCat)->slice(sliceIndices), field, subCat);
 //        }
 //      }
 //    }
+//
+//    append(newContainer);
 //  }
 
   void DataContainer::deduplicate(const std::vector<std::string>& dedupFields)
@@ -348,11 +432,12 @@ namespace bufr {
         else
         {
           bool isDuplicate = true;
+          auto dupRow = uniqueKeys[rowHash];
 
           // check for hash collisions
           for (auto idx = 0; idx < dedupFields.size(); idx++)
           {
-            if (!indices[idx]->compareRows(row, uniqueKeys[rowHash]))
+            if (!indices[idx]->compareRows(row, dupRow))
             {
               isDuplicate = false;
               break;
@@ -371,6 +456,114 @@ namespace bufr {
         continue;
       }
 
+      std::vector<size_t> sliceIndices(numRows - duplicates.size());
+      size_t dupIdx = 0;
+      size_t sliceIdx = 0;
+      for (size_t row = 0; row < numRows; row++)
+      {
+        if (dupIdx < duplicates.size() && row == duplicates[dupIdx])
+        {
+          dupIdx++;
+        }
+        else
+        {
+          sliceIndices[sliceIdx] = row;
+          sliceIdx++;
+        }
+      }
+
+      for (const auto &field: getFieldNames())
+      {
+        set(get(field, subCat)->slice(sliceIndices), field, subCat);
+      }
+    }
+  }
+
+  void DataContainer::deduplicate(const eckit::mpi::Comm& comm,
+                                  const std::vector<std::string>& dedupFields)
+  {
+    for (const auto &subCat: allSubCategories())
+    {
+      std::vector<std::shared_ptr<DataObjectBase>> indices(dedupFields.size());
+      for (auto idx = 0; idx < dedupFields.size(); idx++)
+      {
+        indices[idx] = get(dedupFields[idx], subCat);
+      }
+
+      auto numRows = indices[0]->getDims().at(0);
+      std::vector<size_t> hashKeys(numRows);
+
+      for (size_t row = 0; row < numRows; row++)
+      {
+        auto rowHash = indices[0]->hash(row);
+        for (auto idx = 1; idx < dedupFields.size(); idx++)
+        {
+          rowHash ^= (indices[idx]->hash(row) << idx);
+        }
+
+        hashKeys[row] = rowHash;
+      }
+
+      auto sizeArray = std::vector<int>(comm.size());
+      comm.allGather(static_cast<int>(numRows), sizeArray.begin(), sizeArray.end());
+
+      std::vector<int> displacement(comm.size(), 0);
+      for (size_t i = 1; i < comm.size(); i++)
+      {
+        displacement[i] =  displacement[i - 1] + sizeArray[i - 1];
+      }
+
+      // Make inventory of all unique keys
+      auto totalKeys = 0;
+      for (const auto& size: sizeArray)
+      {
+        totalKeys += size;
+      }
+
+      std::vector<size_t> allKeys(totalKeys);
+      comm.allGatherv(hashKeys.begin(), hashKeys.end(), allKeys.begin(),
+                      sizeArray.data(), displacement.data());
+
+      // Compute my offset
+      size_t offset = 0;
+      for (size_t i = 0; i < comm.rank(); i++)
+      {
+        offset += sizeArray[i];
+      }
+
+      std::unordered_map<size_t, size_t> uniqueKeys;
+      uniqueKeys.reserve(numRows);
+
+      for (size_t row = 0; row < numRows; row++)
+      {
+        auto rowHash = hashKeys[row];
+        if (uniqueKeys.find(rowHash) == uniqueKeys.end())
+        {
+          uniqueKeys[rowHash] = row;
+        }
+      }
+
+      // Find the duplicates in MY data
+      std::vector<size_t> duplicates;
+      for (size_t row = offset; row < numRows; row++)
+      {
+        auto rowHash = hashKeys[row];
+        if (uniqueKeys.find(rowHash) != uniqueKeys.end())
+        {
+          auto dupRow = uniqueKeys[rowHash];
+          if (row != dupRow)
+          {
+            duplicates.push_back(row - offset);
+          }
+        }
+      }
+
+      if (duplicates.empty())
+      {
+        continue;
+      }
+
+      // Slice the duplicates out
       std::vector<size_t> sliceIndices(numRows - duplicates.size());
       size_t dupIdx = 0;
       size_t sliceIdx = 0;

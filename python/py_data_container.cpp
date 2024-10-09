@@ -130,12 +130,26 @@ void setupDataContainer(py::module& m)
         py::arg("category"),
         "Get the data container for the sub category.")
    .def("list", &DataContainer::getFieldNames, "Get the field names.")
-   .def("append", &DataContainer::append,
+   .def("append", [](DataContainer& self,
+                     const DataContainer& other,
+                     const std::vector<std::string>& dupFields)
+        {
+//          if (dupFields.empty())
+//          {
+            self.append(other);
+//          }
+//          else
+//          {
+//            self.append(other, dupFields);
+//          }
+        },
         py::arg("other"),
+        py::arg("dup_fields") = std::vector<std::string>(),
         "Append contents of another container. Must have the same category map and fields.")
-    .def("deduplicate", &DataContainer::deduplicate,
-         py::arg("dedupFields"),
-         "Remove duplicate rows.")
+    .def("deduplicate", py::overload_cast<const std::vector<std::string>&>
+      (&DataContainer::deduplicate), "Remove duplicate rows.")
+    .def("deduplicate", py::overload_cast<const eckit::mpi::Comm&, const std::vector<std::string>&>
+      (&DataContainer::deduplicate), "Remove duplicate rows.")
    .def("gather", [](DataContainer& self, bufr::mpi::Comm& comm)
         {
           return self.gather(comm.getComm());

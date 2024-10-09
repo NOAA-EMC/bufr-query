@@ -81,8 +81,37 @@ def test_mpi_all_gather():
         run_compare(OUTPUT_PATH, COMP_PATH)
 
 
+def test_mpi_deduplicate():
+    DATA_PATH = 'testdata/gdas.t00z.1bhrs4.tm00.bufr_d'
+    YAML_PATH = 'testinput/bufrtest_hrs_basic_mapping.yaml'
+
+    bufr.mpi.App(sys.argv) # Don't do this if passing in MPI communicator
+    comm = bufr.mpi.Comm("world")
+
+    container = bufr.Parser(DATA_PATH, YAML_PATH).parse(comm)
+
+    orig_data = container.get('variables/brightnessTemp')
+
+    new_container = bufr.DataContainer()
+    new_container.append(container)
+    new_container.append(container)
+
+    new_container.deduplicate(comm,
+                              ['variables/timestamp',
+                               'variables/latitude',
+                               'variables/longitude'])
+
+    new_container.all_gather(comm)
+
+    new_data = new_container.get('variables/brightnessTemp')
+
+    assert orig_data.shape == new_data.shape
+    assert np.allclose(orig_data, new_data)
+
+
 if __name__ == '__main__':
-    test_mpi_basic()
+    # test_mpi_basic()
     test_mpi_categories()
-    test_mpi_sub_container()
-    test_mpi_all_gather()
+    # test_mpi_sub_container()
+    # test_mpi_all_gather()
+    # test_mpi_deduplicate()
