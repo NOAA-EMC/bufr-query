@@ -90,20 +90,20 @@ def test_mpi_deduplicate():
 
     container = bufr.Parser(DATA_PATH, YAML_PATH).parse(comm)
 
-    orig_data = container.get('variables/brightnessTemp')
-
     new_container = bufr.DataContainer()
     new_container.append(container)
     new_container.append(container)
-
-    new_container.deduplicate(comm,
-                              ['variables/timestamp',
-                               'variables/latitude',
-                               'variables/longitude'])
-
     new_container.all_gather(comm)
 
+    new_container.deduplicate(comm, ['variables/timestamp',
+                                     'variables/latitude',
+                                     'variables/longitude'])
+
+    new_container.all_gather(comm)
+    container.all_gather(comm)
+
     new_data = new_container.get('variables/brightnessTemp')
+    orig_data = container.get('variables/brightnessTemp')
 
     assert orig_data.shape == new_data.shape
     assert np.allclose(orig_data, new_data)
@@ -111,7 +111,7 @@ def test_mpi_deduplicate():
 
 if __name__ == '__main__':
     # test_mpi_basic()
-    test_mpi_categories()
+    # test_mpi_categories()
     # test_mpi_sub_container()
     # test_mpi_all_gather()
-    # test_mpi_deduplicate()
+    test_mpi_deduplicate()

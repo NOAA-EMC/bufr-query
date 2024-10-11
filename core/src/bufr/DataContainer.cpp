@@ -534,9 +534,9 @@ namespace bufr {
       std::unordered_map<size_t, size_t> uniqueKeys;
       uniqueKeys.reserve(numRows);
 
-      for (size_t row = 0; row < numRows; row++)
+      for (size_t row = 0; row < totalKeys; row++)
       {
-        auto rowHash = hashKeys[row];
+        auto rowHash = allKeys[row];
         if (uniqueKeys.find(rowHash) == uniqueKeys.end())
         {
           uniqueKeys[rowHash] = row;
@@ -545,9 +545,11 @@ namespace bufr {
 
       // Find the duplicates in MY data
       std::vector<size_t> duplicates;
-      for (size_t row = offset; row < numRows; row++)
+      duplicates.reserve(numRows);
+
+      for (size_t row = offset; row < offset + numRows; row++)
       {
-        auto rowHash = hashKeys[row];
+        auto rowHash = allKeys[row];
         if (uniqueKeys.find(rowHash) != uniqueKeys.end())
         {
           auto dupRow = uniqueKeys[rowHash];

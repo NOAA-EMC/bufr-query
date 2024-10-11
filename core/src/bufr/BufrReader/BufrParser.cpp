@@ -197,10 +197,12 @@ namespace bufr {
         }
       }
 
+      newParams.offset = startOffset;
+
       auto startTime = std::chrono::steady_clock::now();
 
       log::info() << "MPI task: " << comm.rank() << " Executing Queries for message ";
-      log::info() << startOffset << " to " << startOffset + msgsToParse - 1 << std::endl;
+      log::info() << startOffset << " to " << startOffset + newParams.numMessages - 1 << std::endl;
 
       const auto resultSet = file_.execute(querySet, newParams);
 
@@ -210,9 +212,9 @@ namespace bufr {
       {
         for (const auto& queryInfo : var->getQueryList())
         {
-          if (!params.varList.empty() && std::find(params.varList.begin(),
-                                                   params.varList.end(),
-                                                   queryInfo.name) == params.varList.end())
+          if (!newParams.varList.empty() && std::find(newParams.varList.begin(),
+                                                      newParams.varList.end(),
+                                                   queryInfo.name) == newParams.varList.end())
           {
             continue;
           }
@@ -223,7 +225,7 @@ namespace bufr {
       }
 
       log::info() << "MPI task: " << comm.rank() << " Exporting Data" << std::endl;
-      auto exportedData = exportData(srcData, params);
+      auto exportedData = exportData(srcData, newParams);
 
       auto timeElapsed = std::chrono::steady_clock::now() - startTime;
       auto timeElapsedDuration = std::chrono::duration_cast<std::chrono::milliseconds>

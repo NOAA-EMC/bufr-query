@@ -148,8 +148,15 @@ void setupDataContainer(py::module& m)
         "Append contents of another container. Must have the same category map and fields.")
     .def("deduplicate", py::overload_cast<const std::vector<std::string>&>
       (&DataContainer::deduplicate), "Remove duplicate rows.")
-    .def("deduplicate", py::overload_cast<const eckit::mpi::Comm&, const std::vector<std::string>&>
-      (&DataContainer::deduplicate), "Remove duplicate rows.")
+    .def("deduplicate", [](DataContainer& self,
+                           bufr::mpi::Comm comm,
+                           const std::vector<std::string>& dedupFields)
+          {
+            self.deduplicate(comm.getComm(), dedupFields);
+          },
+          py::arg("comm"),
+          py::arg("dedup_fields"),
+          "Remove duplicate rows.")
    .def("gather", [](DataContainer& self, bufr::mpi::Comm& comm)
         {
           return self.gather(comm.getComm());
