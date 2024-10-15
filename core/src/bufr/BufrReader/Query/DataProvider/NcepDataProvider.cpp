@@ -17,6 +17,7 @@ namespace bufr {
     {
         open_f(FileUnit, filePath_.c_str());
         openbf_f(FileUnit, "IN", FileUnit);
+        isetprm_f(strdup("MAXSS"), 250000);
 
         isOpen_ = true;
     }

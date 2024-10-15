@@ -27,6 +27,8 @@ namespace bufr {
         openbf_f(FileUnit, "SEC3", FileUnit);
         mtinfo_f(tableFilePath_.c_str(), FileUnitTable1, FileUnitTable2);
 
+        isetprm_f(strdup("MAXSS"), 250000);
+
         isOpen_ = true;
     }
 
