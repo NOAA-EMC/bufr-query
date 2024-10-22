@@ -87,42 +87,6 @@ namespace bufr {
            fovn[idx] = fovnObj->getAsInt(idx);
         }
 
-        if (sensor == "iasi")
-        {
-           for (size_t idx = 0; idx < fovnObj->size(); idx++)
-           {
-              scanpos[idx] = (fovnObj->getAsInt(idx) - 1) / 2 + 1;
-           }
-        }
-        else
-        {
-           for (size_t idx = 0; idx < fovnObj->size(); idx++)
-           {
-              scanpos[idx] = fovnObj->getAsInt(idx);
-           }
-        }
-
-        if (sensor == "iasi")
-        {
-           float tmp;
-           tmp = -stepAdj;
-           // Calculate sensor scan angle
-           for (size_t idx = 0; idx < fovnObj->size(); idx++)
-           {
-              if (scanpos[idx] % 2 == 1)
-              {
-                 tmp = stepAdj;
-              }
-              scanang[idx] = start + static_cast<float>((fovn[idx]-1)/4) * step + tmp;
-           }
-        }
-        else
-        {
-           for (size_t idx = 0; idx < fovnObj->size(); idx++)
-           {
-              scanang[idx] = start + static_cast<float>(fovn[idx]-1) * step;
-           }
-        }
 
         return DataObjectBuilder::make<float>(scanang,
                                               getExportName(),
