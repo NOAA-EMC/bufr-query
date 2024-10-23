@@ -8,6 +8,7 @@
 
 #include <typeinfo>
 #include <iostream>
+#include <regex>  // NOLINT
 
 #include "DataObjectFunctions.h"
 
@@ -84,11 +85,11 @@ namespace bufr {
 
     py::dtype dt          = pyData.dtype();
     std::string dtype_str = py::cast<std::string>(py::str(dt));
-    if (dtype_str[0] == 'U' || dtype_str[0] == 'S')
-    {
-      dataObj = _makeObject<std::string>(fieldName, pyData);
-    }
-    else if (pyData.dtype().is(py::dtype::of<float>()))
+
+    std::cmatch m;
+    static const std::regex strRegex("[|\\<\\>]?[US]\\d*");
+
+    if (pyData.dtype().is(py::dtype::of<float>()))
     {
       dataObj = _makeObject<float>(fieldName, pyData);
     }
@@ -103,6 +104,10 @@ namespace bufr {
     else if (pyData.dtype().is(py::dtype::of<int64_t>()))
     {
       dataObj = _makeObject<int64_t>(fieldName, pyData);
+    }
+    else if (dtype_str == "object" || std::regex_match(dtype_str.c_str(), m, strRegex))
+    {
+      dataObj = _makeObject<std::string>(fieldName, pyData);
     }
     else
     {
