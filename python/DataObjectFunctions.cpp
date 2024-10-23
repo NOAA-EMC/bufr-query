@@ -20,6 +20,8 @@ namespace py = pybind11;
 
 namespace bufr {
 
+  static const std::regex strRegex("[|\\<\\>]?[US]\\d*");
+
   py::array pyArrayFromObj(const std::shared_ptr<DataObjectBase>& obj)
   {
     if (const auto& strObj = std::dynamic_pointer_cast<DataObject<std::string>>(obj))
@@ -87,8 +89,6 @@ namespace bufr {
     std::string dtype_str = py::cast<std::string>(py::str(dt));
 
     std::cmatch m;
-    static const std::regex strRegex("[|\\<\\>]?[US]\\d*");
-
     if (pyData.dtype().is(py::dtype::of<float>()))
     {
       dataObj = _makeObject<float>(fieldName, pyData);
@@ -121,8 +121,9 @@ namespace bufr {
   std::shared_ptr<DataObjectBase> _makeObject<std::string>(
     const std::string& fieldName, const py::array& pyData, std::string dummy)
   {
+    std::cmatch m;
     const auto dtype_str = py::cast<std::string>(py::str(pyData.dtype()));
-    if (dtype_str[0] != 'U' && dtype_str[0] != 'S')
+    if (!std::regex_match(dtype_str.c_str(), m, strRegex))
     {
       throw std::runtime_error("DataContainer::makeObject: Type mismatch");
     }
