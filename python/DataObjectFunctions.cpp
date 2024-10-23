@@ -123,7 +123,7 @@ namespace bufr {
   {
     std::cmatch m;
     const auto dtype_str = py::cast<std::string>(py::str(pyData.dtype()));
-    if (!std::regex_match(dtype_str.c_str(), m, strRegex))
+    if (dtype_str != "object" && !std::regex_match(dtype_str.c_str(), m, strRegex))
     {
       throw std::runtime_error("DataContainer::makeObject: Type mismatch");
     }
