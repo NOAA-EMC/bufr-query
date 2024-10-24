@@ -21,8 +21,6 @@ namespace py = pybind11;
 
 namespace bufr {
 
-  static const std::regex strRegex("[|\\<\\>]?[US]\\d*");
-
   py::array pyArrayFromObj(const std::shared_ptr<DataObjectBase>& obj);
 
   template <typename T>
