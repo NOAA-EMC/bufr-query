@@ -85,6 +85,8 @@ namespace bufr {
         for (size_t idx = 0; idx < fovnObj->size(); idx++)
         {
            fovn[idx] = fovnObj->getAsInt(idx);
+	   auto fieldOfViewNumber = fovnObj->getAsInt(idx);
+	   scan_angle[idx] = -48.3 + (3.22/2) + std::floor(fieldOfViewNumber/4)*3.22 - \ (1.25/2) + (fieldOfViewNumber % 2)*1.25
         }
 
 	scan_angle = -48.3 + (3.22/2) + sln*3.22 - (1.25/2) + (fov % 2)*1.25
