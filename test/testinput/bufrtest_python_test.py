@@ -143,6 +143,9 @@ def test_highlevel_add():
     paths = container.get_paths('variables/brightnessTemp')
     container.add('variables/brightnessTemp_new', data, paths)
 
+    str_data = np.array(["hello"]*data.shape[0])
+    container.add('variables/str_data', str_data, container.get_paths('variables/latitude'))
+
     description = bufr.encoders.Description(YAML_PATH)
     description.add_variable(name='ObsValue/new_brightnessTemperature',
                              source='variables/brightnessTemp_new',
