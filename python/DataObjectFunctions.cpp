@@ -94,7 +94,8 @@ namespace bufr {
     std::vector<std::string> strVec(pyData.size());
     for (size_t i = 0; i < static_cast<size_t>(pyData.size()); i++)
     {
-      strVec[i] = py::cast<std::string>(pyData(i));
+      py::object element = pyData.attr("__getitem__")(i);  // Get the element as a Python object
+      strVec[i] = element.cast<py::str>();    // Cast it to py::str
     }
 
     dataObj->setFieldName(fieldName);
