@@ -87,6 +87,7 @@ namespace bufr {
            fovn[idx] = fovnObj->getAsInt(idx);
         }
 
+	scan_angle = -48.3 + (3.22/2) + sln*3.22 - (1.25/2) + (fov % 2)*1.25
 
         return DataObjectBuilder::make<float>(scanang,
                                               getExportName(),
