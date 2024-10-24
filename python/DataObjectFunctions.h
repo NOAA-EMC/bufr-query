@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <type_traits>
+#include <regex>  // NOLINT
+
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
@@ -17,6 +20,8 @@
 namespace py = pybind11;
 
 namespace bufr {
+
+  static const std::regex strRegex("[|\\<\\>]?[US]\\d*");
 
   py::array pyArrayFromObj(const std::shared_ptr<DataObjectBase>& obj);
 
@@ -49,8 +54,8 @@ namespace bufr {
 
   template <typename T>
   std::shared_ptr<DataObjectBase> _makeObject(const std::string& fieldName,
-                                              const py::array& pyData,
-                                              T dummy = T()) {
+                                              const py::array& pyData)
+  {
     if (!pyData.dtype().is(py::dtype::of<T>())) {
       throw std::runtime_error("DataContainer::makeObject: Type mismatch");
     }
@@ -68,8 +73,8 @@ namespace bufr {
   }
 
   template <>
-  std::shared_ptr<DataObjectBase> _makeObject<std::string>(
-    const std::string& fieldName, const py::array& pyData, std::string dummy);
+  std::shared_ptr<DataObjectBase> _makeObject<std::string>(const std::string& fieldName,
+                                                           const py::array& pyData);
 
   std::shared_ptr<DataObjectBase> makeObject(const std::string& fieldName,
                                              const py::array& pyData);

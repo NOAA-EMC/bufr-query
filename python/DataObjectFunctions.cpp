@@ -8,7 +8,6 @@
 
 #include <typeinfo>
 #include <iostream>
-#include <regex>  // NOLINT
 
 #include "DataObjectFunctions.h"
 
@@ -19,8 +18,6 @@
 namespace py = pybind11;
 
 namespace bufr {
-
-  static const std::regex strRegex("[|\\<\\>]?[US]\\d*");
 
   py::array pyArrayFromObj(const std::shared_ptr<DataObjectBase>& obj)
   {
@@ -81,6 +78,33 @@ namespace bufr {
     return maskedArray;
   }
 
+  template <>
+  std::shared_ptr<DataObjectBase> _makeObject<std::string>(const std::string& fieldName,
+                                                           const py::array& pyData)
+  {
+    std::cmatch m;
+    const auto dtype_str = py::cast<std::string>(py::str(pyData.dtype()));
+    if (dtype_str != "object" && !std::regex_match(dtype_str.c_str(), m, strRegex))
+    {
+      throw std::runtime_error("DataContainer::makeObject: Type mismatch");
+    }
+
+    auto dataObj = std::make_shared<DataObject<std::string>>();
+
+    std::vector<std::string> strVec(pyData.size());
+    for (size_t i = 0; i < static_cast<size_t>(pyData.size()); i++)
+    {
+      strVec[i] = py::cast<std::string>(pyData(i));
+    }
+
+    dataObj->setFieldName(fieldName);
+    dataObj->setData(std::move(strVec));
+    dataObj->setDims(std::vector<int>(pyData.shape(), pyData.shape() + pyData.ndim()));
+    dataObj->setDimPaths(std::vector<Query>(pyData.ndim()));
+
+    return dataObj;
+  }
+
   std::shared_ptr<DataObjectBase> makeObject(const std::string& fieldName,
                                              const py::array& pyData) {
     std::shared_ptr<DataObjectBase> dataObj;
@@ -116,31 +140,4 @@ namespace bufr {
 
     return dataObj;
   }
-
-  template <>
-  std::shared_ptr<DataObjectBase> _makeObject<std::string>(
-    const std::string& fieldName, const py::array& pyData, std::string dummy)
-  {
-    std::cmatch m;
-    const auto dtype_str = py::cast<std::string>(py::str(pyData.dtype()));
-    if (dtype_str != "object" && !std::regex_match(dtype_str.c_str(), m, strRegex))
-    {
-      throw std::runtime_error("DataContainer::makeObject: Type mismatch");
-    }
-
-    auto dataObj = std::make_shared<DataObject<std::string>>();
-
-    std::vector<std::string> strVec(pyData.size());
-    for (size_t i = 0; i < static_cast<size_t>(pyData.size()); i++)
-    {
-      strVec[i] = py::cast<std::string>(pyData(i));
-    }
-
-    dataObj->setFieldName(fieldName);
-    dataObj->setData(std::move(strVec));
-    dataObj->setDims(std::vector<int>(pyData.shape(), pyData.shape() + pyData.ndim()));
-
-    return dataObj;
-  }
-
 }  // namespace bufr
