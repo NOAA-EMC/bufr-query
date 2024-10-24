@@ -8,6 +8,7 @@
 
 #include <typeinfo>
 #include <iostream>
+#include <regex>  // NOLINT
 
 #include "DataObjectFunctions.h"
 

@@ -8,9 +8,6 @@
 
 #pragma once
 
-#include <type_traits>
-#include <regex>  // NOLINT
-
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
