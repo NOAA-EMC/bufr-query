@@ -155,10 +155,12 @@ def test_highlevel_add():
     dataset = next(iter(netcdf.Encoder(description).encode(container, OUTPUT_PATH).values()))
     obs_orig = dataset["ObsValue/brightnessTemperature"][:]
     obs_temp = dataset["ObsValue/new_brightnessTemperature"][:]
+    obs_strs = dataset["ObsValue/str_data"][:]
     dataset.close()
 
     assert np.allclose(obs_temp, obs_orig)
     assert obs_temp.shape == data.shape
+    assert np.all(obs_strs == str_data)
 
 def test_highlevel_append():
     DATA_PATH = 'testdata/gdas.t00z.1bhrs4.tm00.bufr_d'
