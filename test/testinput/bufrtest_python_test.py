@@ -152,6 +152,11 @@ def test_highlevel_add():
                              units='K',
                              longName='New Brightness Temperature')
 
+    description.add_variable(name='ObsValue/str_data',
+                             source='variables/str_data',
+                             units='strs',
+                             longName='Hello Strings')
+
     dataset = next(iter(netcdf.Encoder(description).encode(container, OUTPUT_PATH).values()))
     obs_orig = dataset["ObsValue/brightnessTemperature"][:]
     obs_temp = dataset["ObsValue/new_brightnessTemperature"][:]
