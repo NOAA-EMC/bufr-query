@@ -57,18 +57,73 @@ def add_main_functions(cls):
 
 
 class ObsBuilder:
-    def __init__(self, input_path, mapping_path, log_name='obs_builder'):
-        self.input_path = input_path
-        self.mapping_path = mapping_path
+    def __init__(self, *args, **kwargs):
+        self.input_dict = {}
+
+        log_name = 'obs_builder'
+
+        ERR_MSG = 'ObsBuilder.__init__ has the following signatures: \n' \
+                    ' 1. (log_name:str=\'obs_builder\'\n' \
+                    ' 2. (input_path:str, mapping_path:str, log_name:str=\'obs_builder\')\n' \
+                    ' 3. (input_dict:dict[str:(str, str)], log_name:str=\'obs_builder\')\n' \
+                    '     where input_dict = {\'obs_type\': (input_path, mapping_path)}'
+
+        if len(args) == 0:
+            return # Create empty object
+
+        if type(args[0]) == str:
+            if len(args) == 1:
+                log_name = args[0]
+
+            elif len(args) >= 2:
+                assert len(args) >= 2 and type(args[1]) == str, ERR_MSG
+                self.input_dict = {'', (args[0], args[1])}
+
+                if len(args) == 3:
+                    assert type(args[2]) == str, ERR_MSG
+                    log_name = args[2]
+
+        elif type(args[0]) == dict:
+            # Validate the dictionary
+            for key, value in args[0].items():
+                assert type(key) == str, ERR_MSG
+                assert type(value) == tuple and len(value) == 2, ERR_MSG
+                assert type(value[0]) == str and type(value[1]) == str, ERR_MSG
+
+            self.input_dict = args[0]
+
+            if len(args) == 2:
+                assert type(args[1]) == str, ERR_MSG
+                log_name = args[1]
+
+        # kwargs
+        if 'log_name' in kwargs:
+            assert type(kwargs['log_name']) == str, ERR_MSG
+            log_name = kwargs['log_name']
+
         self.log = Logger(log_name)
 
     # Virtual Method
-    def make_description(self) -> bufr.encoders.Description:
-        return bufr.encoders.Description(self.mapping_path)
+    def _make_description(self) -> bufr.encoders.Description:
+        assert len(self.input_dict) > 0, 'Must override _make_description(), or provide input_dict'
+        _, mapping_path = self.input_dict.values()[0]
+        return bufr.encoders.Description(mapping_path)
 
     # Virtual Method
-    def make_obs(self, comm) -> bufr.DataContainer:
-        return bufr.Parser(self.input_path, self.mapping_path).parse(comm)
+    def _make_obs(self, comm) -> bufr.DataContainer:
+        assert len(self.input_dict) > 0, 'Must override _make_obs(), or provide input_dict'
+
+        input_path, mapping_path = self.input_dict.values()[0]
+        container = bufr.Parser(input_path, mapping_path).parse(comm)
+
+        for idx, (key, values) in enumerate(self.input_dict.items()):
+            if idx == 0:
+                continue
+
+            input_path, mapping_path = values()[0]
+            container.append(bufr.Parser(input_path, mapping_path).parse(comm))
+
+        return container
 
     def create_obs_group(self, category, env):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
@@ -76,18 +131,22 @@ class ObsBuilder:
         comm = bufr.mpi.Comm(env["comm_name"])
         self.log.comm = comm
 
+        cache_input_path = self.input_dict.values()[0][0]
+        cache_mapping_path = self.input_dict.values()[0][1]
+
         # Check the cache for the data and return it if it exists
-        self.log.debug(f'Check if bufr.DataCache exists? {bufr.DataCache.has(self.input_path, self.mapping_path)}')
-        if bufr.DataCache.has(self.input_path, self.mapping_path):
-            container = bufr.DataCache.get(self.input_path, self.mapping_path)
+        self.log.debug(f'Check if bufr.DataCache exists? {bufr.DataCache.has(cache_input_path, 
+                                                                             cache_mapping_path)}')
+        if bufr.DataCache.has(cache_input_path, cache_mapping_path):
+            container = bufr.DataCache.get(cache_input_path, cache_mapping_path)
             self.log.info(f'Encode {category} from cache')
-            data = iodaEncoder(self.make_description()).encode(container)[(category,)]
+            data = iodaEncoder(self._make_description()).encode(container)[(category,)]
             self.log.info(f'Mark {category} as finished in the cache')
-            bufr.DataCache.mark_finished(self.input_path, self.mapping_path, [category])
+            bufr.DataCache.mark_finished(cache_input_path, cache_mapping_path, [category])
             self.log.info(f'Return the encoded data for {category}')
             return data
 
-        container = self.make_obs(comm)
+        container = self._make_obs(comm)
 
         # Gather data from all tasks into all tasks. Each task will have the complete record
         self.log.info(f'Gather data from all tasks into all tasks')
@@ -95,15 +154,18 @@ class ObsBuilder:
 
         self.log.info(f'Add container to cache')
         # Add the container to the cache
-        bufr.DataCache.add(self.input_path, self.mapping_path, container.all_sub_categories(), container)
+        bufr.DataCache.add(cache_input_path,
+                           cache_mapping_path,
+                           container.all_sub_categories(),
+                           container)
 
         # Encode the data
         self.log.info(f'Encode {category}')
-        data = iodaEncoder(self.make_description()).encode(container)[(category,)]
+        data = iodaEncoder(self._make_description()).encode(container)[(category,)]
 
         self.log.info(f'Mark {category} as finished in the cache')
         # Mark the data as finished in the cache
-        bufr.DataCache.mark_finished(self.input_path, self.mapping_path, [category])
+        bufr.DataCache.mark_finished(cache_input_path, cache_mapping_path, [category])
 
         self.log.info(f'Return the encoded data for {category}')
         return data
@@ -113,11 +175,11 @@ class ObsBuilder:
         comm = bufr.mpi.Comm("world")
         self.log.comm = comm
 
-        container = self.make_obs(comm)
+        container = self._make_obs(comm)
         container.gather(comm)
 
         # Encode the data
         if comm.rank() == 0:
-            FILE_ENCODER_DICT[type](self.make_description()).encode(container, output_path, append)
+            FILE_ENCODER_DICT[type](self._make_description()).encode(container, output_path, append)
 
         self.log.info(f'Return the encoded data')
