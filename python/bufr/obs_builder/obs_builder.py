@@ -13,12 +13,20 @@ def add_encoder_type(name, encoder):
     FILE_ENCODER_DICT[name] = encoder
 
 def add_main_functions(cls):
-    def create_obs_group(input_path, mapping_path, category, env):
-        obs_builder = cls(input_path, mapping_path)
+    def create_obs_group(input_path, category, env, mapping_path=''):
+        if not mapping_path:
+            obs_builder = cls(input_path)
+        else:
+            obs_builder = cls(input_path, mapping_path)
+
         obs_builder.create_obs_group(category, env)
 
-    def create_obs_file(input_path, mapping_path, output_path, type='netcdf', append=False):
-        obs_builder = cls(input_path, mapping_path)
+    def create_obs_file(input_path, output_path, mapping_path='', type='netcdf', append=False):
+        if not mapping_path:
+            obs_builder = cls(input_path)
+        else:
+            obs_builder = cls(input_path, mapping_path)
+
         return obs_builder.create_obs_file(output_path, type, append)
 
     def default_main():
