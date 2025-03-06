@@ -143,8 +143,8 @@ class ObsBuilder:
         cache_mapping_path = self.input_dict.values()[0][1]
 
         # Check the cache for the data and return it if it exists
-        self.log.debug(f'Check if bufr.DataCache exists? {bufr.DataCache.has(cache_input_path, 
-                                                                             cache_mapping_path)}')
+        self.log.debug(f'Check if bufr.DataCache exists? \
+                         {bufr.DataCache.has(cache_input_path, cache_mapping_path)}')
         if bufr.DataCache.has(cache_input_path, cache_mapping_path):
             container = bufr.DataCache.get(cache_input_path, cache_mapping_path)
             self.log.info(f'Encode {category} from cache')
