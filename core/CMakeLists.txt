@@ -69,6 +69,8 @@ list(APPEND BUFR_PRIVATE
 	src/bufr/BufrReader/Exports/Variables/Transforms/OffsetTransform.cpp
 	src/bufr/BufrReader/Exports/Variables/Transforms/ScalingTransform.h
 	src/bufr/BufrReader/Exports/Variables/Transforms/ScalingTransform.cpp
+	src/bufr/BufrReader/Exports/Variables/Transforms/WrapTransform.h
+	src/bufr/BufrReader/Exports/Variables/Transforms/WrapTransform.cpp
 	src/bufr/BufrReader/Exports/Variables/Transforms/TransformBuilder.h
 	src/bufr/BufrReader/Exports/Variables/Transforms/TransformBuilder.cpp
 	src/bufr/BufrReader/Query/DataProvider/DataProvider.cpp
