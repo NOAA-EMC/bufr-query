@@ -123,6 +123,9 @@ void setupDataContainer(py::module& m)
         py::arg("data"),
         py::arg("category") = std::vector<std::string>(),
         "Replace the variable with the given name.")
+   .def("remove", &DataContainer::remove,
+        py::arg("name"),
+        "Remove the field with the given name.")
    .def("get_category_map", &DataContainer::getCategoryMap, "Get the map.")
    .def("all_sub_categories", &DataContainer::allSubCategories,
         "Get the sub categories for the satellite.")

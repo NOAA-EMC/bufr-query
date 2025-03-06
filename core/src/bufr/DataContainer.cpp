@@ -7,6 +7,8 @@
 
 #include "eckit/exception/Exceptions.h"
 
+#include "Log.h"
+
 
 namespace bufr {
   DataContainer::DataContainer() : categoryMap_({}) { makeDataSets(); }
@@ -270,6 +272,28 @@ namespace bufr {
     }
   }
 
+  void DataContainer::remove(const std::string& fieldName)
+  {
+    bool fieldExists = false;
+    for (const auto &subCat: allSubCategories())
+    {
+      auto dataset = dataSets_.at(subCat);
+      if (dataset.find(dropPath(fieldName)) != dataset.end())
+      {
+        dataset.erase(dropPath(fieldName));
+        fieldExists = true;
+      }
+    }
+
+    if (!fieldExists)
+    {
+      std::ostringstream warningStr;
+      warningStr << "Field " << fieldName << " does not exist in data container. ";
+      warningStr << "Cannot remove. ";
+
+      log::warning() << warningStr.str() << std::endl;
+    }
+  }
 
   void DataContainer::gather(const eckit::mpi::Comm& comm)
   {

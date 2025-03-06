@@ -105,6 +105,10 @@ namespace bufr {
     /// \param other DataContainer to append.
     void append(const DataContainer& other);
 
+    /// \brief Remove a field from the container in all subcategories.
+    /// \param fieldName The name of the field to remove.
+    void remove(const std::string& fieldName);
+
     /// \brief Gather data from all ranks into rank 0.
     /// \param comm MPI communicator to use.
     void gather(const eckit::mpi::Comm& comm);
