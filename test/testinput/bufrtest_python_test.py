@@ -278,6 +278,30 @@ def test_highlevel_cache():
     if bufr.DataCache.has(DATA_PATH, YAML_PATH):
         assert False, "Data Cache still contains entry."
 
+def test_highlevel_apply_mask():
+    container = bufr.DataContainer()
+
+    d0 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    d1 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    d2 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    d3 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    d4 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    d5 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+    container.add('d0', d0, ['*'])
+    container.add('d1', d1, ['*'])
+    container.add('d2', d2, ['*'])
+    container.add('d3', d3, ['*'])
+    container.add('d4', d4, ['*'])
+    container.add('d5', d5, ['*'])
+
+    mask = np.array([1, 0, 0, 1, 1, 0, 0, 1, 0, 1])
+
+    container.apply_mask(mask)
+
+    assert np.all(container.get('d0') == np.array([0, 3, 4, 7, 9]))
+    assert np.all(container.get('d4') == np.array([0, 3, 4, 7, 9]))
+
 def test_zarr_encoder():
     DATA_PATH = 'testdata/gdas.t18z.1bmhs.tm00.bufr_d'
     YAML_PATH = 'testinput/bufrtest_mhs_basic_mapping.yaml'
@@ -302,6 +326,7 @@ if __name__ == '__main__':
     test_highlevel_w_category()
     test_highlevel_cache()
     test_highlevel_append()
+    test_highlevel_apply_mask()
 
     # Test Encoders
     test_zarr_encoder()

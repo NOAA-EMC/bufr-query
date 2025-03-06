@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <memory>
 #include <iostream>
+#include <numeric>
 #include <vector>
 
 #include "eckit/mpi/Comm.h"
@@ -172,6 +173,10 @@ namespace bufr {
       /// \brief Do an MPI Gather All operation to distribute all the data.
       /// \param comm The MPI communicator to use.
       virtual void allGather(const eckit::mpi::Comm& comm) = 0;
+
+      /// \brief Apply mask to data
+      /// \param mask The mask too apply (vector<bool>)
+      virtual void applyMask(const std::vector<int>& mask) = 0;
 
       /// \brief Makes a new dimension scale using this data object as the source
       /// \param name The name of the dimension variable.
@@ -671,6 +676,40 @@ namespace bufr {
 
         dims_ = rcvDims;
         data_ = std::move(rcvBuffer);
+      }
+
+      void applyMask(const std::vector<int>& mask) final
+      {
+        if (mask.size() != dims_[0])
+        {
+          std::ostringstream str;
+          str << "Supplied mask does not match the number of rows in the data object.";
+          throw eckit::BadParameter(str.str());
+        }
+
+        const int newNumRows = std::accumulate(mask.begin(), mask.end(), 0, std::plus());
+        const int rowSize = std::accumulate(dims_.begin() + 1,
+                                                  dims_.end(),
+                                                  1,
+                                                  std::multiplies());
+
+        std::vector<T> newData;
+        newData.reserve(newNumRows * rowSize);
+
+        int newIdx = 0;
+        for (size_t row = 0; row < dims_[0]; ++row)
+        {
+          if (mask[row])
+          {
+            newData.insert(newData.begin() + newIdx * rowSize,
+                           data_.begin() + row * rowSize,
+                           data_.begin() + (row + 1) * rowSize);
+            newIdx++;
+          }
+        }
+
+        dims_[0] = newNumRows;
+        data_ = std::move(newData);
       }
 
       /// \brief Append the data from another DataObject to this one.
@@ -1224,6 +1263,40 @@ namespace bufr {
           data_[idx] = str;
           offset += strSizes[idx];
         }
+      }
+
+      /// \brief Apply a mask to the data object.
+      /// \param mask The mask to apply.
+      void applyMask(const std::vector<int>& mask) final
+      {
+        if (mask.size() != dims_[0])
+        {
+          std::ostringstream str;
+          str << "Supplied mask does not match the number of rows in the data object.";
+          throw eckit::BadParameter(str.str());
+        }
+
+        const int newNumRows = std::accumulate(mask.begin(), mask.end(), 0);
+        const int rowSize = std::accumulate(dims_.begin() + 1,
+                                            dims_.end(),
+                                            1,
+                                            std::multiplies());
+
+        std::vector<std::string> newData;
+        newData.reserve(newNumRows*rowSize);
+
+        size_t newIdx = 0;
+        for (size_t row = 0; row < dims_[0]; ++row)
+        {
+          if (mask[row])
+          {
+            newData[newIdx] = std::move(data_[row]);
+            newIdx++;
+          }
+        }
+
+        dims_[0] = newNumRows;
+        data_ = std::move(newData);
       }
 
       /// \brief Append the data from another DataObject to this one.

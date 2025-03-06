@@ -113,6 +113,10 @@ namespace bufr {
     /// \param comm MPI communicator to use.
     void allGather(const eckit::mpi::Comm& comm);
 
+    /// \brief Apply a mask to the container (mutate it)
+    /// \param mask vector of bools (mask) to apply to the container
+    void applyMask(const std::vector<int>& mask, const SubCategory& categoryId = {});
+
   private:
     /// Category map given (see constructor).
     CategoryMap categoryMap_;

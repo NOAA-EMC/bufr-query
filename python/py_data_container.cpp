@@ -144,5 +144,9 @@ void setupDataContainer(py::module& m)
           return self.allGather(comm.getComm());
         },
         py::arg("comm"),
-        "Gather data from all tasks into all tasks. Each task will have the complete record.");
+        "Gather data from all tasks into all tasks. Each task will have the complete record.")
+   .def("apply_mask", &DataContainer::applyMask,
+        py::arg("mask"),
+        py::arg("category") = std::vector<std::string>(),
+        "Apply a mask to the data container.");
 }

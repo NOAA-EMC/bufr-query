@@ -295,6 +295,22 @@ namespace bufr {
     }
   }
 
+  void DataContainer::applyMask(const std::vector<int>& mask, const SubCategory& categoryId)
+  {
+    if (!hasCategory(categoryId))
+    {
+      std::ostringstream errStr;
+      errStr << "ERROR: The category " << makeSubCategoryStr(categoryId);
+      errStr << " does not exist. Cannot apply the mask.";
+      throw eckit::BadParameter(errStr.str());
+    }
+
+    for (const auto &field: getFieldNames())
+    {
+      get(field, categoryId)->applyMask(mask);
+    }
+  }
+
   std::string DataContainer::dropPath(const std::string& fieldName)
   {
     size_t pos = fieldName.find_last_of("/");
