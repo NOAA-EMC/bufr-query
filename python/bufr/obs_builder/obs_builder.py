@@ -13,7 +13,7 @@ def add_encoder_type(name, encoder):
     FILE_ENCODER_DICT[name] = encoder
 
 def add_main_functions(cls):
-    def obs_builder(*args, **kwargs):
+    def make_obs_builder(*args, **kwargs):
         return cls(*args, **kwargs)
 
     def create_obs_group(input_path, mapping_path, category, env, ):
@@ -49,7 +49,7 @@ def add_main_functions(cls):
 
     caller_frame = inspect.stack()[1]
     calling_module = inspect.getmodule(caller_frame.frame)
-    calling_module.obs_builder = obs_builder
+    calling_module.make_obs_builder = make_obs_builder
     calling_module.create_obs_group = create_obs_group
     calling_module.create_obs_file = create_obs_file
     calling_module.default_main = default_main
