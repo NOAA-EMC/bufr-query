@@ -65,21 +65,19 @@ class ObsBuilder:
         log_name = 'obs_builder'
 
         ERR_MSG = 'ObsBuilder.__init__ has the following signatures: \n' \
-                    ' 1. (log_name:str=\'obs_builder\'\n' \
+                    ' 1. (mapping_path:str=\'obs_builder\'\n' \
                     ' 2. (mapping_path:str, log_name:str=\'obs_builder\')\n' \
                     ' 3. (map_dict:dict[str:str], log_name:str=\'obs_builder\')\n' \
                     '     where map_dict = {\'obs_type\': mapping_path}'
 
-        if len(args) == 0:
-            return # Create empty object
+        assert len(args) == 1 or len(args) == 2, ERR_MSG
 
         if type(args[0]) == str:
-            if len(args) == 1:
-                map_path = args[0]
+            self.map_dict = {'': args[0]}
 
-            elif len(args) == 2:
+            if len(args) == 2:
                 assert type(args[1]) == str, ERR_MSG
-                self.map_dict = {'', args[0]}
+                log_name = args[1]
 
             else:
                 assert False, ERR_MSG
