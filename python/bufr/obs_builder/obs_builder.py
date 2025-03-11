@@ -126,7 +126,7 @@ class ObsBuilder:
 
         return container
 
-    def create_obs_group(self, input, category, env):
+    def _create_obs_group_w_cache(self, input, category, env):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
         assert type(input) == str, 'Input was not a path str, please override create_obs_group'
 
@@ -171,6 +171,28 @@ class ObsBuilder:
 
         self.log.info(f'Return the encoded data for {category}')
         return data
+
+    def _create_obs_group_no_cache(self, input, env):
+        from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
+        assert type(input) == str, 'Input was not a path str, please override create_obs_group'
+
+        comm = bufr.mpi.Comm(env["comm_name"])
+        self.log.comm = comm
+
+        container = self.make_obs(comm, input)
+        container.gather(comm)
+
+        # Encode the data
+        self.log.info(f'Encode')
+        data = next(iter(iodaEncoder(self.make_description()).encode(container)))
+
+        return data
+
+    def create_obs_group(self, input, category, env):
+        if category or env.get('use_cache', False):
+            return self._create_obs_group_w_cache(input, category, env)
+        else:
+            return self._create_obs_group_no_cache(input, env)
 
     def create_obs_file(self, input, output_path, type='netcdf', append=False):
 
