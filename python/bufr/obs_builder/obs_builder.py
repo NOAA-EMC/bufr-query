@@ -12,15 +12,19 @@ FILE_ENCODER_DICT = {'netcdf': netcdf.Encoder,
 def add_encoder_type(name, encoder):
     FILE_ENCODER_DICT[name] = encoder
 
-def add_main_functions(cls, uses_cache=False):
+def add_main_functions(cls, uses_categories=False, uses_cache=False):
     def make_obs_builder(*args, **kwargs):
         return cls(*args, **kwargs)
 
+    # Create ObsGroup functions
     def create_obs_group_w_cache(input_path, mapping_path, category, env):
         return cls(mapping_path).create_obs_group_w_cache(input_path, category, env)
 
-    def create_obs_group_no_cache(input_path, mapping_path, env):
-        return cls(mapping_path).create_obs_group_no_cache(input_path, env)
+    def create_obs_group_no_cache_cat(input_path, mapping_path, category, env):
+        return cls(mapping_path).create_obs_group_no_cache(input_path, env, category)
+
+    def create_obs_group_no_cache_no_cat(input_path, mapping_path, env):
+        return cls(mapping_path).create_obs_group_no_cache(input_path, env, '')
 
     def create_obs_file(input_path, output_path, mapping_path, type='netcdf', append=False):
         return cls(mapping_path).create_obs_file(input_path, output_path, type, append)
@@ -55,9 +59,15 @@ def add_main_functions(cls, uses_cache=False):
     calling_module.make_obs_builder = make_obs_builder
 
     if uses_cache:
-        calling_module.create_obs_group = create_obs_group_w_cache
+        if uses_categories:
+            calling_module.create_obs_group = create_obs_group_w_cache
+        else:
+            assert False, 'Caching is only supported with categories'
     else:
-        calling_module.create_obs_group = create_obs_group_no_cache
+        if uses_categories:
+            calling_module.create_obs_group = create_obs_group_no_cache_cat
+        else:
+            calling_module.create_obs_group = create_obs_group_no_cache_no_cat
 
     calling_module.create_obs_file = create_obs_file
     calling_module.default_main = default_main
@@ -180,7 +190,7 @@ class ObsBuilder:
         self.log.info(f'Return the encoded data for {category}')
         return data
 
-    def create_obs_group_no_cache(self, input, env):
+    def create_obs_group_no_cache(self, input, env, category=''):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
         assert type(input) == str, 'Input was not a path str, please override create_obs_group'
 
@@ -191,8 +201,12 @@ class ObsBuilder:
         container.gather(comm)
 
         # Encode the data
-        self.log.info(f'Encode')
-        data = next(iter(iodaEncoder(self.make_description()).encode(container)))
+        if category == '':
+            self.log.info(f'Encoding')
+            data = next(iter(iodaEncoder(self.make_description()).encode(container)))
+        else:
+            self.log.info(f'Encoding {category}')
+            data = iodaEncoder(self.make_description()).encode(container)[(category,)]
 
         return data
 
