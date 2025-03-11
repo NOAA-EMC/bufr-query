@@ -108,7 +108,7 @@ class ObsBuilder:
     def make_description(self) -> bufr.encoders.Description:
         assert len(self.map_dict) > 0, 'No mapping file provided, please override make_description()'
 
-        return bufr.encoders.Description(self.map_dict.values()[0])
+        return bufr.encoders.Description(list(self.map_dict.values())[0])
 
     # Virtual Method
     def make_obs(self, comm, input) -> bufr.DataContainer:

@@ -262,7 +262,7 @@ namespace bufr {
             std::ostringstream errStr;
             errStr << "Error: encountered mismatch when combining DataContainers.";
             errStr << " Field \"" << field << "\" category \"" << makeSubCategoryStr(subCat)
-                   << "\"";
+                   << "\" does not exist in this DataContainer.";
             throw eckit::BadParameter(errStr.str());
           }
 
@@ -277,7 +277,7 @@ namespace bufr {
     bool fieldExists = false;
     for (const auto &subCat: allSubCategories())
     {
-      auto dataset = dataSets_.at(subCat);
+      auto& dataset = dataSets_.at(subCat);
       if (dataset.find(dropPath(fieldName)) != dataset.end())
       {
         dataset.erase(dropPath(fieldName));
