@@ -30,7 +30,6 @@ find_package( gsl-lite REQUIRED HINTS $ENV{gsl_lite_DIR} )
 find_package( NetCDF REQUIRED COMPONENTS CXX)
 find_package( bufr 12.0.1 REQUIRED)
 
-
 # Python-finding settings
 set(Python3_FIND_REGISTRY "LAST")
 set(Python3_FIND_FRAMEWORK "LAST")
@@ -53,7 +52,10 @@ if (BUILD_PYTHON_BINDINGS)
 endif()
 
 add_subdirectory( tools )
-add_subdirectory( test )
+
+if (NOT SKIP_BUILD_BUFR_QUERY_TESTS)
+  add_subdirectory( test )
+endif()
 
 ## Tests
 ecbuild_add_test( TARGET ${PROJECT_NAME}_coding_norms
