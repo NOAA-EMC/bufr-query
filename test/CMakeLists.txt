@@ -3,44 +3,44 @@
 # Download the test data if we don't have it.
 # Code borrowed from NCEPLIB-bufr project...
 
-set(DOWNLOAD_TEST_DATA OFF)
-
-if(DOWNLOAD_TEST_DATA)
-        set(DOWNLOAD_URL "https://ftp.emc.ncep.noaa.gov/static_files/public/bufr-query")
-        set(FILE_COLLECTION "bufr_query-0.0.1.tgz")
-
-        # Get the test data if we don't have it.
-        if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION}")
-                message(STATUS "Downloading: " ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
-                file(DOWNLOAD
-                        ${DOWNLOAD_URL}/${FILE_COLLECTION}
-                        ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION}
-                        SHOW_PROGRESS
-                        STATUS download_status
-                        INACTIVITY_TIMEOUT 30
-                )
-
-                list(GET download_status 0 download_status_num)
-
-                if(NOT download_status_num EQUAL 0 OR NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
-                        # Remove empty file if download doesn't complete
-                        file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
-                        message(STATUS "Could not download test files, not building tests")
-                        return()
-                endif()
-
-                add_custom_target(get_bufr_test_data ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
-                add_custom_command(
-                        TARGET get_bufr_test_data
-                        POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} tar xzf ${FILE_COLLECTION}
-                        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} rm -rf testdata
-                        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} rm -rf testoutput
-                        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} mv remote_data/testdata testdata
-                        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} mv remote_data/testoutput testoutput
-                        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} rm -rf remote_data)
-        endif()
-endif()
+#set(DOWNLOAD_TEST_DATA OFF)
+#
+#if(DOWNLOAD_TEST_DATA)
+#        set(DOWNLOAD_URL "https://ftp.emc.ncep.noaa.gov/static_files/public/bufr-query")
+#        set(FILE_COLLECTION "bufr_query-0.0.1.tgz")
+#
+#        # Get the test data if we don't have it.
+#        if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION}")
+#                message(STATUS "Downloading: " ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
+#                file(DOWNLOAD
+#                        ${DOWNLOAD_URL}/${FILE_COLLECTION}
+#                        ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION}
+#                        SHOW_PROGRESS
+#                        STATUS download_status
+#                        INACTIVITY_TIMEOUT 30
+#                )
+#
+#                list(GET download_status 0 download_status_num)
+#
+#                if(NOT download_status_num EQUAL 0 OR NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
+#                        # Remove empty file if download doesn't complete
+#                        file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
+#                        message(STATUS "Could not download test files, not building tests")
+#                        return()
+#                endif()
+#
+#                add_custom_target(get_bufr_test_data ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
+#                add_custom_command(
+#                        TARGET get_bufr_test_data
+#                        POST_BUILD
+#                        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} tar xzf ${FILE_COLLECTION}
+#                        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} rm -rf testdata
+#                        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} rm -rf testoutput
+#                        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} mv remote_data/testdata testdata
+#                        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} mv remote_data/testoutput testoutput
+#                        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} rm -rf remote_data)
+#        endif()
+#endif()
 
 # Function definitions
 
