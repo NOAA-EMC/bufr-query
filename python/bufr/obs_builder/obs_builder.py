@@ -122,11 +122,7 @@ class ObsBuilder:
 
         self.log = Logger(log_name)
 
-    # Virtual Method
-    def make_description(self) -> bufr.encoders.Description:
-        assert len(self.map_dict) > 0, 'No mapping file provided, please override make_description()'
-
-        return bufr.encoders.Description(list(self.map_dict.values())[0])
+        self.description = self._make_description()
 
     # Virtual Method
     def make_obs(self, comm, input) -> bufr.DataContainer:
@@ -144,6 +140,11 @@ class ObsBuilder:
 
         return container
 
+    def _make_description(self) -> bufr.encoders.Description:
+        assert len(self.map_dict) > 0, 'No mapping file provided, please override _make_description()'
+
+        return bufr.encoders.Description(list(self.map_dict.values())[0])
+
     def create_obs_group_w_cache(self, input, category, env):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
         assert type(input) == str, 'Input was not a path str, please override create_obs_group'
@@ -160,7 +161,7 @@ class ObsBuilder:
         if bufr.DataCache.has(cache_input_path, cache_mapping_path):
             container = bufr.DataCache.get(cache_input_path, cache_mapping_path)
             self.log.info(f'Encode {category} from cache')
-            data = iodaEncoder(self.make_description()).encode(container)[(category,)]
+            data = iodaEncoder(self.description).encode(container)[(category,)]
             self.log.info(f'Mark {category} as finished in the cache')
             bufr.DataCache.mark_finished(cache_input_path, cache_mapping_path, [category])
             self.log.info(f'Return the encoded data for {category}')
@@ -181,7 +182,7 @@ class ObsBuilder:
 
         # Encode the data
         self.log.info(f'Encode {category}')
-        data = iodaEncoder(self.make_description()).encode(container)[(category,)]
+        data = iodaEncoder(self.description).encode(container)[(category,)]
 
         self.log.info(f'Mark {category} as finished in the cache')
         # Mark the data as finished in the cache
@@ -203,10 +204,10 @@ class ObsBuilder:
         # Encode the data
         if category == '':
             self.log.info(f'Encoding')
-            data = next(iter(iodaEncoder(self.make_description()).encode(container)))
+            data = next(iter(iodaEncoder(self.description).encode(container)))
         else:
             self.log.info(f'Encoding {category}')
-            data = iodaEncoder(self.make_description()).encode(container)[(category,)]
+            data = iodaEncoder(self.description).encode(container)[(category,)]
 
         return data
 
@@ -220,6 +221,6 @@ class ObsBuilder:
 
         # Encode the data
         if comm.rank() == 0:
-            FILE_ENCODER_DICT[type](self.make_description()).encode(container, output_path, append)
+            FILE_ENCODER_DICT[type](self.description).encode(container, output_path, append)
 
         self.log.info(f'Return the encoded data')
