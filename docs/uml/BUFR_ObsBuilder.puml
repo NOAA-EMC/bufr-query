@@ -22,8 +22,8 @@ abstract class ObsBuilder
 
   + create_obs_group(input_path, mapping_path, category, env)
   + create_obs_file(input_path, mapping_path, type="netcdf", output_path)
+  + make_obs(comm)
   # _make_description()
-  # _make_obs(comm)
 }
 
 class MarineObsBuilder
@@ -38,15 +38,15 @@ class MarineObsBuilder
 
 class SatWndAmvObsBuilder
 {
+  + make_obs(comm)
   # _make_description()
-  # _make_obs(comm)
   # _compute_wind_components(wdir, wspd)
 }
 
 class SatWndAmvAvhrrObsBuilder
 {
+  + make_obs(comm)
   # _make_description()
-  # _make_obs(comm)
 }
 
 Logger <--* ObsBuilder
