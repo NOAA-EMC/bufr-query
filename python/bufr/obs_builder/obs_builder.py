@@ -17,17 +17,17 @@ def add_main_functions(cls, uses_categories=False, uses_cache=False):
         return cls(*args, **kwargs)
 
     # Create ObsGroup functions
-    def create_obs_group_w_cache(input_path, mapping_path, category, env):
-        return cls(mapping_path).create_obs_group_w_cache(input_path, category, env)
+    def create_obs_group_w_cache(input_path, category, env):
+        return cls().create_obs_group_w_cache(input_path, category, env)
 
-    def create_obs_group_no_cache_cat(input_path, mapping_path, category, env):
-        return cls(mapping_path).create_obs_group_no_cache(input_path, env, category)
+    def create_obs_group_no_cache_cat(input_path, category, env):
+        return cls().create_obs_group_no_cache(input_path, env, category)
 
-    def create_obs_group_no_cache_no_cat(input_path, mapping_path, env):
-        return cls(mapping_path).create_obs_group_no_cache(input_path, env, '')
+    def create_obs_group_no_cache_no_cat(input_path, env):
+        return cls().create_obs_group_no_cache(input_path, env, '')
 
-    def create_obs_file(input_path, output_path, mapping_path, type='netcdf', append=False):
-        return cls(mapping_path).create_obs_file(input_path, output_path, type, append)
+    def create_obs_file(input_path, output_path, type='netcdf', append=False):
+        return cls().create_obs_file(input_path, output_path, type, append)
 
     def default_main():
         import sys
@@ -44,11 +44,10 @@ def add_main_functions(cls, uses_categories=False, uses_cache=False):
         # Required input arguments
         parser = argparse.ArgumentParser()
         parser.add_argument('input', type=str, help='Input BUFR')
-        parser.add_argument('mapping', type=str, help='BUFR2IODA Mapping File')
         parser.add_argument('output', type=str, help='Output NetCDF')
 
         args = parser.parse_args()
-        create_obs_file(args.input, args.mapping, args.output)
+        create_obs_file(args.input, args.output)
 
         end_time = time.time()
         running_time = end_time - start_time
@@ -97,9 +96,6 @@ class ObsBuilder:
                 assert type(args[1]) == str, ERR_MSG
                 log_name = args[1]
 
-            else:
-                assert False, ERR_MSG
-
         elif type(args[0]) == dict:
             # Validate the dictionary
             for key, value in args[0].items():
@@ -129,7 +125,7 @@ class ObsBuilder:
         assert len(self.map_dict) > 0, 'Must override _make_obs(), or provide input_dict'
         assert type(input) == str, 'Input was not a path str, please override make_obs'
 
-        mapping_path = self.map_dict.values()[0]
+        mapping_path = list(self.map_dict.values())[0]
         container = bufr.Parser(input, mapping_path).parse(comm)
 
         for idx, mapping_path in enumerate(self.map_dict.items()):
