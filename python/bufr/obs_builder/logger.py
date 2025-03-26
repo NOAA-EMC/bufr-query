@@ -46,7 +46,7 @@ class Logger:
     def _log(self, message, level='INFO'):
         assert level.upper() in self.log_levels.keys(), f'Invalid log level: {level}'
 
-        if self.comm.rank() == 0:
+        if not self.comm or self.comm.rank() == 0:
             log_method = self.log_levels.get(level.upper(), self.logger.info)
             log_method(message)
 
