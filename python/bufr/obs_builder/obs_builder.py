@@ -161,9 +161,9 @@ class ObsBuilder:
             log_name = kwargs['log_name']
 
         self.config = {}
-        if 'configs' in kwargs:
-            assert type(kwargs['configs']) == dict, ERR_MSG
-            self.config = kwargs['configs']
+        if 'config' in kwargs:
+            assert type(kwargs['config']) == dict, ERR_MSG
+            self.config = kwargs['config']
 
         self.log = Logger(log_name)
 
