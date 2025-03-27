@@ -1,10 +1,13 @@
 import json
 import os
 import inspect
+from typing import Union
+
 import bufr
 
 from ..encoders import netcdf, zarr
 from .logger import Logger
+
 
 
 FILE_ENCODER_DICT = {'netcdf': netcdf.Encoder,
@@ -12,6 +15,30 @@ FILE_ENCODER_DICT = {'netcdf': netcdf.Encoder,
 
 def add_encoder_type(name, encoder):
     FILE_ENCODER_DICT[name] = encoder
+
+class FunctionArg:
+    def __init__(self, name, type='str', default=None):
+        self.name = name
+        self.type = type
+        self.default = default
+
+    def __str__(self):
+        return f'{self.name}:{self.type}={self.default}'
+
+class Function:
+    def __init__(self, name, args:list[FunctionArg], body:str):
+        self.name = name
+        self.args = args
+        self.body = body
+
+    def __str__(self):
+        return f'{self.name}({", ".join(map(str, self.args))}):\n{self.body}'
+
+class MainFunctionBuilder:
+    def __init__(self, cls, init_args:list[FunctionArg], func_args:list[FunctionArg]):
+        self.cls = cls
+
+
 
 def add_main_functions(cls, uses_categories=False, uses_cache=False):
     def make_obs_builder(config:dict=None):
@@ -120,53 +147,25 @@ def add_main_functions(cls, uses_categories=False, uses_cache=False):
 
 
 class ObsBuilder:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, mapping_path:Union[str, dict], config:dict=None, log_name:str='obs_builder'):
+        """
+        ObsBuilder constructor
+
+        Args:
+            mapping_path (Union[str, dict]): Path to the mapping file or a dictionary of mapping paths
+            config (dict): Configuration dictionary
+            log_name (str): Name of the logger object
+        """
+
         self.map_dict = {}
 
-        log_name = 'obs_builder'
-
-        ERR_MSG = 'ObsBuilder.__init__ has the following signatures: \n' \
-                    ' 1. (mapping_path:str=\'obs_builder\'\n' \
-                    ' 2. (mapping_path:str, log_name:str=\'obs_builder\')\n' \
-                    ' 3. (map_dict:dict[str:str], log_name:str=\'obs_builder\')\n' \
-                    '     where map_dict = {\'obs_type\': mapping_path}'
-
-        assert len(args) == 1 or len(args) == 2, ERR_MSG
-
-        if type(args[0]) == str:
-            self.map_dict = {'': args[0]}
-
-            if len(args) == 2:
-                assert type(args[1]) == str, ERR_MSG
-                log_name = args[1]
-
-        elif type(args[0]) == dict:
-            # Validate the dictionary
-            for key, value in args[0].items():
-                assert type(key) == str, ERR_MSG
-                assert type(value) == str, ERR_MSG
-
-            self.map_dict = args[0]
-
-            if len(args) == 2:
-                assert type(args[1]) == str, ERR_MSG
-                log_name = args[1]
-
-        else:
-            assert False, ERR_MSG
-
-        # kwargs
-        if 'log_name' in kwargs:
-            assert type(kwargs['log_name']) == str, ERR_MSG
-            log_name = kwargs['log_name']
-
-        self.config = {}
-        if 'config' in kwargs:
-            assert type(kwargs['config']) == dict, ERR_MSG
-            self.config = kwargs['config']
+        if isinstance(mapping_path, str):
+            self.map_dict[''] = mapping_path
+        elif isinstance(mapping_path, dict):
+            self.map_dict = mapping_path
 
         self.log = Logger(log_name)
-
+        self.config = config
         self.description = self._make_description()
 
     # Virtual Method

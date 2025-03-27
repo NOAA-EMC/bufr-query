@@ -19,6 +19,12 @@ class Logger:
                            'ERROR': self.logger.error,
                            'CRITICAL': self.logger.critical}
 
+    def set_level(self, level):
+        if level.upper() not in self.log_levels.keys():
+            raise ValueError(f'Invalid log level: {level}')
+
+        self.logger.setLevel(self.log_levels[level.upper()])
+
     def info(self, message):
         self._log(message, 'INFO')
 
