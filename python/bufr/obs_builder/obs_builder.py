@@ -197,7 +197,7 @@ class ObsBuilder:
         self.log.comm = comm
 
         cache_input_path = input
-        cache_mapping_path = self.map_dict.values()[0]
+        cache_mapping_path = list(self.map_dict.values())[0]
 
         # Check the cache for the data and return it if it exists
         self.log.debug(f'Check if bufr.DataCache exists? \
