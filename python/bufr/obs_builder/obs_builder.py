@@ -16,29 +16,6 @@ FILE_ENCODER_DICT = {'netcdf': netcdf.Encoder,
 def add_encoder_type(name, encoder):
     FILE_ENCODER_DICT[name] = encoder
 
-class FunctionArg:
-    def __init__(self, name, type='str', default=None):
-        self.name = name
-        self.type = type
-        self.default = default
-
-    def __str__(self):
-        return f'{self.name}:{self.type}={self.default}'
-
-class Function:
-    def __init__(self, name, args:list[FunctionArg], body:str):
-        self.name = name
-        self.args = args
-        self.body = body
-
-    def __str__(self):
-        return f'{self.name}({", ".join(map(str, self.args))}):\n{self.body}'
-
-class MainFunctionBuilder:
-    def __init__(self, cls, init_args:list[FunctionArg], func_args:list[FunctionArg]):
-        self.cls = cls
-
-
 
 def add_main_functions(cls, uses_categories=False, uses_cache=False):
     def make_obs_builder(config:dict=None):
