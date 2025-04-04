@@ -90,25 +90,25 @@ CONTAINS
        gaussian_wgt = .false.
        below_50  = any(bt_obs < 50)
        above_500 = any(bt_obs > 500)
-       write(*,*) 'SSMIS_Spatial_Average: input infomration ...'
-       write(*,*) 'SSMIS_Spatial_Average: bufrsat = ', bufrsat
-       write(*,*) 'SSMIS_Spatial_Average: method  = ', method 
-       write(*,*) 'SSMIS_Spatial_Average: nchanl  = ', nchanl 
-       write(*,*) 'SSMIS_Spatial_Average: num_obs = ', num_obs 
-       write(*,*) 'SSMIS_Spatial_Average: Gaussian Weighted Averaging = ', gaussian_wgt 
-       write(*,*) 'SSMIS_Spatial_Average: time min/max     = ', minval(time), maxval(time) 
-       write(*,*) 'SSMIS_Spatial_Average: lat min/max      = ', minval(lat), maxval(lat) 
-       write(*,*) 'SSMIS_Spatial_Average: lon min/max      = ', minval(lon), maxval(lon) 
-       write(*,*) 'SSMIS_Spatial_Average: fov min/max      = ', minval(fov), maxval(fov) 
-       write(*,*) 'SSMIS_Spatial_Average: rflg min/max     = ', minval(rflg), maxval(rflg) 
-       write(*,*) 'SSMIS_Spatial_Average: bt_inout min/max = ', minval(bt_inout), maxval(bt_inout) 
-       write(*,*) 'SSMIS_Spatial_Average: bt_obs min/max   = ', minval(bt_obs), maxval(bt_obs) 
-       write(*,*) 'SSMIS_Spatial_Average: there are values below 50K in bt_obs  ', below_50
-       write(*,*) 'SSMIS_Spatial_Average: there are values above 500K in bt_obs ', above_500
+       write(*,*) 'Spatial_Average: input infomration ...'
+       write(*,*) 'Spatial_Average: bufrsat = ', bufrsat
+       write(*,*) 'Spatial_Average: method  = ', method 
+       write(*,*) 'Spatial_Average: nchanl  = ', nchanl 
+       write(*,*) 'Spatial_Average: num_obs = ', num_obs 
+       write(*,*) 'Spatial_Average: Gaussian Weighted Averaging = ', gaussian_wgt 
+       write(*,*) 'Spatial_Average: time min/max     = ', minval(time), maxval(time) 
+       write(*,*) 'Spatial_Average: lat min/max      = ', minval(lat), maxval(lat) 
+       write(*,*) 'Spatial_Average: lon min/max      = ', minval(lon), maxval(lon) 
+       write(*,*) 'Spatial_Average: fov min/max      = ', minval(fov), maxval(fov) 
+       write(*,*) 'Spatial_Average: rflg min/max     = ', minval(rflg), maxval(rflg) 
+       write(*,*) 'Spatial_Average: bt_inout min/max = ', minval(bt_inout), maxval(bt_inout) 
+       write(*,*) 'Spatial_Average: bt_obs min/max   = ', minval(bt_obs), maxval(bt_obs) 
+       write(*,*) 'Spatial_Average: there are values below 50K in bt_obs  ', below_50
+       write(*,*) 'Spatial_Average: there are values above 500K in bt_obs ', above_500
 
        ! Determine scanline from time
        !==============================
-       write(*,*) 'SSMIS_Spatial_Average: determine scanline from time ...'
+       write(*,*) 'Spatial_Average: determine scanline from time ...'
        allocate(scanline(num_obs))
        t1          = time(1)  ! time for first scanline
        nscan       = 1        ! first scanline
@@ -124,9 +124,9 @@ CONTAINS
           scanline(iobs) = nscan
        enddo
        max_scan = maxval(scanline)
-       write(*,*) 'SSMIS_Spatial_Average: max_scan,max_fov,nchanl = ', &
+       write(*,*) 'Spatial_Average: max_scan,max_fov,nchanl = ', &
                  max_scan,max_fov,nchanl
-       write(*,*) 'SSMIS_Spatial_Average: scanline min/max = ', minval(scanline), maxval(scanline) 
+       write(*,*) 'Spatial_Average: scanline min/max = ', minval(scanline), maxval(scanline) 
 
 !       ! Determine scanline from time
 !       ! This approach should also 
@@ -139,12 +139,12 @@ CONTAINS
 !       scanline(1:num_obs) = NINT(DBLE((time(1:num_obs)-mintime)/scan_interval))+1
 !!      scanline(1:num_obs) = FLOOR((time(1:num_obs)-mintime)/scan_interval)+1
 !       max_scan=MAXVAL(scanline)
-!       write(*,*) 'SSMIS_Spatial_Average: mintime          = ', mintime
-!       write(*,*) 'SSMIS_Spatial_Average: time min/max     = ', minval(time), maxval(time)
-!       write(*,*) 'SSMIS_Spatial_Average: scanline min/max = ', minval(scanline), maxval(scanline)
-!       write(*,*) 'SSMIS_Spatial_Average: rflg min/max     = ', minval(rflg), maxval(rflg)
-!       write(*,*) 'SSMIS_Spatial_Average: max_scan         = ', max_scan
-!       write(*,*) 'SSMIS_Spatial_Average: max_fov          = ', max_fov
+!       write(*,*) 'Spatial_Average: mintime          = ', mintime
+!       write(*,*) 'Spatial_Average: time min/max     = ', minval(time), maxval(time)
+!       write(*,*) 'Spatial_Average: scanline min/max = ', minval(scanline), maxval(scanline)
+!       write(*,*) 'Spatial_Average: rflg min/max     = ', minval(rflg), maxval(rflg)
+!       write(*,*) 'Spatial_Average: max_scan         = ', max_scan
+!       write(*,*) 'Spatial_Average: max_fov          = ', max_fov
 
        ! Index between 1D and 2D data arrays 
        allocate(scanline_back(max_fov,max_scan))
@@ -152,9 +152,9 @@ CONTAINS
        do iobs=1,num_obs
           scanline_back(fov(iobs),scanline(iobs))=iobs
        end do
-       write(6,*) 'SSMIS_Spatial_Average: scanline_back min/max   = ', minval(scanline_back), maxval(scanline_back)
-       write(6,*) 'SSMIS_Spatial_Average: scanline      min/max   = ', minval(scanline), maxval(scanline)
-       write(*,*) 'SSMIS_Spatial_Average: max_scan,max_fov,nchanl = ', max_scan,max_fov,nchanl
+       write(6,*) 'Spatial_Average: scanline_back min/max   = ', minval(scanline_back), maxval(scanline_back)
+       write(6,*) 'Spatial_Average: scanline      min/max   = ', minval(scanline), maxval(scanline)
+       write(*,*) 'Spatial_Average: max_scan,max_fov,nchanl = ', max_scan,max_fov,nchanl
 
 !      Allocate and initialize variables
        allocate(bt_image(max_fov,max_scan,nchanl))
@@ -167,22 +167,21 @@ CONTAINS
        rainflag(:,:)   = missingval 
 
 !      Put data into 2D (fov vs. scanline) array
-       write(*,*) 'SSMIS_Spatial_Average: put data into 2D ...'
+       write(*,*) 'Spatial_Average: put data into 2D ...'
        do iobs = 1, num_obs
           latitude(fov(iobs),scanline(iobs))      = lat(iobs) 
           longitude(fov(iobs),scanline(iobs))     = lon(iobs) 
           rainflag(fov(iobs),scanline(iobs))      = rflg(iobs) 
-!         bt_image(fov(iobs),scanline(iobs),:)    = bt_obs(:,iobs)
-          if (rainflag(fov(iobs),scanline(iobs)) == 0_i_kind) bt_image(fov(iobs),scanline(iobs),:) = bt_obs(:,iobs)
+          if (rainflag(fov(iobs),scanline(iobs)) < 1_i_kind) bt_image(fov(iobs),scanline(iobs),:) = bt_obs(:,iobs)
           scanline_back(fov(iobs),scanline(iobs)) = iobs
        enddo
-       write(*,*) 'SSMIS_Spatial_Average: latitude min/max      = ', minval(latitude), maxval(latitude) 
-       write(*,*) 'SSMIS_Spatial_Average: longitude min/max     = ', minval(longitude), maxval(longitude) 
-       write(*,*) 'SSMIS_Spatial_Average: scanline_back min/max = ', minval(scanline_back), maxval(scanline_back)
-       write(*,*) 'SSMIS_Spatial_Average: bt_image min/max      = ', minval(bt_image), maxval(bt_image)
-       write(*,*) 'SSMIS_Spatial_Average: rainflag min/max      = ', minval(rainflag), maxval(rainflag)
+       write(*,*) 'Spatial_Average: latitude min/max      = ', minval(latitude), maxval(latitude) 
+       write(*,*) 'Spatial_Average: longitude min/max     = ', minval(longitude), maxval(longitude) 
+       write(*,*) 'Spatial_Average: scanline_back min/max = ', minval(scanline_back), maxval(scanline_back)
+       write(*,*) 'Spatial_Average: bt_image min/max      = ', minval(bt_image), maxval(bt_image)
+       write(*,*) 'Spatial_Average: rainflag min/max      = ', minval(rainflag), maxval(rainflag)
 
-       write(*,*) 'SSMIS_Spatial_Average: do spatial averaging ... '
+       write(*,*) 'Spatial_Average: do spatial averaging ... '
 !      Do spatial averaging in the box centered on each fov for each channel
 !$omp parallel do  schedule(dynamic,1)private(ic,iobs,iscan,ifov,ns1,ns2,np1,np2,xnum,mta,is,ip,lat1,lon1,lat2,lon2,dist,wgt)
        scan_loop: do iscan = 1, max_scan 
@@ -232,10 +231,10 @@ CONTAINS
              endif
           enddo fov_loop
        enddo scan_loop
-       write(*,*) 'SSMIS_Spatial_Average: spatial averaging Done ... '
+       write(*,*) 'Spatial_Average: spatial averaging Done ... '
        bt_inout = reshape(bt_obs, (/nchanl*num_obs/))
 
-       write(*,*) 'SSMIS_Spatial_Average: deallocating arrays... '
+       write(*,*) 'Spatial_Average: deallocating arrays... '
 !      Deallocate arrays
        deallocate(scanline_back)
        deallocate(scanline)
