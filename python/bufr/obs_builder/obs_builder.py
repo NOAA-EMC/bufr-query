@@ -225,7 +225,7 @@ class ObsBuilder:
         # Encode the data
         if category == '':
             self.log.info(f'Encoding')
-            data = next(iter(iodaEncoder(self.description).encode(container)))
+            data = next(iter(iodaEncoder(self.description).encode(container).values()))
         else:
             self.log.info(f'Encoding {category}')
             data = iodaEncoder(self.description).encode(container)[(category,)]
