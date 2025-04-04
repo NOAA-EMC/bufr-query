@@ -22,7 +22,7 @@
       !
       !$$$ end documentation block
       
-        use ssmis_kinds,     only: i_kind, r_kind
+        use kinds,     only: i_kind, r_kind
         implicit none
         real(r_kind), parameter :: deg2rad    = 3.14159265358979323846_r_kind / 180.0_r_kind
         real(r_kind), parameter :: half       = 0.5_r_kind

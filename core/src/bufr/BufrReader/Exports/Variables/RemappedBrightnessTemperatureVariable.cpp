@@ -13,7 +13,7 @@
 #include "bufr/DataObject.h"
 #include "DatetimeVariable.h"
 #include "Transforms/atms/atms_spatial_average_interface.h"
-#include "Transforms/ssmis/ssmis_spatial_average_interface.h"
+#include "Transforms/spatial_averaging/spatial_average_interface.h"
 #include "eckit/exception/Exceptions.h"
 
 
@@ -174,8 +174,8 @@ namespace bufr {
             if (nobs > 0) {
                 int error_status;
 		float missingval = DataObject<float>::missingValue();
-	        SSMIS_Spatial_Average_f(satid[1], method, nobs, nchn, missingval, &fovn, &rainflag,  &obstime,
-                                             &lat, &lon, &btobs, &error_status);
+	        Spatial_Average_f(satid[1], method, nobs, nchn, missingval, &fovn, &rainflag,  &obstime,
+                                       &lat, &lon, &btobs, &error_status);
             }
         } else {
             throw std::runtime_error("Invalid sensor type: " + sensorOption +

@@ -1,4 +1,4 @@
-module ssmis_kinds
+module kinds
 !$$$  module documentation block
 !                .      .    .                                       .
 ! module:   kinds
@@ -85,4 +85,4 @@ module ssmis_kinds
 !  integer, parameter, public :: spc = r_single
 !  integer, parameter, public :: dpc = r_double
 !  integer, parameter, public :: dpi = i_llong 
-end module ssmis_kinds
+end module kinds

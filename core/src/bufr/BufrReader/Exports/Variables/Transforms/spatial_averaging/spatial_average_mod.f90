@@ -1,19 +1,19 @@
-Module SSMIS_Spatial_Average_Mod
+Module Spatial_Average_Mod
 !
 !
-! abstract:  This routine reads BUFR format SSMIS radiance 
+! abstract:  This routine reads BUFR format radiance data 
 !            (brightness temperature) files, spatially 
 !            averages the data using the AAPP averaging routines
 !            and writes the data back into BUFR format
 !
 !
 ! Program history log:
-!    2011-12-20   eliu      - SSMIS (originally from Banghua Yan) with modifications 
+!    2011-12-20   eliu      - Originally from Banghua Yan with modifications 
 !    2016-03-03   ejones    - Add option for spatial averaging of GMI
 !    2016-03-24   ejones    - Add option for spatial averaging of AMSR2
 !
 
-  use ssmis_kinds, only: r_kind,r_double,i_kind,i_llong
+  use kinds, only: r_kind,r_double,i_kind,i_llong
   use m_distance
 
   implicit none     
@@ -22,12 +22,12 @@ Module SSMIS_Spatial_Average_Mod
   real(r_double), parameter    :: Missing_Value=1.e11_r_double
 
   private
-  public :: SSMIS_Spatial_Average
+  public :: Spatial_Average
 
 CONTAINS 
 
-  SUBROUTINE SSMIS_Spatial_Average(bufrsat, method, num_obs, nchanl, missingval,  &
-                                   fov, rflg, time, lat, lon, bt_inout, error_status)
+  SUBROUTINE Spatial_Average(bufrsat, method, num_obs, nchanl, missingval,  &
+                             fov, rflg, time, lat, lon, bt_inout, error_status)
 
     IMPLICIT NONE
     
@@ -172,8 +172,8 @@ CONTAINS
           latitude(fov(iobs),scanline(iobs))      = lat(iobs) 
           longitude(fov(iobs),scanline(iobs))     = lon(iobs) 
           rainflag(fov(iobs),scanline(iobs))      = rflg(iobs) 
-!         bt_image(fov(iobs),scanline(iobs),:) = bt_obs(:,iobs)
-          if (rainflag(fov(iobs),scanline(iobs)) < 1_i_kind) bt_image(fov(iobs),scanline(iobs),:) = bt_obs(:,iobs)
+!         bt_image(fov(iobs),scanline(iobs),:)    = bt_obs(:,iobs)
+          if (rainflag(fov(iobs),scanline(iobs)) == 0_i_kind) bt_image(fov(iobs),scanline(iobs),:) = bt_obs(:,iobs)
           scanline_back(fov(iobs),scanline(iobs)) = iobs
        enddo
        write(*,*) 'SSMIS_Spatial_Average: latitude min/max      = ', minval(latitude), maxval(latitude) 
@@ -249,9 +249,6 @@ CONTAINS
 !   Simple method for GMI (like method 1)
     if (Method == 2) then  ! simple averaging
        gaussian_wgt = .false.
-!       write(*,*) 'SSMIS_Spatial_Average for GMI: using method from Banghua'
-       write(*,*) 'SSMIS_Spatial_Average for GMI: bufrsat = ', BufrSat
-       write(*,*) 'SSMIS_Spatial_Average for GMI: Gaussian Weighted Averaging =',gaussian_wgt
 
        ! Determine scanline from time
        !==============================
@@ -269,7 +266,7 @@ CONTAINS
           scanline(iobs) = nscan
        enddo
        max_scan = maxval(scanline)
-       write(*,*) 'SSMIS_Spatial_Average for GMI:max_scan,max_fov,nchanl = ', &
+       write(*,*) 'Spatial_Average for GMI:max_scan,max_fov,nchanl = ', &
                  max_scan,max_fov,nchanl
 
 !      Allocate and initialize variables
@@ -371,9 +368,8 @@ CONTAINS
 !   Simple method for AMSR2 (like method 1)
     if (Method == 3) then  ! simple averaging 1
        gaussian_wgt = .false.
-!       write(*,*) 'SSMIS_Spatial_Average for AMSR2: using method from Banghua'
-       write(*,*) 'SSMIS_Spatial_Average for AMSR2: bufrsat = ', BufrSat
-       write(*,*) 'SSMIS_Spatial_Average for AMSR2: Gaussian Weighted Averaging=',gaussian_wgt
+       write(*,*) 'Spatial_Average for AMSR2: bufrsat = ', BufrSat
+       write(*,*) 'Spatial_Average for AMSR2: Gaussian Weighted Averaging=',gaussian_wgt
 
        ! Determine scanline from time
        !==============================
@@ -391,7 +387,7 @@ CONTAINS
           scanline(iobs) = nscan
        enddo
        max_scan = maxval(scanline)
-       write(*,*) 'SSMIS_Spatial_Average for AMSR2:max_scan,max_fov,nchanl = ', &
+       write(*,*) 'Spatial_Average for AMSR2:max_scan,max_fov,nchanl = ', &
                  max_scan,max_fov,nchanl
 
 !      Allocate and initialize variables
@@ -500,6 +496,6 @@ CONTAINS
     endif ! Method=3
 
 
-  END SUBROUTINE SSMIS_Spatial_Average
+  END SUBROUTINE Spatial_Average
 
-END MODULE SSMIS_Spatial_Average_Mod
+END MODULE Spatial_Average_Mod

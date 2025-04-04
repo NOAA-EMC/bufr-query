@@ -1,19 +1,19 @@
-module ssmis_spatial_average_c_interface_mod
+module spatial_average_c_interface_mod
 
   use iso_c_binding
 
   implicit none
 
   private
-  public:: SSMIS_Spatial_Average_c
+  public:: Spatial_Average_c
 
 contains
 
-  subroutine SSMIS_Spatial_Average_c(bufrsat, method, num_obs, nchanl, missingval, &
+  subroutine Spatial_Average_c(bufrsat, method, num_obs, nchanl, missingval, &
                                      fov, rainflag, time, lat, lon, bt_inout, error_status) &
-                                     bind(C, name='SSMIS_Spatial_Average_f')
+                                     bind(C, name='Spatial_Average_f')
 
-    use ssmis_spatial_average_mod, only: SSMIS_Spatial_Average
+    use spatial_average_mod, only: Spatial_Average
 
     integer(c_int),   value, intent(in)    :: bufrsat
     integer(c_int),   value, intent(in)    :: method
@@ -42,9 +42,9 @@ contains
     call c_f_pointer(lon, lon_f, [num_obs])
     call c_f_pointer(bt_inout, bt_inout_f, [nchanl, num_obs])
 
-    call SSMIS_Spatial_Average(bufrsat, method, num_obs, nchanl, missingval,  &
-                             fov_f, rainflag_f, time_f, lat_f, lon_f, bt_inout_f, error_status)
+    call Spatial_Average(bufrsat, method, num_obs, nchanl, missingval,  &
+                         fov_f, rainflag_f, time_f, lat_f, lon_f, bt_inout_f, error_status)
 
-  end subroutine SSMIS_Spatial_Average_c
+  end subroutine Spatial_Average_c
 
-end module ssmis_spatial_average_c_interface_mod
+end module spatial_average_c_interface_mod
