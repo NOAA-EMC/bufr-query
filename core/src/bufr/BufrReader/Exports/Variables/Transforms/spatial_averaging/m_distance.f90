@@ -60,16 +60,6 @@
       
         !Compute distances
         !=================
-        !>>orig 
-        !nlat=size(alat)
-        !work0(1:nlat)=sin((alat-blat)*deg2rad*0.5 )**2
-        !work1(1:nlat)=sin((alon-blon)*deg2rad*0.5 )**2
-        !work2(1:nlat)=cos((alat+blat)*deg2rad*0.5 )**2
-        !dist=(work2(1:nlat)-work0(1:nlat))*work1(1:nlat)+work0(1:nlat)
-        !dist=asin(sqrt(dist))/deg2rad
-        !<<orig
-      
-        !>>new    
         nlat=size(alat)
         work0(1:nlat)=sin((alat-blat)*deg2rad*half)**two
         work1(1:nlat)=sin((alon-blon)*deg2rad*half)**two
@@ -77,18 +67,6 @@
         dist=(work2(1:nlat)-work0(1:nlat))*work1(1:nlat)+work0(1:nlat)
         dist=asin(sqrt(dist))*two
         dist= 6372.8_r_kind*dist 
-        !<<new
-      
-        !>>test 
-        !nlat=size(alat)
-        !work0(1:nlat)=sin((alat-blat)*deg2rad*0.5_r_kind )**2.0_r_kind
-        !work1(1:nlat)=sin((alon-blon)*deg2rad*0.5_r_kind )**2.0_r_kind
-        !work2(1:nlat)=cos(alat*deg2rad)*cos(blat*deg2rad)
-        !dist = work0(1:nlat)+work2(1:nlat)*work1(1:nlat)
-        !dist = sqrt(dist) 
-        !dist = 2.0_r_kind*asin(min(1.0_r_kind,minval(dist)))
-        !dist = 6372.8_r_kind*dist 
-        !<<test
       
         end function distance1
       
