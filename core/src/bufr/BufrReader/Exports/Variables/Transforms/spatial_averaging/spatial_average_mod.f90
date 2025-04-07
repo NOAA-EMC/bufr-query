@@ -71,7 +71,6 @@ CONTAINS
     integer(i_kind), allocatable ::  rainflag(:,:)
     integer(i_kind), allocatable ::  scanline_back(:,:)
     integer(i_kind), allocatable ::  scanline(:)
-    real(r_kind), allocatable ::  scanlinex(:)
     real(r_kind), allocatable ::  latitude(:,:), longitude(:,:)
     real(r_kind), allocatable :: bt_image(:,:,:)
     real(r_kind), dimension(nchanl, num_obs) :: bt_obs
@@ -134,7 +133,6 @@ CONTAINS
 !       ! time includes miliseonds
 !       !==============================
 !       allocate(scanline(num_obs))
-!       allocate(scanlinex(num_obs))
 !       mintime = MINVAL(time)
 !       scanline(1:num_obs) = NINT(DBLE((time(1:num_obs)-mintime)/scan_interval))+1
 !!      scanline(1:num_obs) = FLOOR((time(1:num_obs)-mintime)/scan_interval)+1
@@ -204,7 +202,6 @@ CONTAINS
                    mta    = 0.0_r_kind
                    if (any(bt_image(np1:np2,ns1:ns2,ic) < btmin .or. &
                            bt_image(np1:np2,ns1:ns2,ic) > btmax)) then 
-                   !  bt_obs(ic,iobs) = 1000.0_r_kind 
                       bt_obs(ic,iobs) = missingval 
                    else
 !                     ! Calculate distance of each fov to the center fov 
@@ -238,7 +235,6 @@ CONTAINS
 !      Deallocate arrays
        deallocate(scanline_back)
        deallocate(scanline)
-!      deallocate(scanlinex)
        deallocate(latitude,longitude)
        deallocate(bt_image)
     endif ! Method=1
