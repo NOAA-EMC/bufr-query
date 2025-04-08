@@ -147,33 +147,17 @@ class ObsBuilder:
 
     # Virtual Method
     def make_obs(self, comm, input : Union[str, dict]) -> bufr.DataContainer:
-        assert len(self.map_dict) > 0, 'Must override _make_obs(), or provide input_dict'
+        if not isinstance(input, str) or len(self.map_dict) != 1:
+            assert False, 'You must create a custom override for make_obs().'
 
-        if isinstance(input, str):
-            if len(self.map_dict) > 1:
-                raise ValueError('Multiple mapping files available, please provide a dict')
+        mapping_path = list(self.map_dict.values())[0]
+        container = bufr.Parser(input, mapping_path).parse(comm)
 
-            mapping_path = list(self.map_dict.values())[0]
-            container = bufr.Parser(input, mapping_path).parse(comm)
+        for idx, mapping_path in enumerate(self.map_dict.items()):
+            if idx == 0:
+                continue
 
-            for idx, mapping_path in enumerate(self.map_dict.items()):
-                if idx == 0:
-                    continue
-
-                container.append(bufr.Parser(input, mapping_path).parse(comm))
-
-        elif isinstance(input, dict):
-            # make sure keys match in map_dict and input
-            for key in input.keys():
-                if key not in self.map_dict:
-                    raise ValueError(f'Key {key} not found in map_dict')
-
-            container = bufr.DataContainer()
-            for key, value in input.items():
-                mapping_path = self.map_dict.get(key)
-                container.append(bufr.Parser(value, mapping_path).parse(comm))
-        else:
-            raise TypeError('Input was not a path str or dict')
+            container.append(bufr.Parser(input, mapping_path).parse(comm))
 
         return container
 
