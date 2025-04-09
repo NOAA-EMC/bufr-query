@@ -214,6 +214,11 @@ void setupEncoderDescription(py::module& m)
         {
           writer = std::make_shared<PyGlobalWriter<std::string>>(pyGlobals);
         }
+        else if (auto _ =
+          std::dynamic_pointer_cast<GlobalDescription<std::vector<std::string>>>(global))
+        {
+          writer = std::make_shared<PyGlobalWriter<std::vector<std::string>>>(pyGlobals);
+        }
 
         global->writeTo(writer);
       }

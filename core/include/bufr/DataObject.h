@@ -1305,13 +1305,8 @@ namespace bufr {
         }
 
         const int newNumRows = std::accumulate(mask.begin(), mask.end(), 0);
-        const int rowSize = std::accumulate(dims_.begin() + 1,
-                                            dims_.end(),
-                                            1,
-                                            std::multiplies());
-
-        std::vector<std::string> newData;
-        newData.reserve(newNumRows*rowSize);
+        
+        std::vector<std::string> newData(newNumRows);
 
         size_t newIdx = 0;
         for (size_t row = 0; row < dims_[0]; ++row)
