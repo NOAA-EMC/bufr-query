@@ -33,8 +33,8 @@ namespace encoders {
         std::string name;
         std::string source;
         std::vector<std::string> dimensions;
-        std::string longName;
         std::string units;
+        std::string longName;
         std::shared_ptr<std::string> coordinates;  // Optional
         std::shared_ptr<Range> range;  // Optional
         std::vector<size_t> chunks;  // Optional
@@ -135,6 +135,7 @@ namespace encoders {
                             const std::string& units,
                             const std::string& longName = "",
                             const std::string& coordinates = "",
+			    const std::vector<size_t>& range = {},
                             const std::vector<size_t>& chunks = {},
                             const int compressionLevel = 3);
 
