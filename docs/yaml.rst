@@ -55,7 +55,7 @@ Here is an example:
       longitude:
         query: "*/CLON"
         transforms:
-          - offset: -180
+          - wrap: [ -180.0, 180.0 ]
       latitude:
         query: "*/CLAT"
       channels:
@@ -91,8 +91,8 @@ The **bufr** element has the following sub-elements:
 
     * **query**: Query string which is used to get the data from the BUFR file. *(optional)* Can
       apply a list of **tranforms** to the numeric (not string) data. Possible transforms are
-      **offset** and **scale**. You can also manually override the type by specifying the **type** as
-      **int**, **int64**, **float**, or **double**.
+      **offset**, **scale** and **wrap**. You can also manually override the type by specifying the
+      **type** as **int**, **int64**, **float**, or **double**.
     * **datetime**: Associate **key** with data for mnemonics for **year**, **month**, **day**, **hour**,
       **minute**, *(optional)* **second**, and *(optional)* **hoursFromUtc** (must be an **integer**).
       Internally, the value stored is number of seconds elapsed since a reference epoch, currently
