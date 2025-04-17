@@ -86,100 +86,89 @@ namespace bufr {
 
         // Get field-of-view number
         std::vector<int> fovn(fovnObj->size(), DataObject<int>::missingValue());
-        for (size_t idx = 0; idx < fovnObj->size(); idx++)
-        {
-           fovn[idx] = fovnObj->getAsInt(idx);
-        }
+        fovn = std::dynamic_pointer_cast<DataObject<int>>(fovnObj)->getRawData();
 
         // Get sensor channel
         std::vector<int> channel(sensorChanObj->size(), DataObject<int>::missingValue());
-        for (size_t idx = 0; idx < sensorChanObj->size(); idx++)
-        {
-           channel[idx] = sensorChanObj->getAsInt(idx);
-        }
+        channel = std::dynamic_pointer_cast<DataObject<int>>(sensorChanObj)->getRawData();
 
         // Get brightness temperature (observation)
         std::vector<float> btobs(radObj->size(), DataObject<float>::missingValue());
-        for (size_t idx = 0; idx < radObj->size(); idx++)
-        {
-           btobs[idx] = radObj->getAsFloat(idx);
-        }
+        btobs = std::dynamic_pointer_cast<DataObject<float>>(radObj)->getRawData();
 
         // Check the sensor option.
         std::string sensorOption = conf_.getString(ConfKeys::Sensor, "atms"); //By default it is ATMS
-        if (sensorOption == "atms") {
+        if (sensorOption == "atms")
+       	{
             std::cout << "Sensor is ATMS." << std::endl;
         // Perform FFT image remapping
         // input only variables: nobs, nchn obstime, fovn, channel
         // input & output variables: btobs, scanline, error_status
-            if (nobs > 0) {
+            if (nobs > 0)
+	    {
                 int error_status;
 	        ATMS_Spatial_Average_f(nobs, nchn, &obstime, &fovn, &channel, &btobs,
                                                    &scanline, &error_status);
             }
-        } else if (sensorOption == "ssmis") {
-            // Declare and initialize rain flag array
-            // rainflag has the same dimension as fovn
+        }
+       	else if (sensorOption == "ssmis")
+       	{
 	    std::cout << "Sensor is SSMIS." << std::endl;
-            std::shared_ptr<DataObjectBase> satidObj;
-            std::shared_ptr<DataObjectBase> latObj;
-            std::shared_ptr<DataObjectBase> lonObj;
-            std::shared_ptr<DataObjectBase> rainflagObj;
-            if (conf_.has(ConfKeys::SatelliteId)) {
-                satidObj = map.at(getExportKey(ConfKeys::SatelliteId));
-	    } else {
-                throw std::runtime_error("SatelliteId is missing for SSMIS.");
+
+	    // Read the variables from the map
+            auto& satidObj = map.at(getExportKey(ConfKeys::SatelliteId));
+            auto& latObj = map.at(getExportKey(ConfKeys::Latitude));
+            auto& lonObj = map.at(getExportKey(ConfKeys::Longitude));
+            auto& rainflagObj = map.at(getExportKey(ConfKeys::RainFlag));
+            if (!conf_.has(ConfKeys::SatelliteId))
+            {
+              throw eckit::BadParameter("SatelliteId is missing for SSMIS.");
             }
-            if (conf_.has(ConfKeys::Longitude)) {
-                lonObj = map.at(getExportKey(ConfKeys::Longitude));
-	    } else {
-                throw std::runtime_error("Longitude is missing for SSMIS.");
-            }
-            if (conf_.has(ConfKeys::Latitude)) {
-                latObj = map.at(getExportKey(ConfKeys::Latitude));
-            } else {
-                throw std::runtime_error("Latitude is missing for SSMIS.");
-            }
-            if (conf_.has(ConfKeys::RainFlag)) {
-                rainflagObj = map.at(getExportKey(ConfKeys::RainFlag));
-            } else {
-                throw std::runtime_error("RainFlag is missing for SSMIS.");
-            }
-            // Get satid
+            if (!conf_.has(ConfKeys::Longitude))
+            {
+              throw eckit::BadParameter("Longitude is missing for SSMIS.");
+            }            
+            if (!conf_.has(ConfKeys::Latitude))
+            {
+              throw eckit::BadParameter("Latitude is missing for SSMIS.");
+            }            
+            if (!conf_.has(ConfKeys::RainFlag))
+            {
+              throw eckit::BadParameter("RainFlag is missing for SSMIS.");
+            }            
+
+	    // Get satid
             std::vector<int> satid(satidObj->size(), DataObject<int>::missingValue());
-            for (size_t idx = 0; idx < satidObj->size(); idx++)
-            {
-               satid[idx] = satidObj->getAsInt(idx);
-            }
-            // Get latitude
+            satid = std::dynamic_pointer_cast<DataObject<int>>(satidObj)->getRawData();
+
+	    // Get latitude
             std::vector<float> lon(lonObj->size(), DataObject<float>::missingValue());
-            for (size_t idx = 0; idx < lonObj->size(); idx++)
-            {
-               lon[idx] = lonObj->getAsFloat(idx);
-            }
-            // Get latitude
+            lon = std::dynamic_pointer_cast<DataObject<float>>(lonObj)->getRawData();
+
+	    // Get latitude
             std::vector<float> lat(latObj->size(), DataObject<float>::missingValue());
-            for (size_t idx = 0; idx < latObj->size(); idx++)
-            {
-               lat[idx] = latObj->getAsFloat(idx);
-            }
-            // Get rain flag
+            lat = std::dynamic_pointer_cast<DataObject<float>>(latObj)->getRawData();
+
+	    // Get rain flag
             std::vector<int> rainflag(rainflagObj->size(), DataObject<int>::missingValue());
-            for (size_t idx = 0; idx < rainflagObj->size(); idx++)
-            {
-               rainflag[idx] = rainflagObj->getAsInt(idx);
-            }
+            rainflag = std::dynamic_pointer_cast<DataObject<int>>(rainflagObj)->getRawData();
+
 	    // Get method for spatial averaging 
             int method = conf_.getInt(ConfKeys::Method, 1); // Default is 1
-            if (nobs > 0) {
+
+	    if (nobs > 0)
+	    {
                 int error_status;
 		float missingval = DataObject<float>::missingValue();
 	        Spatial_Average_f(satid[1], method, nobs, nchn, missingval, &fovn, &rainflag,  &obstime,
                                        &lat, &lon, &btobs, &error_status);
             }
-        } else {
-            throw std::runtime_error("Invalid sensor type: " + sensorOption +
-                                     ". Must be either ATMS or SSMIS.");
+        }
+       	else
+       	{
+
+            throw eckit::BadParameter("Invalid sensor type: " + sensorOption +
+                                      ". Must be either ATMS or SSMIS.");
         }
 
         // Export remapped observation (btobs)
