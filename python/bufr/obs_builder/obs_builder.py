@@ -75,9 +75,9 @@ def add_main_functions(cls, uses_categories=False, uses_cache=False):
 
         # Required input arguments
         parser = argparse.ArgumentParser()
-        parser.add_argument('-i', '--input', type=str, help='Input BUFR')
-        parser.add_argument('-o', '--output', type=str, help='Output NetCDF')
-        parser.add_argument('-c', '--config', type=str, help='GDAS App style config')
+        parser.add_argument('--input', type=str, help='Input BUFR')
+        parser.add_argument('--output', type=str, help='Output NetCDF')
+        parser.add_argument('--config', type=str, help='GDAS App style config')
 
         args = parser.parse_args()
 
