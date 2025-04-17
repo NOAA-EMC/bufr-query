@@ -32,8 +32,8 @@ namespace
             const char* Source = "source";
             const char* LongName = "longName";
             const char* Units = "units";
-            const char* Range = "range";
             const char* Coords = "coordinates";
+            const char* Range = "range";
             const char* Chunks = "chunks";
             const char* CompressionLevel = "compressionLevel";
         }  // namespace Variable
@@ -326,6 +326,7 @@ namespace encoders {
                                      const std::string& units,
                                      const std::string& longName,
                                      const std::string& coordinates,
+				     const std::vector<size_t>& range,
                                      const std::vector<size_t>& chunks,
                                      const int compressionLevel)
     {
@@ -342,6 +343,19 @@ namespace encoders {
         if (!coordinates.empty())
         {
             variable.coordinates = std::make_shared<std::string>(coordinates);
+        }
+
+        if (!range.empty())
+        {
+            if (range.size() != 2)
+            {
+                throw eckit::BadParameter("Range is the wrong size.");
+            }
+
+            auto newRange = std::make_shared<Range>();
+            newRange->start = range[0];
+            newRange->end = range[1];
+            variable.range = newRange;
         }
 
         variable.compressionLevel = compressionLevel;
