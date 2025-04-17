@@ -85,16 +85,13 @@ namespace bufr {
         obstime = std::dynamic_pointer_cast<DataObject<int64_t>>(datetimeObj)->getRawData();
 
         // Get field-of-view number
-        std::vector<int> fovn(fovnObj->size(), DataObject<int>::missingValue());
-        fovn = std::dynamic_pointer_cast<DataObject<int>>(fovnObj)->getRawData();
+        auto fovn = std::dynamic_pointer_cast<DataObject<int>>(fovnObj)->getRawData();
 
         // Get sensor channel
-        std::vector<int> channel(sensorChanObj->size(), DataObject<int>::missingValue());
-        channel = std::dynamic_pointer_cast<DataObject<int>>(sensorChanObj)->getRawData();
+        auto channel = std::dynamic_pointer_cast<DataObject<int>>(sensorChanObj)->getRawData();
 
         // Get brightness temperature (observation)
-        std::vector<float> btobs(radObj->size(), DataObject<float>::missingValue());
-        btobs = std::dynamic_pointer_cast<DataObject<float>>(radObj)->getRawData();
+        auto btobs = std::dynamic_pointer_cast<DataObject<float>>(radObj)->getRawData();
 
         // Check the sensor option.
         std::string sensorOption = conf_.getString(ConfKeys::Sensor, "atms"); //By default it is ATMS
@@ -138,20 +135,16 @@ namespace bufr {
             }            
 
 	    // Get satid
-            std::vector<int> satid(satidObj->size(), DataObject<int>::missingValue());
-            satid = std::dynamic_pointer_cast<DataObject<int>>(satidObj)->getRawData();
+            auto satid = std::dynamic_pointer_cast<DataObject<int>>(satidObj)->getRawData();
 
 	    // Get latitude
-            std::vector<float> lon(lonObj->size(), DataObject<float>::missingValue());
-            lon = std::dynamic_pointer_cast<DataObject<float>>(lonObj)->getRawData();
+            auto lon = std::dynamic_pointer_cast<DataObject<float>>(lonObj)->getRawData();
 
 	    // Get latitude
-            std::vector<float> lat(latObj->size(), DataObject<float>::missingValue());
-            lat = std::dynamic_pointer_cast<DataObject<float>>(latObj)->getRawData();
+            auto lat = std::dynamic_pointer_cast<DataObject<float>>(latObj)->getRawData();
 
 	    // Get rain flag
-            std::vector<int> rainflag(rainflagObj->size(), DataObject<int>::missingValue());
-            rainflag = std::dynamic_pointer_cast<DataObject<int>>(rainflagObj)->getRawData();
+            auto rainflag = std::dynamic_pointer_cast<DataObject<int>>(rainflagObj)->getRawData();
 
 	    // Get method for spatial averaging 
             int method = conf_.getInt(ConfKeys::Method, 1); // Default is 1
