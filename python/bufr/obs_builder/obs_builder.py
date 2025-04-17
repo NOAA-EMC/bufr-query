@@ -9,119 +9,11 @@ from ..encoders import netcdf, zarr
 from .logger import Logger
 
 
-
 FILE_ENCODER_DICT = {'netcdf': netcdf.Encoder,
                      'zarr': zarr.Encoder}
 
 def add_encoder_type(name, encoder):
     FILE_ENCODER_DICT[name] = encoder
-
-
-def add_main_functions(cls, uses_categories=False, uses_cache=False):
-    def make_obs_builder(config:dict=None):
-        if 'config' in inspect.signature(cls.__init__).parameters:
-            return cls(config=config) if config else cls()
-        else:
-            return cls()
-
-    # Create ObsGroup functions
-    def create_obs_group_w_cache(input_path, category, env, config:dict=None):
-        return make_obs_builder(config=config).create_obs_group_w_cache(input_path, category, env)
-
-    def create_obs_group_no_cache_cat(input_path, category, env, config:dict=None):
-        return make_obs_builder(config=config).create_obs_group_no_cache(input_path, env, category)
-
-    def create_obs_group_no_cache_no_cat(input_path, env, config:dict=None):
-        return make_obs_builder(config=config).create_obs_group_no_cache(input_path, env, '')
-
-    def create_obs_file(input_path, output_path, type='netcdf', append=False, config:dict=None):
-        make_obs_builder(config=config).create_obs_file(input_path, output_path, type, append)
-
-    def create_obs_file_from_config(config):
-        # Get parameters from configuration
-        data_format = config["data_format"]
-        data_type = config["data_type"]
-        cycle_type = config["cycle_type"]
-        dump_dir = config["dump_directory"]
-        cycle = config["cycle_datetime"]
-        ioda_dir = config["ioda_directory"]
-
-        # Make input path
-        yyyymmdd = cycle[0:8]
-        hh = cycle[8:10]
-        bufrfile = f"{cycle_type}.t{hh}z.{data_type}.tm{hh}.{data_format}"
-        input_path = os.path.join(dump_dir, f"{cycle_type}.{yyyymmdd}", str(hh), f"atmos", bufrfile)
-
-        # Make output path
-        iodafile = f"{cycle_type}.t{hh}z.{data_type}.tm00.nc"
-        output_path = os.path.join(ioda_dir, iodafile)
-
-        create_obs_file(input_path, output_path, config)
-
-    def default_main():
-        import sys
-        import time
-        import argparse
-        import yaml
-        from bufr import mpi
-        from bufr.obs_builder import Logger
-
-        logger = Logger(os.path.basename(__file__))
-
-        start_time = time.time()
-
-        mpi.App(sys.argv)
-        comm = mpi.Comm("world")
-
-        # Required input arguments
-        parser = argparse.ArgumentParser()
-        parser.add_argument('-i', '--input', type=str, help='Input BUFR')
-        parser.add_argument('-o', '--output', type=str, help='Output NetCDF')
-        parser.add_argument('-c', '--config', type=str, help='GDAS App style config')
-
-        args = parser.parse_args()
-
-        if args.config:
-            with open(args.config, "r") as file:
-                config = yaml.safe_load(file)
-
-            create_obs_file_from_config(config)
-
-            if args.output or args.input:
-                logger.warning('Ignoring input and output arguments when using config.')
-        else:
-            if not args.input or not args.output:
-                logger.error('Both Input and output arguments are required.')
-                sys.exit(1)
-
-            create_obs_file(args.input, args.output)
-
-        end_time = time.time()
-        running_time = end_time - start_time
-        logger.info(f'Total running time: {running_time}')
-
-    caller_frame = inspect.stack()[1]
-    calling_module = inspect.getmodule(caller_frame.frame)
-    calling_module.make_obs_builder = make_obs_builder
-
-    if uses_cache:
-        if uses_categories:
-            calling_module.create_obs_group = create_obs_group_w_cache
-        else:
-            assert False, 'Caching is only supported with categories'
-    else:
-        if uses_categories:
-            calling_module.create_obs_group = create_obs_group_no_cache_cat
-        else:
-            calling_module.create_obs_group = create_obs_group_no_cache_no_cat
-
-    calling_module.create_obs_file = create_obs_file
-    calling_module.create_obs_file_from_config = create_obs_file_from_config
-    calling_module.default_main = default_main
-
-    if calling_module.__name__ == '__main__':
-        default_main()
-
 
 class ObsBuilder:
     def __init__(self, mapping_path:Union[str, dict], config:dict=None, log_name:str='obs_builder'):
@@ -162,11 +54,43 @@ class ObsBuilder:
         return container
 
     def _make_description(self) -> bufr.encoders.Description:
-        assert len(self.map_dict) > 0, 'No mapping file provided, please override _make_description()'
+        if len(self.map_dict) != 1:
+            assert False, 'You must create a custom override for _make_description().'
 
         return bufr.encoders.Description(list(self.map_dict.values())[0])
 
-    def create_obs_group_w_cache(self, input, category, env):
+    def create_obs_file(self, input, output, type='netcdf', append=False):
+
+        comm = bufr.mpi.Comm("world")
+        self.log.comm = comm
+
+        container = self.make_obs(comm, input)
+        container.gather(comm)
+
+        # Encode the data
+        if comm.rank() == 0:
+            FILE_ENCODER_DICT[type](self.description).encode(container, output, append)
+
+        self.log.info(f'Return the encoded data')
+
+    def create_obs_group(self, input, env, category=''):
+        """
+        Create an observation group from the input data.
+
+        Args:
+            input (str): Path to the input data.
+            env (dict): Environment variables.
+            category (str): Category of the observation group.
+
+        Returns:
+            dict: Encoded data.
+        """
+        if category:
+            return self._create_obs_group_w_cache(input, category, env)
+        else:
+            return self._create_obs_group_no_cache(input, env)
+
+    def _create_obs_group_w_cache(self, input, category, env):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
         assert type(input) == str, 'Input was not a path str, please override create_obs_group'
 
@@ -212,7 +136,7 @@ class ObsBuilder:
         self.log.info(f'Return the encoded data for {category}')
         return data
 
-    def create_obs_group_no_cache(self, input, env, category=''):
+    def _create_obs_group_no_cache(self, input, env, category=''):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
         assert type(input) == str, 'Input was not a path str, please override create_obs_group'
 
@@ -231,17 +155,3 @@ class ObsBuilder:
             data = iodaEncoder(self.description).encode(container)[(category,)]
 
         return data
-
-    def create_obs_file(self, input, output_path, type='netcdf', append=False):
-
-        comm = bufr.mpi.Comm("world")
-        self.log.comm = comm
-
-        container = self.make_obs(comm, input)
-        container.gather(comm)
-
-        # Encode the data
-        if comm.rank() == 0:
-            FILE_ENCODER_DICT[type](self.description).encode(container, output_path, append)
-
-        self.log.info(f'Return the encoded data')
