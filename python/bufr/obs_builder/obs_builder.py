@@ -17,7 +17,7 @@ def add_encoder_type(name, encoder):
     FILE_ENCODER_DICT[name] = encoder
 
 
-def add_main_functions(cls, uses_categories=False, uses_cache=False):
+def add_main_functions(cls, uses_categories=False, uses_cache=False, execute_main=True):
     def make_obs_builder(config:dict=None):
         if 'config' in inspect.signature(cls.__init__).parameters:
             return cls(config=config) if config else cls()
@@ -119,7 +119,7 @@ def add_main_functions(cls, uses_categories=False, uses_cache=False):
     calling_module.create_obs_file_from_config = create_obs_file_from_config
     calling_module.default_main = default_main
 
-    if calling_module.__name__ == '__main__':
+    if calling_module.__name__ == '__main__' and execute_main:
         default_main()
 
 
