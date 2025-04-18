@@ -54,8 +54,7 @@ class ObsBuilder:
         return container
 
     def _make_description(self) -> bufr.encoders.Description:
-        if len(self.map_dict) != 1:
-            assert False, 'You must create a custom override for _make_description().'
+        assert len(self.map_dict) > 0, 'No mapping file provided, please override _make_description()'
 
         return bufr.encoders.Description(list(self.map_dict.values())[0])
 

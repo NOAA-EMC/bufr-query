@@ -42,20 +42,20 @@ def add_main_functions(cls):
         data_type = config["data_type"]
         cycle_type = config["cycle_type"]
         dump_dir = config["dump_directory"]
-        cycle = config["cycle_datetime"]
+        cycle_datetime = config["cycle_datetime"]
         ioda_dir = config["ioda_directory"]
 
         # Make input path
-        yyyymmdd = cycle[0:8]
-        hh = cycle[8:10]
-        bufrfile = f"{cycle_type}.t{hh}z.{data_type}.tm{hh}.{data_format}"
-        input_path = os.path.join(dump_dir, f"{cycle_type}.{yyyymmdd}", str(hh), f"atmos", bufrfile)
+        yyyymmdd = cycle_datetime[0:8]
+        hh = cycle_datetime[8:10]
+        bufrfile = f"{cycle_datetime}-{cycle_type}.t{hh}z.{data_format}.tm00.bufr_d"
+        input_path = os.path.join(dump_dir, bufrfile)
 
         # Make output path
         iodafile = f"{cycle_type}.t{hh}z.{data_type}.tm00.nc"
         output_path = os.path.join(ioda_dir, iodafile)
 
-        create_obs_file(input_path, output_path, config)
+        create_obs_file(input_path, output_path, config=config)
 
     def default_main():
         import sys

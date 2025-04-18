@@ -52,6 +52,7 @@ void setupEncoderDescription(py::module& m)
         py::arg("units"),
         py::arg("longName")="",
         py::arg("coordinates")="",
+	py::arg("range")=std::vector<size_t>{},
         py::arg("chunks")=std::vector<size_t>{},
         py::arg("compressionLevel")=3,
           "Add a variable to the description.")
@@ -77,6 +78,12 @@ void setupEncoderDescription(py::module& m)
             coordinates = var_dict["coordinates"].cast<std::string>();
           }
 
+          auto range = std::vector<size_t>{};
+          if (var_dict.contains("range"))
+          {
+            range = var_dict["range"].cast<std::vector<size_t>>();
+          }
+
           auto chunks = std::vector<size_t>{};
           if (var_dict.contains("chunks"))
           {
@@ -94,6 +101,7 @@ void setupEncoderDescription(py::module& m)
                               units,
                               longName,
                               coordinates,
+			      range,
                               chunks,
                               compressionLevel);
         }
