@@ -3,20 +3,27 @@ import os
 import inspect
 import functools
 
-def _create_module_func(cls, method_name, config=None):
+def _create_module_func(cls, method_name):
     """Create a module-level function that calls cls.method_name with the same signature."""
     # Get the bound method and its signature
     method = getattr(cls, method_name)
     sig = inspect.signature(method)
+
     # Remove 'self' from parameters for the new function
     params = [param for name, param in sig.parameters.items() if name != 'self']
+    # Add optional 'config' parameter to the parameters
+    params.append(inspect.Parameter('config',
+                                    inspect.Parameter.KEYWORD_ONLY,
+                                    default={}))
+
     new_sig = inspect.Signature(params)
 
     # Define a generic wrapper that calls the method on a new instance
     def wrapper(*args, **kwargs):
         # Call the original method on an instance of cls
         if 'config' in inspect.signature(cls.__init__).parameters:
-            return getattr(cls(config=config), method_name)(*args, **kwargs)
+            kwargs.pop('config', None)
+            return getattr(cls(config=kwargs['config']), method_name)(*args, **kwargs)
         else:
             return getattr(cls(), method_name)(*args, **kwargs)
 
