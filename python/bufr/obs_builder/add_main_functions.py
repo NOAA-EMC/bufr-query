@@ -11,27 +11,6 @@ def add_main_functions(cls, execute_main=True):
         else:
             return cls()
 
-    def create_obs_file_from_config(config):
-        # Get parameters from configuration
-        data_format = config["data_format"]
-        data_type = config["data_type"]
-        cycle_type = config["cycle_type"]
-        dump_dir = config["dump_directory"]
-        cycle_datetime = config["cycle_datetime"]
-        ioda_dir = config["ioda_directory"]
-
-        # Make input path
-        yyyymmdd = cycle_datetime[0:8]
-        hh = cycle_datetime[8:10]
-        bufrfile = f"{cycle_datetime}-{cycle_type}.t{hh}z.{data_format}.tm00.bufr_d"
-        input_path = os.path.join(dump_dir, bufrfile)
-
-        # Make output path
-        iodafile = f"{cycle_type}.t{hh}z.{data_type}.tm00.nc"
-        output_path = os.path.join(ioda_dir, iodafile)
-
-        create_obs_file(input_path, output_path, config=config)
-
     def default_main():
         import sys
         import time
@@ -59,28 +38,12 @@ def add_main_functions(cls, execute_main=True):
                 parser.add_argument(f'--{param.name}', required=True)
             else:
                 parser.add_argument(f'--{param.name}', default=param.default)
-
-        parser.add_argument(f'--config', required=False)
         args = parser.parse_args()
 
-        if args.config:
-            with open(args.config, "r") as file:
-                config = yaml.safe_load(file)
+        create_args = {k: v for k, v in vars(args).items() if k in create_file_sig.parameters}
+        create_kwargs = {k: v for k, v in vars(args).items() if k not in create_file_sig.parameters}
 
-            create_obs_file_from_config(config)
-
-            if args.output or args.input:
-                logger.warning('Ignoring input and output arguments when using config.')
-        else:
-            if not args.input or not args.output:
-                logger.error('Both Input and output arguments are required.')
-                sys.exit(1)
-
-            create_args = {k: v for k, v in vars(args).items() if k in create_file_sig.parameters}
-            create_kwargs = {k: v for k, v in vars(args).items() if k not in create_file_sig.parameters}
-            create_kwargs.pop('config')
-
-            create_obs_file(**create_args, **create_kwargs)
+        create_obs_file(**create_args, **create_kwargs)
 
         end_time = time.time()
         running_time = end_time - start_time
@@ -119,7 +82,6 @@ def add_main_functions(cls, execute_main=True):
     calling_module.make_obs_builder = make_obs_builder
     calling_module.create_obs_group = create_obs_group
     calling_module.create_obs_file = create_obs_file
-    calling_module.create_obs_file_from_config = create_obs_file_from_config
     calling_module.default_main = default_main
 
     if calling_module.__name__ == '__main__' and execute_main:
