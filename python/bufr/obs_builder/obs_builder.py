@@ -16,7 +16,12 @@ def add_encoder_type(name, encoder):
     FILE_ENCODER_DICT[name] = encoder
 
 class ObsBuilder:
-    def __init__(self, mapping_path:Union[str, dict], config:dict=None, log_name:str='obs_builder'):
+    def __init__(self,
+                 mapping_path:Union[str, dict],
+                 config:dict=None,
+                 log_name:str='obs_builder',
+                 uses_categories:bool=False,
+                 uses_cache:bool=False):
         """
         ObsBuilder constructor
 
@@ -36,6 +41,8 @@ class ObsBuilder:
         self.log = Logger(log_name)
         self.config = config
         self.description = self._make_description()
+        self.uses_categories = uses_categories
+        self.uses_cache = uses_cache
 
     # Virtual Method
     def make_obs(self, comm, input : Union[str, dict]) -> bufr.DataContainer:
@@ -84,8 +91,11 @@ class ObsBuilder:
         Returns:
             dict: Encoded data.
         """
-        if category:
+
+        if self.uses_cache:
             return self._create_obs_group_w_cache(input, category, env)
+        elif self.uses_categories:
+            return self._create_obs_group_no_cache(input, env, category)
         else:
             return self._create_obs_group_no_cache(input, env)
 
