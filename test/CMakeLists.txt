@@ -93,6 +93,7 @@ list( APPEND test_input
   testinput/bufrtest_python_test.py
   testinput/bufrtest_python_mpi_test.py
   testinput/bufrtest_python_obsbuilder.py
+  testinput/bufrtest_python_obsbuilder_mod_sig.py
 )
 
 # create test directories and make links to the input files
@@ -570,6 +571,12 @@ if (${BUILD_PYTHON_BINDINGS})
                     TYPE    SCRIPT
                     COMMAND python3
                     ARGS    testinput/bufrtest_python_obsbuilder.py
+                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
+
+  ecbuild_add_test( TARGET  test_bufr_python_obsbuilder_mod_signature
+                    TYPE    SCRIPT
+                    COMMAND python3
+                    ARGS    testinput/bufrtest_python_obsbuilder_mod_sig.py
                     ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
 
 endif()

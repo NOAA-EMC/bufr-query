@@ -1,0 +1,88 @@
+
+import os
+import inspect
+import functools
+
+def add_main_functions(cls, execute_main=True):
+
+    def make_obs_builder(config:dict=None):
+        if 'config' in inspect.signature(cls.__init__).parameters:
+            return cls(config=config) if config else cls()
+        else:
+            return cls()
+
+    def default_main():
+        import sys
+        import time
+        import yaml
+        import argparse
+        from bufr import mpi
+        from bufr.obs_builder import Logger
+
+        logger = Logger(os.path.basename(__file__))
+
+        start_time = time.time()
+
+        mpi.App(sys.argv)
+        comm = mpi.Comm("world")
+
+        create_file_sig = inspect.signature(create_obs_file)
+
+        # Required input arguments
+        parser = argparse.ArgumentParser()
+
+        for param in create_file_sig.parameters.values():
+            if param.name == 'self':
+                continue
+            if param.default is param.empty:
+                parser.add_argument(f'--{param.name}', required=True)
+            else:
+                parser.add_argument(f'--{param.name}', default=param.default)
+        args = parser.parse_args()
+
+        create_args = {k: v for k, v in vars(args).items() if k in create_file_sig.parameters}
+        create_kwargs = {k: v for k, v in vars(args).items() if k not in create_file_sig.parameters}
+
+        create_obs_file(**create_args, **create_kwargs)
+
+        end_time = time.time()
+        running_time = end_time - start_time
+        logger.info(f'Total running time: {running_time}')
+
+    def _create_module_func(cls, method_name):
+        """Create a module-level function that calls cls.method_name with the same signature."""
+        # Get the bound method and its signature
+        method = getattr(cls, method_name)
+        sig = inspect.signature(method)
+
+        # Remove 'self' from parameters for the new function
+        params = [param for name, param in sig.parameters.items() if name != 'self']
+        # Add optional 'config' parameter to the parameters
+        params.append(inspect.Parameter('config',
+                                        inspect.Parameter.KEYWORD_ONLY,
+                                        default={}))
+
+        new_sig = inspect.Signature(params)
+
+        # Define a generic wrapper that calls the method on a new instance
+        def wrapper(*args, **kwargs):
+            return getattr(make_obs_builder(kwargs.pop('config', {})), method_name)(*args, **kwargs)
+
+        # Use functools.wraps to copy name, docstring, etc., from the original method
+        wrapper = functools.wraps(method)(wrapper)
+        # Assign the exact signature to the wrapper so it appears correct to inspect and help
+        wrapper.__signature__ = new_sig
+        return wrapper
+
+    create_obs_group = _create_module_func(cls, 'create_obs_group')
+    create_obs_file = _create_module_func(cls, 'create_obs_file')
+
+    caller_frame = inspect.stack()[1]
+    calling_module = inspect.getmodule(caller_frame.frame)
+    calling_module.make_obs_builder = make_obs_builder
+    calling_module.create_obs_group = create_obs_group
+    calling_module.create_obs_file = create_obs_file
+    calling_module.default_main = default_main
+
+    if calling_module.__name__ == '__main__' and execute_main:
+        default_main()
