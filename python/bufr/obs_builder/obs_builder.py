@@ -83,7 +83,7 @@ class ObsBuilder:
             input (str): Path to the input data.
             env (dict): Environment variables.
             category (str): Category of the observation group.
-            cache_categories (list): Whether to use cached categories.
+            cache_categories (list): List of cache categories.
 
         Returns:
             dict: Encoded data.
