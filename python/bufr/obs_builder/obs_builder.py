@@ -19,9 +19,7 @@ class ObsBuilder:
     def __init__(self,
                  mapping_path:Union[str, dict],
                  config:dict=None,
-                 log_name:str='obs_builder',
-                 uses_categories:bool=False,
-                 uses_cache:bool=False):
+                 log_name:str='obs_builder'):
         """
         ObsBuilder constructor
 
@@ -41,8 +39,6 @@ class ObsBuilder:
         self.log = Logger(log_name)
         self.config = config
         self.description = self._make_description()
-        self.uses_categories = uses_categories
-        self.uses_cache = uses_cache
 
     # Virtual Method
     def make_obs(self, comm, input : Union[str, dict]) -> bufr.DataContainer:
@@ -79,7 +75,7 @@ class ObsBuilder:
 
         self.log.info(f'Return the encoded data')
 
-    def create_obs_group(self, input, env, category=''):
+    def create_obs_group(self, input, env, category:list=None, cache_categories:list=None):
         """
         Create an observation group from the input data.
 
@@ -87,19 +83,32 @@ class ObsBuilder:
             input (str): Path to the input data.
             env (dict): Environment variables.
             category (str): Category of the observation group.
+            cache_categories (list): Whether to use cached categories.
 
         Returns:
             dict: Encoded data.
         """
 
-        if self.uses_cache:
-            return self._create_obs_group_w_cache(input, category, env)
-        elif self.uses_categories:
-            return self._create_obs_group_no_cache(input, env, category)
-        else:
-            return self._create_obs_group_no_cache(input, env)
+        # Guard Block
+        if cache_categories is not None:
+            assert category is not None, 'Category must be provided if cache_categories are specified'
 
-    def _create_obs_group_w_cache(self, input, category, env):
+        if category:
+            assert type(category) == list, 'Category must be a list of subcategories ex: [\'npp\']'
+            assert type(category[0]) == str, 'Category must be a list of subcategories ex: [\'npp\']'
+
+        if cache_categories:
+            assert type(cache_categories) == list, 'Cache categories must be a list of subcategories ex: [\'npp\']'
+            assert type(cache_categories[0]) == list, 'Cache categories must be a list of subcategories ex: [\'npp\']'
+            assert type(cache_categories[0][0]) == str, 'Cache categories must be the same length as categories'
+            assert category in cache_categories, 'Category must be found inside the cache categories'
+
+        if cache_categories:
+            return self._create_obs_group_w_cache(input, env, category)
+        else:
+            return self._create_obs_group_no_cache(input, env, category)
+
+    def _create_obs_group_w_cache(self, input, env, category:list):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
         assert type(input) == str, 'Input was not a path str, please override create_obs_group'
 
@@ -115,9 +124,9 @@ class ObsBuilder:
         if bufr.DataCache.has(cache_input_path, cache_mapping_path):
             container = bufr.DataCache.get(cache_input_path, cache_mapping_path)
             self.log.info(f'Encode {category} from cache')
-            data = iodaEncoder(self.description).encode(container)[(category,)]
+            data = iodaEncoder(self.description).encode(container)[category]
             self.log.info(f'Mark {category} as finished in the cache')
-            bufr.DataCache.mark_finished(cache_input_path, cache_mapping_path, [category])
+            bufr.DataCache.mark_finished(cache_input_path, cache_mapping_path, category)
             self.log.info(f'Return the encoded data for {category}')
             return data
 
@@ -136,16 +145,16 @@ class ObsBuilder:
 
         # Encode the data
         self.log.info(f'Encode {category}')
-        data = iodaEncoder(self.description).encode(container)[(category,)]
+        data = iodaEncoder(self.description).encode(container)[category]
 
         self.log.info(f'Mark {category} as finished in the cache')
         # Mark the data as finished in the cache
-        bufr.DataCache.mark_finished(cache_input_path, cache_mapping_path, [category])
+        bufr.DataCache.mark_finished(cache_input_path, cache_mapping_path, category)
 
         self.log.info(f'Return the encoded data for {category}')
         return data
 
-    def _create_obs_group_no_cache(self, input, env, category=''):
+    def _create_obs_group_no_cache(self, input, env, category:list):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
         assert type(input) == str, 'Input was not a path str, please override create_obs_group'
 
@@ -156,11 +165,11 @@ class ObsBuilder:
         container.gather(comm)
 
         # Encode the data
-        if category == '':
+        if not category:
             self.log.info(f'Encoding')
             data = next(iter(iodaEncoder(self.description).encode(container).values()))
         else:
             self.log.info(f'Encoding {category}')
-            data = iodaEncoder(self.description).encode(container)[(category,)]
+            data = iodaEncoder(self.description).encode(container)[category]
 
         return data
