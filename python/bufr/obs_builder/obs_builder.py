@@ -104,11 +104,11 @@ class ObsBuilder:
             assert category in cache_categories, 'Category must be found inside the cache categories'
 
         if cache_categories:
-            return self._create_obs_group_w_cache(input, env, category)
+            return self._create_obs_group_w_cache(input, env, category, cache_categories)
         else:
             return self._create_obs_group_no_cache(input, env, category)
 
-    def _create_obs_group_w_cache(self, input, env, category:list):
+    def _create_obs_group_w_cache(self, input, env, category:list, cache_categories:list):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
         assert type(input) == str, 'Input was not a path str, please override create_obs_group'
 
@@ -140,7 +140,7 @@ class ObsBuilder:
         # Add the container to the cache
         bufr.DataCache.add(cache_input_path,
                            cache_mapping_path,
-                           container.all_sub_categories(),
+                           cache_categories,
                            container)
 
         # Encode the data
