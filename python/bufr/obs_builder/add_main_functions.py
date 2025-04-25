@@ -47,7 +47,7 @@ def add_main_functions(cls, execute_main=True):
 
         end_time = time.time()
         running_time = end_time - start_time
-        logger.info(f'Total running time: {running_time}')
+        logger.info(f'Total running time: {running_time} seconds')
 
     def _create_module_func(cls, method_name):
         """Create a module-level function that calls cls.method_name with the same signature."""
