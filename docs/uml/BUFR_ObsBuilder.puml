@@ -20,10 +20,10 @@ abstract class ObsBuilder
   - log : Logger
 
   + ObsBuilder(mapping_path:Union[str, dict], config:dict=None, log_name:str='obs_builder')
-  + make_obs(comm)
+  + make_obs(comm, input : Union[str, dict]) : bufr.DataContainer
   # _make_description()
   + create_obs_file(input, output, type='netcdf', append=False)
-  + create_obs_group(input, env, category:list=None, cache_categories:list=None)
+  + create_obs_group(input, env, category:list=None, cache_categories:list=None) : ioda.ObsGroup
 }
 
 class SatWndAmvObsBuilder
