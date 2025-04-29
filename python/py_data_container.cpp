@@ -123,6 +123,9 @@ void setupDataContainer(py::module& m)
         py::arg("data"),
         py::arg("category") = std::vector<std::string>(),
         "Replace the variable with the given name.")
+   .def("remove", &DataContainer::remove,
+        py::arg("name"),
+        "Remove the field with the given name.")
    .def("get_category_map", &DataContainer::getCategoryMap, "Get the map.")
    .def("all_sub_categories", &DataContainer::allSubCategories,
         "Get the sub categories for the satellite.")
@@ -144,5 +147,14 @@ void setupDataContainer(py::module& m)
           return self.allGather(comm.getComm());
         },
         py::arg("comm"),
-        "Gather data from all tasks into all tasks. Each task will have the complete record.");
+        "Gather data from all tasks into all tasks. Each task will have the complete record.")
+   .def("apply_mask", [](DataContainer& self, const py::array_t<int>& mask, const SubCategory& category)
+        {
+          std::vector<int> maskVec(mask.size());
+          std::copy(mask.data(), mask.data() + mask.size(), maskVec.begin());
+          self.applyMask(maskVec, category);
+        },
+        py::arg("mask"),
+        py::arg("category") = std::vector<std::string>(),
+        "Apply a mask to the data container.");
 }

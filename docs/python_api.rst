@@ -110,8 +110,8 @@ So to replace a value in the DataContainer you would do something like this (ass
 
     container = bufr.Parser(input_path, YAML_PATH).parse()
 
-    data = container.get('variables/brightnessTemp')
-    container.replace('variables/brightnessTemp', data * 1.1)
+    data = container.get('brightnessTemp')
+    container.replace('brightnessTemp', data * 1.1)
 
     datasets = netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH).values()
     obs_temp = dataset["ObsValue/brightnessTemperature"][:]
@@ -165,13 +165,13 @@ So the code looks more like this:
 
       container = bufr.Parser(input_path, YAML_PATH).parse()
 
-      data = container.get('variables/brightnessTemp')
-      paths = container.get_paths('variables/brightnessTemp')
-      container.add('variables/brightnessTemp_new', data*.01, paths)
+      data = container.get('brightnessTemp')
+      paths = container.get_paths('brightnessTemp')
+      container.add('brightnessTemp_new', data*.01, paths)
 
       description = netcdf.Description(YAML_PATH)
       description.add_variable(name='ObsValue/new_brightnessTemperature',
-                               source='variables/brightnessTemp_new',
+                               source='brightnessTemp_new',
                                units='K',
                                longName='New Brightness Temperature')
 
@@ -254,8 +254,8 @@ Example:
         container = bufr.DataCache.get(input_path, YAML_PATH)
       bufr.DataCache.mark_finished(input_path, YAML_PATH, category)
 
-      data = container.get('variables/brightnessTemp', category)
-      container.replace('variables/brightnessTemp', data*.01, category)
+      data = container.get('brightnessTemp', category)
+      container.replace('brightnessTemp', data*.01, category)
 
       dataset = netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)[category]
       return dataset

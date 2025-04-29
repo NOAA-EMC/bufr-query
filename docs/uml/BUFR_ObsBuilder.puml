@@ -1,0 +1,57 @@
+@startuml
+'skinparam dpi 300
+'scale 1024 width
+
+class Logger
+{
+  + info(message)
+  + debug(message)
+  + error(message)
+  + info_all(message)
+  + debug_all(message)
+  + error_all(message)
+  - _log(message, level)
+  - _log_all(message, level)
+}
+
+abstract class ObsBuilder
+{
+  - mapping_path : dict
+  - log : Logger
+
+  + make_obs(comm)
+  # _make_description()
+  + create_obs_group(input_path, mapping_path, category, env)
+  + create_obs_file(input_path, mapping_path, type="netcdf", output_path)
+}
+
+class MarineObsBuilder
+{
+  # _convert_temp_to_celsius(name)
+  # _convert_depth_from_pressure(name)
+  # _add_preqc_var(name)
+  # _add_error_var(name, error)
+  # _add_seq_num()
+  # _add_ocean_basin()
+}
+
+class SatWndAmvObsBuilder
+{
+  + make_obs(comm)
+  # _make_description()
+  # _compute_wind_components(wdir, wspd)
+}
+
+class SatWndAmvAvhrrObsBuilder
+{
+  + make_obs(comm)
+  # _make_description()
+}
+
+Logger <--* ObsBuilder
+ObsBuilder <|-- MarineObsBuilder
+ObsBuilder <|-- SatWndAmvObsBuilder
+SatWndAmvObsBuilder <|-- SatWndAmvAvhrrObsBuilder
+
+
+@enduml

@@ -105,6 +105,10 @@ namespace bufr {
     /// \param other DataContainer to append.
     void append(const DataContainer& other);
 
+    /// \brief Remove a field from the container in all subcategories.
+    /// \param fieldName The name of the field to remove.
+    void remove(const std::string& fieldName);
+
     /// \brief Gather data from all ranks into rank 0.
     /// \param comm MPI communicator to use.
     void gather(const eckit::mpi::Comm& comm);
@@ -112,6 +116,10 @@ namespace bufr {
     /// \brief Gather data to all the ranks soo they all have the same data.
     /// \param comm MPI communicator to use.
     void allGather(const eckit::mpi::Comm& comm);
+
+    /// \brief Apply a mask to the container (mutate it)
+    /// \param mask vector of bools (mask) to apply to the container
+    void applyMask(const std::vector<int>& mask, const SubCategory& categoryId = {});
 
   private:
     /// Category map given (see constructor).
@@ -122,6 +130,11 @@ namespace bufr {
 
     /// \brief Uses category map to generate listings of all possible subcategories.
     void makeDataSets();
+
+    /// \brief Remove the path info from the a field name string
+    /// \param fieldName The field name to remove the path from
+    /// \return The field name without the path
+    static std::string dropPath(const std::string& fieldName);
   };
 }  // namespace bufr
 

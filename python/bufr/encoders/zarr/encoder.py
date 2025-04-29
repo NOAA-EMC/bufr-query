@@ -19,8 +19,8 @@ class Encoder(bufr.encoders.EncoderBase):
 
         super(Encoder, self).__init__(self.description)
 
-    def encode(self, container: bufr.DataContainer, output_path:str) -> dict[tuple[str],zarr.Group]:
-        result:dict[tuple[str], zarr.Group] = {}
+    def encode(self, container: bufr.DataContainer, output_path:str, append:bool=False) -> dict:
+        result = {}
         for category in container.all_sub_categories():
             cat_idx = 0
             substitutions = {}
@@ -62,7 +62,7 @@ class Encoder(bufr.encoders.EncoderBase):
                       dims:bufr.encoders.EncoderDimensions):
 
         for var in self.description.get_variables():
-            if var["source"] not in container.list():
+            if var["source"].split('/')[-1] not in container.list():
                 raise ValueError(f'Variable {var["source"]} not found in the container')
 
             data = container.get(var['source'], category)
@@ -92,7 +92,7 @@ class Encoder(bufr.encoders.EncoderBase):
             # Associate the dimensions
             store.attrs['_ARRAY_DIMENSIONS'] = dims.dim_names_for_var(var["name"])
 
-    def _make_path(self, prototype_path:str, sub_dict:dict[str, str]):
+    def _make_path(self, prototype_path:str, sub_dict:dict):
         subs = re.findall(r'\{(?P<sub>\w+\/\w+)\}', prototype_path)
         for sub in subs:
             prototype_path = prototype_path.replace(f'{{{sub}}}', sub_dict[sub])

@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <memory>
 #include <iostream>
+#include <numeric>
 #include <vector>
 
 #include "eckit/mpi/Comm.h"
@@ -157,6 +158,10 @@ namespace bufr {
       /// \param val Scalar to multiply to the data..
       virtual void multiplyBy(double val) = 0;
 
+      /// \brief Wrap the data values to a given range.
+      /// \param range The range to wrap the data to.
+      virtual void wrap(std::vector<float> range) = 0;
+
       /// \brief Add a scalar to the stored values in this data object.
       /// \param val Scalar to add to the data..
       virtual void offsetBy(double val) = 0;
@@ -172,6 +177,10 @@ namespace bufr {
       /// \brief Do an MPI Gather All operation to distribute all the data.
       /// \param comm The MPI communicator to use.
       virtual void allGather(const eckit::mpi::Comm& comm) = 0;
+
+      /// \brief Apply mask to data
+      /// \param mask The mask too apply (vector<bool>)
+      virtual void applyMask(const std::vector<int>& mask) = 0;
 
       /// \brief Makes a new dimension scale using this data object as the source
       /// \param name The name of the dimension variable.
@@ -367,6 +376,23 @@ namespace bufr {
           str << "Multiplying integer field \"" << fieldName_ << "\" with a non-integer is ";
           str << "illegal. Please convert it to a float or double.";
           throw eckit::BadParameter(str.str());
+        }
+      }
+
+      /// \brief Wrap the data values to a given range.
+      /// \param range The range to wrap the data to.
+      void wrap(std::vector<float> range) final
+      {
+        auto start = static_cast<T>(range[0]);
+        auto stop = static_cast<T>(range[1]);
+
+        auto diff = stop - start;
+        for (size_t i = 0; i < data_.size(); i++)
+        {
+          if (data_[i] != missingValue())
+          {
+            data_[i] = static_cast<T>(start + std::fmod(data_[i] - start, diff));
+          }
         }
       }
 
@@ -673,6 +699,40 @@ namespace bufr {
         data_ = std::move(rcvBuffer);
       }
 
+      void applyMask(const std::vector<int>& mask) final
+      {
+        if (mask.size() != dims_[0])
+        {
+          std::ostringstream str;
+          str << "Supplied mask does not match the number of rows in the data object.";
+          throw eckit::BadParameter(str.str());
+        }
+
+        const int newNumRows = std::accumulate(mask.begin(), mask.end(), 0, std::plus());
+        const int rowSize = std::accumulate(dims_.begin() + 1,
+                                                  dims_.end(),
+                                                  1,
+                                                  std::multiplies());
+
+        std::vector<T> newData;
+        newData.reserve(newNumRows * rowSize);
+
+        int newIdx = 0;
+        for (size_t row = 0; row < dims_[0]; ++row)
+        {
+          if (mask[row])
+          {
+            newData.insert(newData.begin() + newIdx * rowSize,
+                           data_.begin() + row * rowSize,
+                           data_.begin() + (row + 1) * rowSize);
+            newIdx++;
+          }
+        }
+
+        dims_[0] = newNumRows;
+        data_ = std::move(newData);
+      }
+
       /// \brief Append the data from another DataObject to this one.
       /// \param data The data object to append.
       void append(const std::shared_ptr<DataObjectBase>& data) final
@@ -887,6 +947,13 @@ namespace bufr {
       void multiplyBy(double val) final
       {
         throw eckit::BadParameter("Trying to multiply a string by a number");
+      }
+
+      /// \brief Wrap the stored values into a range of values
+      /// \param range The range to wrap the data into.
+      void wrap(std::vector<float> range) final
+      {
+        throw eckit::BadParameter("Can't wrap a string field.");
       }
 
       /// \brief Add a scalar to the stored values in this data object (string version).
@@ -1224,6 +1291,35 @@ namespace bufr {
           data_[idx] = str;
           offset += strSizes[idx];
         }
+      }
+
+      /// \brief Apply a mask to the data object.
+      /// \param mask The mask to apply.
+      void applyMask(const std::vector<int>& mask) final
+      {
+        if (mask.size() != dims_[0])
+        {
+          std::ostringstream str;
+          str << "Supplied mask does not match the number of rows in the data object.";
+          throw eckit::BadParameter(str.str());
+        }
+
+        const int newNumRows = std::accumulate(mask.begin(), mask.end(), 0);
+        
+        std::vector<std::string> newData(newNumRows);
+
+        size_t newIdx = 0;
+        for (size_t row = 0; row < dims_[0]; ++row)
+        {
+          if (mask[row])
+          {
+            newData[newIdx] = std::move(data_[row]);
+            newIdx++;
+          }
+        }
+
+        dims_[0] = newNumRows;
+        data_ = std::move(newData);
       }
 
       /// \brief Append the data from another DataObject to this one.
