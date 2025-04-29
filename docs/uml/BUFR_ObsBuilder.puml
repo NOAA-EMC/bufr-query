@@ -14,7 +14,7 @@ class Logger
   - _log_all(message, level)
 }
 
-abstract class ObsBuilder
+class ObsBuilder
 {
   - mapping_path : dict
   - log : Logger
