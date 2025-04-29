@@ -22,8 +22,8 @@ abstract class ObsBuilder
   + ObsBuilder(mapping_path:Union[str, dict], config:dict=None, log_name:str='obs_builder')
   + make_obs(comm)
   # _make_description()
-  + create_obs_group(input_path, mapping_path, category, env)
-  + create_obs_file(input_path, mapping_path, type="netcdf", output_path)
+  + create_obs_file(input, output, type='netcdf', append=False)
+  + create_obs_group(input, env, category:list=None, cache_categories:list=None)
 }
 
 class SatWndAmvObsBuilder
