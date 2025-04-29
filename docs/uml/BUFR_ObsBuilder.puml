@@ -19,24 +19,16 @@ abstract class ObsBuilder
   - mapping_path : dict
   - log : Logger
 
+  + ObsBuilder(mapping_path:Union[str, dict], config:dict=None, log_name:str='obs_builder')
   + make_obs(comm)
   # _make_description()
   + create_obs_group(input_path, mapping_path, category, env)
   + create_obs_file(input_path, mapping_path, type="netcdf", output_path)
 }
 
-class MarineObsBuilder
-{
-  # _convert_temp_to_celsius(name)
-  # _convert_depth_from_pressure(name)
-  # _add_preqc_var(name)
-  # _add_error_var(name, error)
-  # _add_seq_num()
-  # _add_ocean_basin()
-}
-
 class SatWndAmvObsBuilder
 {
+  + SatWndAmvObsBuilder(mapping_path:str)
   + make_obs(comm)
   # _make_description()
   # _compute_wind_components(wdir, wspd)
@@ -44,14 +36,24 @@ class SatWndAmvObsBuilder
 
 class SatWndAmvAvhrrObsBuilder
 {
+  MAPPING_PATH : str = "satwnd_amv_avhrr.yaml"
+  + SatWndAmvAvhrrObsBuilder()
+  + make_obs(comm)
+  # _make_description()
+}
+
+class SatWndAmvAhiObsBuilder
+{
+   MAPPING_PATH : str = "satwnd_amv_ahi.yaml"
+  + SatWndAmvAhiObsBuilder()
   + make_obs(comm)
   # _make_description()
 }
 
 Logger <--* ObsBuilder
-ObsBuilder <|-- MarineObsBuilder
 ObsBuilder <|-- SatWndAmvObsBuilder
 SatWndAmvObsBuilder <|-- SatWndAmvAvhrrObsBuilder
+SatWndAmvObsBuilder <|-- SatWndAmvAhiObsBuilder
 
 
 @enduml

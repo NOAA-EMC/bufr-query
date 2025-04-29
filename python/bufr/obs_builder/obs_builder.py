@@ -21,12 +21,12 @@ class ObsBuilder:
                  config:dict=None,
                  log_name:str='obs_builder'):
         """
-        ObsBuilder constructor
+        ObsBuilder constructor.
 
-        Args:
-            mapping_path (Union[str, dict]): Path to the mapping file or a dictionary of mapping paths
-            config (dict): Configuration dictionary
-            log_name (str): Name of the logger object
+        :param mapping_path: Path to the mapping file or a dict[str, str] which maps names to
+                             mapping file paths.
+        :param config: Configuration dictionary (optional) used to initialize the obs-builder.
+        :param log_name: Name for the logger (optional).
         """
 
         self.map_dict = {}
@@ -42,6 +42,17 @@ class ObsBuilder:
 
     # Virtual Method
     def make_obs(self, comm, input : Union[str, dict]) -> bufr.DataContainer:
+        """
+        This method is the main method that can be overridden (optional). Its objective is to read
+        the bufr file and to create an DataContainer object and return it. The data container is
+        used in conjunction with the encoder Descriptor to encode the data into the format of your
+        choice.
+
+        :param comm: MPI communicator
+        :param input: Either a path to the input data or a dictionary the maps the input data to the
+                      mapping file paths (see constructor)
+        :return: DataContainer object
+        """
         if not isinstance(input, str) or len(self.map_dict) != 1:
             assert False, 'You must create a custom override for make_obs().'
 
@@ -57,11 +68,24 @@ class ObsBuilder:
         return container
 
     def _make_description(self) -> bufr.encoders.Description:
+        """
+        Use this override to extend the encoder description for the data when adding data fields.
+        """
         assert len(self.map_dict) > 0, 'No mapping file provided, please override _make_description()'
 
         return bufr.encoders.Description(list(self.map_dict.values())[0])
 
     def create_obs_file(self, input, output, type='netcdf', append=False):
+        """
+        Create an observation file from the input data. Override this method if you want to
+        customize the file creation process or if you need a different function signature (ex: you
+        need to pass multiple input files). add_main_functions will copy the function signature.
+
+        :param input: Input path to the BUFR file.
+        :param output: Output file name
+        :param type: Data type to encode into (optional)
+        :param append: Add to the file if it exists or create a new file. (optional)
+        """
 
         comm = bufr.mpi.Comm("world")
         self.log.comm = comm
@@ -77,16 +101,15 @@ class ObsBuilder:
 
     def create_obs_group(self, input, env, category:list=None, cache_categories:list=None):
         """
-        Create an observation group from the input data.
+        Create an observation file from the input data. Override this method if you want to
+        customize the file creation process or if you need a different function signature (ex: you
+        need to pass multiple input files). add_main_functions will copy the function signature.
 
-        Args:
-            input (str): Path to the input data.
-            env (dict): Environment variables.
-            category (list): Category of the observation group (list of subcategories).
-            cache_categories (list): List of cache categories.
-
-        Returns:
-            dict: Encoded data.
+        :param input: Input path to the BUFR file.
+        :param env: The IODA environment. Dictionary with keys: start_time, end_time, comm_name
+        :param category: The category to encode. (optional)
+        :param cache_categories: The list of categories to cache. (optional)
+        :return: IODA ObsGroup object.
         """
 
         # Guard Block
