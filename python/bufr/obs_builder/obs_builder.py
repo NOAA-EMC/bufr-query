@@ -82,7 +82,7 @@ class ObsBuilder:
         Args:
             input (str): Path to the input data.
             env (dict): Environment variables.
-            category (str): Category of the observation group.
+            category (list): Category of the observation group (list of subcategories).
             cache_categories (list): List of cache categories.
 
         Returns:
@@ -154,7 +154,7 @@ class ObsBuilder:
         self.log.info(f'Return the encoded data for {category}')
         return data
 
-    def _create_obs_group_no_cache(self, input, env, category:list):
+    def _create_obs_group_no_cache(self, input, env, category:list = None):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
         assert type(input) == str, 'Input was not a path str, please override create_obs_group'
 
