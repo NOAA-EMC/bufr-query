@@ -29,7 +29,7 @@ abstract class ObsBuilder
 class SatWndAmvObsBuilder
 {
   + SatWndAmvObsBuilder(mapping_path:str)
-  + make_obs(comm)
+  + make_obs(comm, input)
   # _make_description()
   # _compute_wind_components(wdir, wspd)
 }
@@ -38,7 +38,7 @@ class SatWndAmvAvhrrObsBuilder
 {
   MAPPING_PATH : str = "satwnd_amv_avhrr.yaml"
   + SatWndAmvAvhrrObsBuilder()
-  + make_obs(comm)
+  + make_obs(comm, input)
   # _make_description()
 }
 
@@ -46,7 +46,7 @@ class SatWndAmvAhiObsBuilder
 {
    MAPPING_PATH : str = "satwnd_amv_ahi.yaml"
   + SatWndAmvAhiObsBuilder()
-  + make_obs(comm)
+  + make_obs(comm, input)
   # _make_description()
 }
 
