@@ -2,6 +2,7 @@
 import os
 import inspect
 import functools
+import json
 
 def add_main_functions(cls, execute_main=True):
 
@@ -66,7 +67,13 @@ def add_main_functions(cls, execute_main=True):
 
         # Define a generic wrapper that calls the method on a new instance
         def wrapper(*args, **kwargs):
-            return getattr(make_obs_builder(kwargs.pop('config', {})), method_name)(*args, **kwargs)
+            config = kwargs.pop('config', {})
+            if config and isinstance(config, str):
+                # Load the config from a JSON file if it's a string
+                with open(config, 'r') as f:
+                    config = json.load(f)
+
+            return getattr(make_obs_builder(config), method_name)(*args, **kwargs)
 
         # Use functools.wraps to copy name, docstring, etc., from the original method
         wrapper = functools.wraps(method)(wrapper)
