@@ -2,6 +2,7 @@
 import os
 import inspect
 import functools
+import yaml
 import json
 
 def add_main_functions(cls, execute_main=True):
@@ -69,9 +70,18 @@ def add_main_functions(cls, execute_main=True):
         def wrapper(*args, **kwargs):
             config = kwargs.pop('config', {})
             if config and isinstance(config, str):
+                ext = os.path.splitext(config)[-1]
+                if ext == '.yaml' or ext == '.yml':
+                    # Load the config from a YAML file if it's a string
+                    with open(config, 'r') as f:
+                        config = yaml.safe_load(f)
                 # Load the config from a JSON file if it's a string
-                with open(config, 'r') as f:
-                    config = json.load(f)
+                elif ext == '.json':
+                    with open(config, 'r') as f:
+                        config = json.load(f)
+
+            if not isinstance(config, dict):
+                raise ValueError(f'Config must resolve to a dict.')
 
             return getattr(make_obs_builder(config), method_name)(*args, **kwargs)
 
