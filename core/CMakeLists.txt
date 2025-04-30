@@ -98,6 +98,13 @@ list(APPEND BUFR_PRIVATE
 	src/bufr/BufrReader/Exports/Variables/Transforms/atms/atms_spatial_average_mod.f90
 	src/bufr/BufrReader/Exports/Variables/Transforms/atms/atms_spatial_average_interface.h
 	src/bufr/BufrReader/Exports/Variables/Transforms/atms/atms_spatial_average_interface.f90
+
+        # spatial averaging 
+        src/bufr/BufrReader/Exports/Variables/Transforms/spatial_averaging/kinds.F90
+        src/bufr/BufrReader/Exports/Variables/Transforms/spatial_averaging/m_distance.f90
+        src/bufr/BufrReader/Exports/Variables/Transforms/spatial_averaging/spatial_average_mod.f90
+        src/bufr/BufrReader/Exports/Variables/Transforms/spatial_averaging/spatial_average_interface.h
+        src/bufr/BufrReader/Exports/Variables/Transforms/spatial_averaging/spatial_average_interface.f90
 )
 
 list (APPEND ENCODERS_PRIVATE

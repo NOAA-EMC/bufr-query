@@ -13,6 +13,7 @@
 #include "bufr/DataObject.h"
 #include "DatetimeVariable.h"
 #include "Transforms/atms/atms_spatial_average_interface.h"
+#include "Transforms/spatial_averaging/spatial_average_interface.h"
 #include "eckit/exception/Exceptions.h"
 
 
@@ -21,14 +22,24 @@ namespace
     namespace ConfKeys
     {
         const char* FieldOfViewNumber = "fieldOfViewNumber";
+        const char* RainFlag = "rainFlag";
         const char* SensorChannelNumber = "sensorChannelNumber";
         const char* BrightnessTemperature = "brightnessTemperature";
         const char* ObsTime = "obsTime";
+        const char* Sensor= "sensor";
+        const char* SatelliteId= "satelliteId";
+        const char* Latitude = "latitude";
+        const char* Longitude = "longitude";
+        const char* Method = "method";
     }  // namespace ConfKeys
 
     const std::vector<std::string> FieldNames = {ConfKeys::FieldOfViewNumber,
+                                                 ConfKeys::RainFlag,
                                                  ConfKeys::SensorChannelNumber,
                                                  ConfKeys::BrightnessTemperature,
+                                                 ConfKeys::SatelliteId,
+                                                 ConfKeys::Latitude,
+                                                 ConfKeys::Longitude,
                                                 };
 }  // namespace
 
@@ -59,7 +70,7 @@ namespace bufr {
         {
            log::info()  << "Observation dimension should be 2 " << std::endl;
            log::error() << "Incorrect observation dimension : " << radObj->getDims().size()
-                                                                       << std::endl;
+                                                                << std::endl;
         }
         int nobs = (radObj->getDims())[0];
         int nchn = (radObj->getDims())[1];
@@ -74,33 +85,83 @@ namespace bufr {
         obstime = std::dynamic_pointer_cast<DataObject<int64_t>>(datetimeObj)->getRawData();
 
         // Get field-of-view number
-        std::vector<int> fovn(fovnObj->size(), DataObject<int>::missingValue());
-        for (size_t idx = 0; idx < fovnObj->size(); idx++)
-        {
-           fovn[idx] = fovnObj->getAsInt(idx);
-        }
+        auto fovn = std::dynamic_pointer_cast<DataObject<int>>(fovnObj)->getRawData();
 
         // Get sensor channel
-        std::vector<int> channel(sensorChanObj->size(), DataObject<int>::missingValue());
-        for (size_t idx = 0; idx < sensorChanObj->size(); idx++)
-        {
-           channel[idx] = sensorChanObj->getAsInt(idx);
-        }
+        auto channel = std::dynamic_pointer_cast<DataObject<int>>(sensorChanObj)->getRawData();
 
         // Get brightness temperature (observation)
-        std::vector<float> btobs(radObj->size(), DataObject<float>::missingValue());
-        for (size_t idx = 0; idx < radObj->size(); idx++)
-        {
-           btobs[idx] = radObj->getAsFloat(idx);
-        }
+        auto btobs = std::dynamic_pointer_cast<DataObject<float>>(radObj)->getRawData();
 
+        // Check the sensor option.
+        std::string sensorOption = conf_.getString(ConfKeys::Sensor, "atms"); //By default it is ATMS
+        if (sensorOption == "atms")
+       	{
+            std::cout << "Sensor is ATMS." << std::endl;
         // Perform FFT image remapping
         // input only variables: nobs, nchn obstime, fovn, channel
         // input & output variables: btobs, scanline, error_status
-        if (nobs > 0) {
-            int error_status;
-	    ATMS_Spatial_Average_f(nobs, nchn, &obstime, &fovn, &channel, &btobs,
-                                               &scanline, &error_status);
+            if (nobs > 0)
+	    {
+                int error_status;
+	        ATMS_Spatial_Average_f(nobs, nchn, &obstime, &fovn, &channel, &btobs,
+                                                   &scanline, &error_status);
+            }
+        }
+       	else if (sensorOption == "ssmis")
+       	{
+	    std::cout << "Sensor is SSMIS." << std::endl;
+
+	    // Read the variables from the map
+            auto& satidObj = map.at(getExportKey(ConfKeys::SatelliteId));
+            auto& latObj = map.at(getExportKey(ConfKeys::Latitude));
+            auto& lonObj = map.at(getExportKey(ConfKeys::Longitude));
+            auto& rainflagObj = map.at(getExportKey(ConfKeys::RainFlag));
+            if (!conf_.has(ConfKeys::SatelliteId))
+            {
+              throw eckit::BadParameter("SatelliteId is missing for SSMIS.");
+            }
+            if (!conf_.has(ConfKeys::Longitude))
+            {
+              throw eckit::BadParameter("Longitude is missing for SSMIS.");
+            }            
+            if (!conf_.has(ConfKeys::Latitude))
+            {
+              throw eckit::BadParameter("Latitude is missing for SSMIS.");
+            }            
+            if (!conf_.has(ConfKeys::RainFlag))
+            {
+              throw eckit::BadParameter("RainFlag is missing for SSMIS.");
+            }            
+
+	    // Get satid
+            auto satid = std::dynamic_pointer_cast<DataObject<int>>(satidObj)->getRawData();
+
+	    // Get latitude
+            auto lon = std::dynamic_pointer_cast<DataObject<float>>(lonObj)->getRawData();
+
+	    // Get latitude
+            auto lat = std::dynamic_pointer_cast<DataObject<float>>(latObj)->getRawData();
+
+	    // Get rain flag
+            auto rainflag = std::dynamic_pointer_cast<DataObject<int>>(rainflagObj)->getRawData();
+
+	    // Get method for spatial averaging 
+            int method = conf_.getInt(ConfKeys::Method, 1); // Default is 1
+
+	    if (nobs > 0)
+	    {
+                int error_status;
+		float missingval = DataObject<float>::missingValue();
+	        Spatial_Average_f(satid[1], method, nobs, nchn, missingval, &fovn, &rainflag,  &obstime,
+                                       &lat, &lon, &btobs, &error_status);
+            }
+        }
+       	else
+       	{
+
+            throw eckit::BadParameter("Invalid sensor type: " + sensorOption +
+                                      ". Must be either ATMS or SSMIS.");
         }
 
         // Export remapped observation (btobs)
