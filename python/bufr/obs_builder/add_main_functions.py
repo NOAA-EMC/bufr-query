@@ -79,6 +79,8 @@ def add_main_functions(cls, execute_main=True):
                 elif ext == '.json':
                     with open(config, 'r') as f:
                         config = json.load(f)
+                else:
+                    raise ValueError(f'Config file must be a .yaml or .json file.')
 
             if not isinstance(config, dict):
                 raise ValueError(f'Config must resolve to a dict.')
