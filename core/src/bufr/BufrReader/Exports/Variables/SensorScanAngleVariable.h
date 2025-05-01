@@ -18,8 +18,8 @@ namespace bufr {
      public:
         SensorScanAngleVariable() = delete;
         SensorScanAngleVariable(const std::string& exportName,
-                                 const std::string& groupByField,
-                                 const eckit::LocalConfiguration& conf);
+                                const std::string& groupByField,
+                                const eckit::LocalConfiguration& conf);
 
         ~SensorScanAngleVariable() final = default;
 
