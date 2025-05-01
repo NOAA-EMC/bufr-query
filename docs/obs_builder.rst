@@ -4,7 +4,7 @@ Obs Builder
 ===========
 
 Obs builder is a framework that provides a simple and consistent way to create "mapping" files that
-are used to read BUFR files (when just a YAML file is not enough).
+are used to read BUFR files (when a YAML file is not enough).
 
 .. uml:: uml/BUFR_ObsBuilder.puml
     :width: 75%
@@ -19,7 +19,8 @@ set of mapping files for a family of related observation types that have a lot o
 Once the ObsBuilder is created, the framework provides a method called `add_main_functions` which
 automatically creates the main functions that are expected on a mapping file. Once executed the
 files can be executed via the command line (ex: `python ./bufr_satwnd_amv_avhrr.py input.bufr
-output.nc`).
+output.nc`). The `add_main_functions` methods creates the expected module level functions using the
+the class definitions for create_obs_file and create_obs_group (their signatures) as the template.
 
 Common Overrides
 ----------------
@@ -28,75 +29,65 @@ The following methods are the most common methods that are overridden in the Obs
 Overriding each method is optional, as the ObsBuilder base class provides default implementations.
 
 .. autoclass:: bufr.obs_builder.ObsBuilder
-   :members: make_obs
-   :private-members: _make_description
+
+   .. automethod:: __init__
+      :noindex:
 
    .. automethod:: make_obs
 
-      This method is the main method that can be overridden (optional). Its objective is to read the
-      bufr file and to create an DataContainer object and return it. The data container is used
-      in conjunction with the encoder Descriptor to encode the data into the format of your choice.
-      Here is an typical example for what an override might look like:
+   .. automethod:: create_obs_file
 
-      .. code-block:: python
-
-         def make_obs(self, comm, input_path):
-            # Get container from mapping file first
-            container = super().make_obs(comm, input_path)
-
-            wdir = container.get('windDirection')
-            wspd = container.get('windSpeed')
-
-            uob, vob = self._compute_wind_components(wdir, wspd)
-            paths = container.get_paths('windSpeed')
-
-            container.add('windEastward', uob, paths)
-            container.add('windNorthward', vob, paths)
-
-            container.apply_mask(wspd > 0.0)
-
-            return container
-
-      .. note::
-
-         The make obs method calls its base classes implementation for the make_obs method. If this is not
-         desired, you could create the DataContainer object yourself by using the
-         `bufr.Parser(input_path, mapping_path).parse(comm)` method. The suggested behavior allows
-         the base class to add common parameters to the DataContainer object.
+   .. automethod:: create_obs_group
 
    .. automethod:: _make_description
 
-      This method is used to make the description that the data Encoder will use to encode the data.
-      Here is an example of what an override might look like:
 
-      .. code-block:: python
+Here is a simple example of a class that implements the ObsBuilder class and demonstrates its
+intended usage:
 
-         def _make_description(self):
-            description = super()._make_description()
+.. code-block:: python
 
-            description.add_variables([
-              {
-                  'name': 'ObsType/windEastward',
-                  'source': 'windEastward',
-                  'units': '1',
-                  'longName': 'Eastward Wind Component',
-              },
-              {
-                  'name': 'ObsType/windNorthward',
-                  'source': 'windNorthward',
-                  'units': '1',
-                  'longName': 'Northward Wind Component',
-              }])
+   MAPPING_PATH = map_path('bufr_satwnd.yaml')
 
-            return description
+   class SatWndObsBuilder(ObsBuilder):
+      def __init__(self):
+         super().__init__(MAPPING_PATH, log_name=os.path.basename(__file__))
 
-      .. note::
+      def make_obs(self, comm,  input : Union[str, dict])
+         assert isinstance(input, str), "Input must be a string"
 
-         The make obs method calls its base classes implementation for the make_obs method. If this is not
-         desired, you could create the DataContainer object yourself by using the
-         `bufr.Parser(input_path, mapping_path).parse(comm)` method. The suggested behavior allows
-         the base class to add common parameters to the DataContainer object.
+         container = super().make_obs(comm, input)
 
+         wdir = container.get('windDirection')
+         wspd = container.get('windSpeed')
+
+         uob, vob = self._compute_wind_components(wdir, wspd)
+         paths = container.get_paths('windSpeed')
+
+         container.add('windEastward', uob, paths)
+         container.add('windNorthward', vob, paths)
+
+         container.apply_mask(wspd > 0.0)
+         return container
+
+      def _make_description(self):
+         description = super()._make_description()
+
+         description.add_variables([
+         {
+            'name': 'ObsType/windEastward',
+            'source': 'windEastward',
+            'units': '1',
+            'longName': 'Eastward Wind Component',
+         },
+         {
+            'name': 'ObsType/windNorthward',
+            'source': 'windNorthward',
+            'units': '1',
+            'longName': 'Northward Wind Component',
+         }])
+
+         return description
 
 Add Main Functions
 ------------------
@@ -113,4 +104,13 @@ Here is a list of the functions that are created:
 - **create_obs_group**: Function that is used to create an IODA obsgroup object. It is used by the
                       IODA script interface.
 
-- **create_obs_file_from_config**: Uses a NCO provided config file to create an output file.
+.. note::
+
+   The add_main_functions method will create the functions with the same signature as the
+   overridden methods. If you do not override the methods, the default signatures will be used.
+   The default signatures are:
+
+   - create_obs_file(input, output, type='netcdf', append=False, config=None):
+   - create_obs_group(input, env, category:list=None, cache_categories:list=None, config=None):
+
+   `config` is a dictionary that is used to initialize the ObsBuilder object.

@@ -19,16 +19,14 @@ class ObsBuilder:
     def __init__(self,
                  mapping_path:Union[str, dict],
                  config:dict=None,
-                 log_name:str='obs_builder',
-                 uses_categories:bool=False,
-                 uses_cache:bool=False):
+                 log_name:str='obs_builder'):
         """
-        ObsBuilder constructor
+        ObsBuilder constructor.
 
-        Args:
-            mapping_path (Union[str, dict]): Path to the mapping file or a dictionary of mapping paths
-            config (dict): Configuration dictionary
-            log_name (str): Name of the logger object
+        :param mapping_path: Path to the mapping file or a dict[str, str] which maps names to
+                             mapping file paths.
+        :param config: Configuration dictionary (optional) used to initialize the obs-builder.
+        :param log_name: Name for the logger (optional).
         """
 
         self.map_dict = {}
@@ -41,13 +39,22 @@ class ObsBuilder:
         self.log = Logger(log_name)
         self.config = config
         self.description = self._make_description()
-        self.uses_categories = uses_categories
-        self.uses_cache = uses_cache
 
     # Virtual Method
     def make_obs(self, comm, input : Union[str, dict]) -> bufr.DataContainer:
+        """
+        This method is the main method that can be overridden (optional). Its objective is to read
+        the bufr file and to create an DataContainer object and return it. The data container is
+        used in conjunction with the encoder Descriptor to encode the data into the format of your
+        choice.
+
+        :param comm: MPI communicator
+        :param input: Either a path to the input data or a dictionary the maps the input data to the
+                      mapping file paths (see constructor)
+        :return: DataContainer object
+        """
         if not isinstance(input, str) or len(self.map_dict) != 1:
-            assert False, 'You must create a custom override for make_obs().'
+            raise NotImplementedError('You must create a custom override for make_obs().')
 
         mapping_path = list(self.map_dict.values())[0]
         container = bufr.Parser(input, mapping_path).parse(comm)
@@ -61,11 +68,27 @@ class ObsBuilder:
         return container
 
     def _make_description(self) -> bufr.encoders.Description:
-        assert len(self.map_dict) > 0, 'No mapping file provided, please override _make_description()'
+        """
+        Use this override to extend the encoder description for the data when adding data fields.
+        """
+
+        if len(self.map_dict) == 0:
+            raise ValueError('No mapping file provided. Either override _make_description() or '
+                             'provide a mapping file in the constructor.')
 
         return bufr.encoders.Description(list(self.map_dict.values())[0])
 
     def create_obs_file(self, input, output, type='netcdf', append=False):
+        """
+        Create an observation file from the input data. Override this method if you want to
+        customize the file creation process or if you need a different function signature (ex: you
+        need to pass multiple input files). add_main_functions will copy the function signature.
+
+        :param input: Input path to the BUFR file.
+        :param output: Output file name
+        :param type: Data type to encode into (optional)
+        :param append: Add to the file if it exists or create a new file. (optional)
+        """
 
         comm = bufr.mpi.Comm("world")
         self.log.comm = comm
@@ -79,29 +102,50 @@ class ObsBuilder:
 
         self.log.info(f'Return the encoded data')
 
-    def create_obs_group(self, input, env, category=''):
+    def create_obs_group(self, input, env, category:list=None, cache_categories:list=None):
         """
-        Create an observation group from the input data.
+        Create an observation file from the input data. Override this method if you want to
 
         Args:
-            input (str): Path to the input data.
+        customize the file creation process or if you need a different function signature (ex: you
             env (dict): Environment variables.
-            category (str): Category of the observation group.
+        need to pass multiple input files). add_main_functions will copy the function signature.
 
-        Returns:
-            dict: Encoded data.
+        :param input: Input path to the BUFR file.
+        :param env: The IODA environment. Dictionary with keys: start_time, end_time, comm_name
+        :param category: The category to encode. (optional)
+        :param cache_categories: The list of categories to cache. (optional)
+        :return: IODA ObsGroup object.
         """
 
-        if self.uses_cache:
-            return self._create_obs_group_w_cache(input, category, env)
-        elif self.uses_categories:
-            return self._create_obs_group_no_cache(input, env, category)
-        else:
-            return self._create_obs_group_no_cache(input, env)
+        # Guard Block
+        if (cache_categories is not None) and (category is None):
+            raise ValueError('Category must be provided if cache_categories are specified')
 
-    def _create_obs_group_w_cache(self, input, category, env):
+        if category:
+            if not isinstance(category, list) or \
+               not len(category) > 0 or \
+               not isinstance(category[0], str):
+                raise ValueError('Category must be a list of subcategories ex: [\'npp\']')
+
+        if cache_categories:
+            if not isinstance(cache_categories, list) or \
+               not len(cache_categories) > 0 or \
+               not isinstance(cache_categories[0], list) or \
+               not len(cache_categories[0]) > 0 or \
+               not isinstance(cache_categories[0][0], str):
+                raise ValueError('Cache categories must be a list of subcategories ex: [[\'npp\']]')
+
+            if category not in cache_categories:
+                raise ValueError('Category must be found inside the cache categories')
+
+        if cache_categories:
+            return self._create_obs_group_w_cache(input, env, category, cache_categories)
+        else:
+            return self._create_obs_group_no_cache(input, env, category)
+
+    def _create_obs_group_w_cache(self, input, env, category:list, cache_categories:list):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
-        assert type(input) == str, 'Input was not a path str, please override create_obs_group'
 
         comm = bufr.mpi.Comm(env["comm_name"])
         self.log.comm = comm
@@ -115,9 +159,9 @@ class ObsBuilder:
         if bufr.DataCache.has(cache_input_path, cache_mapping_path):
             container = bufr.DataCache.get(cache_input_path, cache_mapping_path)
             self.log.info(f'Encode {category} from cache')
-            data = iodaEncoder(self.description).encode(container)[(category,)]
+            data = iodaEncoder(self.description).encode(container)[category]
             self.log.info(f'Mark {category} as finished in the cache')
-            bufr.DataCache.mark_finished(cache_input_path, cache_mapping_path, [category])
+            bufr.DataCache.mark_finished(cache_input_path, cache_mapping_path, category)
             self.log.info(f'Return the encoded data for {category}')
             return data
 
@@ -131,23 +175,22 @@ class ObsBuilder:
         # Add the container to the cache
         bufr.DataCache.add(cache_input_path,
                            cache_mapping_path,
-                           container.all_sub_categories(),
+                           cache_categories,
                            container)
 
         # Encode the data
         self.log.info(f'Encode {category}')
-        data = iodaEncoder(self.description).encode(container)[(category,)]
+        data = iodaEncoder(self.description).encode(container)[category]
 
         self.log.info(f'Mark {category} as finished in the cache')
         # Mark the data as finished in the cache
-        bufr.DataCache.mark_finished(cache_input_path, cache_mapping_path, [category])
+        bufr.DataCache.mark_finished(cache_input_path, cache_mapping_path, category)
 
         self.log.info(f'Return the encoded data for {category}')
         return data
 
-    def _create_obs_group_no_cache(self, input, env, category=''):
+    def _create_obs_group_no_cache(self, input, env, category:list = None):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
-        assert type(input) == str, 'Input was not a path str, please override create_obs_group'
 
         comm = bufr.mpi.Comm(env["comm_name"])
         self.log.comm = comm
@@ -156,11 +199,11 @@ class ObsBuilder:
         container.gather(comm)
 
         # Encode the data
-        if category == '':
+        if not category:
             self.log.info(f'Encoding')
             data = next(iter(iodaEncoder(self.description).encode(container).values()))
         else:
             self.log.info(f'Encoding {category}')
-            data = iodaEncoder(self.description).encode(container)[(category,)]
+            data = iodaEncoder(self.description).encode(container)[category]
 
         return data

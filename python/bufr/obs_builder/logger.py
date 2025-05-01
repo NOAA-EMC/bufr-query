@@ -50,14 +50,16 @@ class Logger:
         self._log_all(message, 'ERROR')
 
     def _log(self, message, level='INFO'):
-        assert level.upper() in self.log_levels.keys(), f'Invalid log level: {level}'
+        if level.upper() not in self.log_levels.keys():
+            raise ValueError(f'Invalid log level: {level}')
 
         if not self.comm or self.comm.rank() == 0:
             log_method = self.log_levels.get(level.upper(), self.logger.info)
             log_method(message)
 
     def _log_all(self, message, level='INFO'):
-        assert level.upper() in self.log_levels.keys(), f'Invalid log level: {level}'
+        if level.upper() not in self.log_levels.keys():
+            raise ValueError(f'Invalid log level: {level}')
 
         log_method = self.log_levels.get(level.upper(), self.logger.info)
         log_method(f'Rank {self.comm.rank()}: {message}')
