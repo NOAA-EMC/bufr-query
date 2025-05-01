@@ -54,7 +54,7 @@ class ObsBuilder:
         :return: DataContainer object
         """
         if not isinstance(input, str) or len(self.map_dict) != 1:
-            assert False, 'You must create a custom override for make_obs().'
+            raise NotImplementedError('You must create a custom override for make_obs().')
 
         mapping_path = list(self.map_dict.values())[0]
         container = bufr.Parser(input, mapping_path).parse(comm)
@@ -71,7 +71,10 @@ class ObsBuilder:
         """
         Use this override to extend the encoder description for the data when adding data fields.
         """
-        assert len(self.map_dict) > 0, 'No mapping file provided, please override _make_description()'
+
+        if len(self.map_dict) == 0:
+            raise ValueError('No mapping file provided. Either override _make_description() or '
+                             'provide a mapping file in the constructor.')
 
         return bufr.encoders.Description(list(self.map_dict.values())[0])
 
@@ -116,18 +119,25 @@ class ObsBuilder:
         """
 
         # Guard Block
-        if cache_categories is not None:
-            assert category is not None, 'Category must be provided if cache_categories are specified'
+        if (cache_categories is not None) and (category is None):
+            raise ValueError('Category must be provided if cache_categories are specified')
 
         if category:
-            assert type(category) == list, 'Category must be a list of subcategories ex: [\'npp\']'
-            assert type(category[0]) == str, 'Category must be a list of subcategories ex: [\'npp\']'
+            if not isinstance(category, list) or \
+               not len(category) > 0 or \
+               not isinstance(category[0], str):
+                raise ValueError('Category must be a list of subcategories ex: [\'npp\']')
 
         if cache_categories:
-            assert type(cache_categories) == list, 'Cache categories must be a list of subcategories ex: [\'npp\']'
-            assert type(cache_categories[0]) == list, 'Cache categories must be a list of subcategories ex: [\'npp\']'
-            assert type(cache_categories[0][0]) == str, 'Cache categories must be the same length as categories'
-            assert category in cache_categories, 'Category must be found inside the cache categories'
+            if not isinstance(cache_categories, list) or \
+               not len(cache_categories) > 0 or \
+               not isinstance(cache_categories[0], list) or \
+               not len(cache_categories[0]) > 0 or \
+               not isinstance(cache_categories[0][0], str):
+                raise ValueError('Cache categories must be a list of subcategories ex: [[\'npp\']]')
+
+            if category not in cache_categories:
+                raise ValueError('Category must be found inside the cache categories')
 
         if cache_categories:
             return self._create_obs_group_w_cache(input, env, category, cache_categories)
@@ -136,7 +146,6 @@ class ObsBuilder:
 
     def _create_obs_group_w_cache(self, input, env, category:list, cache_categories:list):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
-        assert type(input) == str, 'Input was not a path str, please override create_obs_group'
 
         comm = bufr.mpi.Comm(env["comm_name"])
         self.log.comm = comm
@@ -182,7 +191,6 @@ class ObsBuilder:
 
     def _create_obs_group_no_cache(self, input, env, category:list = None):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
-        assert type(input) == str, 'Input was not a path str, please override create_obs_group'
 
         comm = bufr.mpi.Comm(env["comm_name"])
         self.log.comm = comm
