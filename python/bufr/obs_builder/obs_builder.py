@@ -54,7 +54,7 @@ class ObsBuilder:
         :return: DataContainer object
         """
         if not isinstance(input, str) or len(self.map_dict) != 1:
-            raise NotImplemented('You must create a custom override for make_obs().')
+            raise NotImplementedError('You must create a custom override for make_obs().')
 
         mapping_path = list(self.map_dict.values())[0]
         container = bufr.Parser(input, mapping_path).parse(comm)
