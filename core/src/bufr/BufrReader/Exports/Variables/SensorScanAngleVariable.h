@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <functional>
 #include <string>
 #include <vector>
 #include <memory>
@@ -12,6 +13,17 @@
 
 
 namespace bufr {
+
+    /// \brief Function type for computing scan angles
+    using ComputeFn = std::function<void(
+        std::vector<float>&,               // Output: scan angles
+        const std::vector<int>&,           // Input: field-of-view numbers
+        const std::vector<int>*,           // Optional: field-of-regard numbers (nullptr if unused)
+        float,                             // Scan start angle
+        float,                             // Scan step size
+        float                              // Scan step adjustment
+    )>;
+
     /// \brief Exports parsed data as SensorScanAngle  using speciefied Mnemonics
     class SensorScanAngleVariable final : public Variable
     {
@@ -36,5 +48,23 @@ namespace bufr {
 
         /// \brief get the export key string
         std::string getExportKey(const std::string& name) const;
+
+	/// \brief Compute scan angle for IASI instrument
+        static void computeIasi(std::vector<float>& scanang,
+                                const std::vector<int>& fovn,
+                                const std::vector<int>* forn,
+                                float start, float step, float stepAdj);
+
+        /// \brief Compute scan angle for CrIS instrument
+        static void computeCris(std::vector<float>& scanang,
+                                const std::vector<int>& fovn,
+                                const std::vector<int>* forn,
+                                float start, float step, float stepAdj);
+
+        /// \brief Compute scan angle using generic (default) logic
+        static void computeGeneric(std::vector<float>& scanang,
+                                   const std::vector<int>& fovn,
+                                   const std::vector<int>* forn,
+                                   float start, float step, float stepAdj);
     };
 }  // namespace bufr
