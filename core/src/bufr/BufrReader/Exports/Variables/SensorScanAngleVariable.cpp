@@ -199,9 +199,9 @@ namespace bufr {
         for (size_t i = 0; i < fovn.size(); ++i) {
             int forIdx = (*forn)[i] - 1;
             int fovIdx = fovn[i] - 1;
-            float offset = static_cast<float>(forIdx) * step;
+            float offset = static_cast<float>(forIdx) * step;   // degree 
             float scanRad = degToRad(start + offset);
-            float twistRad = degToRad(FovAng[fovIdx] - offset);
+            float twistRad = FovAng[fovIdx] - degToRad(offset);
             scanRad += FovDist[fovIdx] * sinf(twistRad);
             scanang[i] = radToDeg(scanRad);
         }
