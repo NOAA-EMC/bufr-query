@@ -105,11 +105,8 @@ class ObsBuilder:
     def create_obs_group(self, input, env, category:list=None, cache_categories:list=None):
         """
         Create an observation file from the input data. Override this method if you want to
-
-        Args:
         customize the file creation process or if you need a different function signature (ex: you
-            env (dict): Environment variables.
-        need to pass multiple input files). add_main_functions will copy the function signature.
+        need to pass multiple input files).
 
         :param input: Input path to the BUFR file.
         :param env: The IODA environment. Dictionary with keys: start_time, end_time, comm_name
