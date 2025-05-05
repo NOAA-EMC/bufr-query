@@ -26,6 +26,7 @@ extensions = ['sphinx.ext.mathjax',
 
 templates_path = ['_templates']
 exclude_patterns = ['.DS_Store']
+plantuml = 'plantuml'
 
 root_doc = 'index'
 add_module_names = False
