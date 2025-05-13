@@ -15,14 +15,8 @@
 namespace bufr {
 
     /// \brief Function type for computing scan angles
-    using ComputeFn = std::function<void(
-        std::vector<float>&,               // Output: scan angles
-        const std::vector<int>&,           // Input: field-of-view numbers
-        const std::vector<int>*,           // Optional: field-of-regard numbers (nullptr if unused)
-        float,                             // Scan start angle
-        float,                             // Scan step size
-        float                              // Scan step adjustment
-    )>;
+    using ComputeFn = std::function<std::vector<float>(const eckit::LocalConfiguration& conf,
+		                                       const BufrDataMap& map)>;
 
     /// \brief Exports parsed data as SensorScanAngle  using speciefied Mnemonics
     class SensorScanAngleVariable final : public Variable
@@ -50,21 +44,15 @@ namespace bufr {
         std::string getExportKey(const std::string& name) const;
 
 	/// \brief Compute scan angle for IASI instrument
-        static void computeIasi(std::vector<float>& scanang,
-                                const std::vector<int>& fovn,
-                                const std::vector<int>* forn,
-                                float start, float step, float stepAdj);
+        static std::vector<float> computeIasi(const eckit::LocalConfiguration& conf,
+		                      	      const BufrDataMap& map);
 
         /// \brief Compute scan angle for CrIS instrument
-        static void computeCris(std::vector<float>& scanang,
-                                const std::vector<int>& fovn,
-                                const std::vector<int>* forn,
-                                float start, float step, float stepAdj);
+        static std::vector<float> computeCris(const eckit::LocalConfiguration& conf,
+		                  	      const BufrDataMap& map);
 
         /// \brief Compute scan angle using generic (default) logic
-        static void computeGeneric(std::vector<float>& scanang,
-                                   const std::vector<int>& fovn,
-                                   const std::vector<int>* forn,
-                                   float start, float step, float stepAdj);
+        static std::vector<float> computeGeneric(const eckit::LocalConfiguration& conf,
+		                        	 const BufrDataMap& map);
     };
 }  // namespace bufr

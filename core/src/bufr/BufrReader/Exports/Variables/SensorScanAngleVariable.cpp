@@ -73,23 +73,15 @@ namespace bufr {
 
         // Extract required parameters
         const std::string sensor = conf_.getString(ConfKeys::Sensor);
-        const float start = conf_.getFloat(ConfKeys::ScanStart);
-        const float step  = conf_.getFloat(ConfKeys::ScanStep);
-        const float stepAdj = conf_.has(ConfKeys::ScanStepAdjust)
-                            ? conf_.getFloat(ConfKeys::ScanStepAdjust) : 0.0f;
 
-        auto& fovnObj = map.at(getExportKey("fieldOfViewNumber"));
-        const size_t nobs = fovnObj->size();
-        auto fovn = std::dynamic_pointer_cast<DataObject<int>>(fovnObj)->getRawData();
-        std::vector<float> scanang(nobs, DataObject<float>::missingValue());
+        // Resolve and inject export keys
+        std::string fovnKey = getExportKey(ConfKeys::FieldOfViewNumber);
+        eckit::LocalConfiguration localConf = conf_;
+        localConf.set("fovnKey", fovnKey);
 
-        // Get required data for CrIS
-        std::vector<int> fornVec;
-        std::vector<int>* fornPtr = nullptr;
-        if (sensor == "cris" && conf_.has(ConfKeys::FieldOfRegardNumber)) {
-            auto& fornObj = map.at(getExportKey("fieldOfRegardNumber"));
-            fornVec = std::dynamic_pointer_cast<DataObject<int>>(fornObj)->getRawData();
-            fornPtr = &fornVec;
+        if (conf_.has(ConfKeys::FieldOfRegardNumber)) {
+            std::string fornKey = getExportKey(ConfKeys::FieldOfRegardNumber);
+            localConf.set("fornKey", fornKey);
         }
 
         // Dispatch to sensor-specific function
@@ -98,14 +90,17 @@ namespace bufr {
             { "cris", computeCris }
         };
 
+        std::vector<float> scanang;
+
         auto it = dispatch.find(sensor);
         if (it != dispatch.end()) {
-            it->second(scanang, fovn, fornPtr, start, step, stepAdj);
+            scanang = it->second(localConf, map);
         } else {
-            computeGeneric(scanang, fovn, nullptr, start, step, stepAdj);
+            scanang = computeGeneric(localConf, map);
         }
 
-        // Export scan angle
+	// Export scan angle
+        auto& fovnObj = map.at(getExportKey("fieldOfViewNumber"));
         return DataObjectBuilder::make<float>(
             scanang,
             getExportName(),
@@ -176,46 +171,84 @@ namespace bufr {
     }
 
     /// Compute IASI scan angles
-    void SensorScanAngleVariable::computeIasi(std::vector<float>& scanang,
-                                              const std::vector<int>& fovn,
-                                              const std::vector<int>*,
-                                              float start, float step, float stepAdj)
+    std::vector<float> SensorScanAngleVariable::computeIasi(const eckit::LocalConfiguration& conf,
+                                                            const BufrDataMap& map)
     {
-        for (size_t i = 0; i < fovn.size(); ++i) {
+        const float start   = conf.getFloat(ConfKeys::ScanStart);
+        const float step    = conf.getFloat(ConfKeys::ScanStep);
+        const float stepAdj = conf.has(ConfKeys::ScanStepAdjust) ? conf.getFloat(ConfKeys::ScanStepAdjust) : 0.0f;
+
+        std::string fovnKey = conf.getString("fovnKey");
+        auto fovnObj = map.at(fovnKey);
+        const auto fovn = std::dynamic_pointer_cast<DataObject<int>>(fovnObj)->getRawData();
+        const size_t nobs = fovn.size();
+
+        std::vector<float> scanang(nobs, DataObject<float>::missingValue());
+
+        for (size_t i = 0; i < nobs; ++i)
+       	{
             int scanpos = (fovn[i] - 1) / 2 + 1;
             float offset = (scanpos % 2 == 1) ? stepAdj : -stepAdj;
             scanang[i] = start + ((fovn[i] - 1) / 4) * step + offset;
         }
+
+        return scanang;
     }
 
     /// Compute CrIS scan angles
-    void SensorScanAngleVariable::computeCris(std::vector<float>& scanang,
-                                              const std::vector<int>& fovn,
-                                              const std::vector<int>* forn,
-                                              float start, float step, float)
+    std::vector<float> SensorScanAngleVariable::computeCris(const eckit::LocalConfiguration& conf,
+                                                            const BufrDataMap& map)
     {
-        if (!forn) throw eckit::BadParameter("CrIS scan angle requires fieldOfRegardNumber");
+        const float start = conf.getFloat(ConfKeys::ScanStart);
+        const float step  = conf.getFloat(ConfKeys::ScanStep);
 
-        for (size_t i = 0; i < fovn.size(); ++i) {
-            int forIdx = (*forn)[i] - 1;
+	std::string fovnKey = conf.getString("fovnKey");
+	std::string fornKey = conf.getString("fornKey");
+
+	auto fovnObj = map.at(fovnKey);
+	auto fornObj = map.at(fornKey);
+
+	const auto fovn = std::dynamic_pointer_cast<DataObject<int>>(fovnObj)->getRawData();
+	const auto forn = std::dynamic_pointer_cast<DataObject<int>>(fornObj)->getRawData();
+
+        const size_t nobs = fovn.size();
+
+        std::vector<float> scanang(nobs, DataObject<float>::missingValue());
+
+        for (size_t i = 0; i < nobs; ++i)
+       	{
+            int forIdx = forn[i] - 1;
             int fovIdx = fovn[i] - 1;
-            float offset = static_cast<float>(forIdx) * step;   // degree 
+            float offset = static_cast<float>(forIdx) * step;
             float scanRad = degToRad(start + offset);
             float twistRad = FovAng[fovIdx] - degToRad(offset);
             scanRad += FovDist[fovIdx] * sinf(twistRad);
             scanang[i] = radToDeg(scanRad);
         }
+
+        return scanang; 
     }
   
     /// Generic scan angle computation (linear scan pattern)
-    void SensorScanAngleVariable::computeGeneric(std::vector<float>& scanang,
-                                                 const std::vector<int>& fovn,
-                                                 const std::vector<int>*,
-                                                 float start, float step, float)
+    std::vector<float> SensorScanAngleVariable::computeGeneric(const eckit::LocalConfiguration& conf,
+                                                               const BufrDataMap& map)
     {
-        for (size_t i = 0; i < fovn.size(); ++i) {
+        const float start = conf.getFloat(ConfKeys::ScanStart);
+        const float step  = conf.getFloat(ConfKeys::ScanStep);
+
+        std::string fovnKey = conf.getString("fovnKey");
+        auto fovnObj = map.at(fovnKey);
+        const auto fovn = std::dynamic_pointer_cast<DataObject<int>>(fovnObj)->getRawData();
+        const size_t nobs = fovn.size();
+
+        std::vector<float> scanang(nobs, DataObject<float>::missingValue());
+
+        for (size_t i = 0; i < nobs; ++i)
+       	{
             scanang[i] = start + static_cast<float>(fovn[i] - 1) * step;
         }
+
+        return scanang;
     }
 
 }  // namespace bufr
