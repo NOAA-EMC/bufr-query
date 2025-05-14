@@ -1,7 +1,7 @@
 
 import os
 
-def get_default_nprocs(default=8):
+def nprocs_per_task(default=8):
     """
     Determine the number of processes to use.
 
