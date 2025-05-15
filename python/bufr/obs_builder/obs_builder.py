@@ -102,7 +102,7 @@ class ObsBuilder:
 
         self.log.info(f'Return the encoded data')
 
-    def create_obs_group(self, input, env, category:list=None, cache_categories:list=None):
+    def create_obs_group(self, input, env, category:str=None, cache_categories:list=None):
         """
         Create an observation file from the input data. Override this method if you want to
         customize the file creation process or if you need a different function signature (ex: you
@@ -110,7 +110,7 @@ class ObsBuilder:
 
         :param input: Input path to the BUFR file.
         :param env: The IODA environment. Dictionary with keys: start_time, end_time, comm_name
-        :param category: The category to encode. (optional)
+        :param category: The category to encode (comma separated subcategories). (optional)
         :param cache_categories: The list of categories to cache. (optional)
         :return: IODA ObsGroup object.
         """
@@ -120,21 +120,22 @@ class ObsBuilder:
             raise ValueError('Category must be provided if cache_categories are specified')
 
         if category:
-            if not isinstance(category, list) or \
-               not len(category) > 0 or \
-               not isinstance(category[0], str):
-                raise ValueError('Category must be a list of subcategories ex: [\'npp\']')
+            if not isinstance(category, str):
+                raise ValueError('Category must be a list of subcategories ex: \'npp\'')
 
         if cache_categories:
             if not isinstance(cache_categories, list) or \
                not len(cache_categories) > 0 or \
-               not isinstance(cache_categories[0], list) or \
-               not len(cache_categories[0]) > 0 or \
-               not isinstance(cache_categories[0][0], str):
-                raise ValueError('Cache categories must be a list of subcategories ex: [[\'npp\']]')
+               not isinstance(cache_categories[0], str):
+                raise ValueError('Cache categories must be a list of subcategories ex: [\'goes-17\''
+                                 ', \'goes-18\']')
 
             if category not in cache_categories:
                 raise ValueError('Category must be found inside the cache categories')
+
+        # Parse category and cache_categories strings
+        category = category.replace(' ', '').split(',')
+        cache_categories = [cat.replace(' ', '').split(',') for cat in cache_categories]
 
         if cache_categories:
             return self._create_obs_group_w_cache(input, env, category, cache_categories)
