@@ -2,33 +2,29 @@ import numpy as np
 
 def add_dummy_variable(container, name, cat, base_var):
     """
-    Add a dummy variable to the observation container using a zero-length masked array.
+    Add a dummy variable to the observation container using an existing variable's structure.
 
-    This function is typically used when a sub-category exists but contains no valid data,
-    ensuring the variable still exists in the container with the correct structure.
+    This function attempts to retrieve the data and path structure of a base variable in the specified
+    sub-category. It then uses this information to insert a new variable (with the same structure and a
+    copy of the base data) under a different name. This is useful when ensuring consistent data output
+    even if a variable has no valid observations.
 
-    Parameters
-    ----------
-    container : object
-        The observation data container. Must support `get_paths(base_var, cat)` and `add(name, data, paths, cat)`.
+    :param container: Observation container object that provides access to data and path structure. 
+                      It must implement ``get_paths(var, cat)``, ``get(var, cat)``, and ``add(name, data, paths, cat)``.
+    :type container: object
+    :param name: Name of the new dummy variable to add.
+    :type name: str
+    :param cat: Sub-category key identifying a specific observation group (e.g., by sensor/platform).
+    :type cat: tuple
+    :param base_var: Name of an existing variable whose data and path structure will be used as a template.
+    :type base_var: str
+    :raises KeyError: If the base variable or its paths cannot be retrieved from the container.
+    :returns: None
+    :rtype: None
 
-    name : str
-        The name of the variable to add to the container.
+    :example:
 
-    cat : tuple
-        The sub-category identifier (usually a tuple of integers or strings).
-
-    base_var : str
-        The name of an existing variable in the container to base the path and dtype on.
-
-    Raises
-    ------
-    KeyError
-        If `base_var` is not found or paths cannot be resolved.
-
-    Returns
-    -------
-    None
+    >>> add_dummy_variable(container, 'windError', ('sensorA',), 'windSpeed')
     """
     try:
         paths = container.get_paths(base_var, cat)
