@@ -3,24 +3,18 @@
 Mapping YAML File
 =================
 
-The YAML mapping tells which BUFR component fields to read from the BUFR file, and how
-to encode those fields into the output format. To do that it defines 2 sections: `bufr` and
-`encoder`. The content of these sections (described bellow) can be thought of as descriptions for what
-will be read and how it will be encoded.
+The mapping YAML describes which BUFR fields to extract and how they will be
+written to an output file.  It is divided into two top level sections:
+``bufr`` and ``encoder``.  The ``bufr`` section controls what data are read
+from the file while ``encoder`` describes how that data are encoded.  Complete
+examples are available in ``test/testinput``.
 
-.. note::
-  Please see the test/testinput directory for examples.
+BUFR section
+------------
 
-BUFR Description
-~~~~~~~~~~~~~~~~
-
-This section describes the BUFR parameters that will be read form the BUFR file, and allows
-for some basic operations to read the data in a form that is useful. For example, it has the
-ability to group variables in order to "unroll" sections of the BUFR file data. You can split BUFR
-data into sub groups (categories) based on the value of a BUFR field (for example: you can categorize
-data based on satellite IDs). You can also filter data based on the value of a BUFR field.
-
-Here is an example:
+The ``bufr`` section controls how data are retrieved from the BUFR file.  It
+supports grouping repeated sequences, splitting the dataset into categories and
+filtering rows before encoding.  A trimmed example looks like:
 
 .. code-block:: yaml
 
@@ -78,65 +72,53 @@ Here is an example:
           upperBound: -68  # optional
           lowerBound: -86.3  # optional
 
-The **bufr** element has the following sub-elements:
+``bufr`` keys
+^^^^^^^^^^^^^
 
-* **group_by_variable**: *(optional)* String value that defines the name of the variable to group
-  observations by. If this field is missing then observations will not be re-grouped.
-* **subsets**: *(optional)* List of subsets that you want to process. If the field is not present then
-  all subsets will be processed in accordance with the query definitions.
-* **variables**: List of variables to read as key value pairs.
+``group_by_variable`` *(optional)*
+    Name of a variable used to group observations when expanding repeated
+    sequences.
 
-  * **keys** are arbitrary strings (anything you want). They can be referenced in the output section.
-  * **values** (One of these types):
+``subsets`` *(optional)*
+    List of subset names to read.  When omitted all subsets matching the
+    queries are processed.
 
-    * **query**: Query string which is used to get the data from the BUFR file. *(optional)* Can
-      apply a list of **tranforms** to the numeric (not string) data. Possible transforms are
-      **offset**, **scale** and **wrap**. You can also manually override the type by specifying the
-      **type** as **int**, **int64**, **float**, or **double**.
-    * **datetime**: Associate **key** with data for mnemonics for **year**, **month**, **day**, **hour**,
-      **minute**, *(optional)* **second**, and *(optional)* **hoursFromUtc** (must be an **integer**).
-      Internally, the value stored is number of seconds elapsed since a reference epoch, currently
-      set to 1970-01-01T00:00:00Z.
-    * **timeoffset**: Associate **key** with data for mnemonic for **timeOffset**, that should result
-      in seconds relative to an ISO-8601 string of date and time (e.g., `2020-11-01T11:42:56Z`).
-      If the timeOffset mnemonic is a floating-point value in hours, then simply use **transforms**
-      and scale by 3600 seconds.  Internally, the value stored is number of seconds elapsed since
-      a reference epoch, currently set to 1970-01-01T00:00:00Z.
-* *(optional)* **splits** List of key value pair (splits) that define how to split the data into
-  subsets of data. Any number of splits can be applied. Possible categories within each split will
-  be combined to form sets which describe all unique combinations of those categories. For example
-  the splits with categories ("a", "b") and ("x", "y") will be combined into four split categories
-  ("a", "x"), ("a", "y"), ("b", "x"), ("b", "y").
+``variables``
+    Mapping of arbitrary names to variable descriptions.  These names are later
+    referenced by the ``encoder`` section.  A variable description can be one of
+    the following:
 
-  * **keys** are arbitrary strings (anything you want). They can be referenced in the output section.
-  * **values** Type of split to apply (currently supports **category**)
+    - ``query`` – direct query into the BUFR tree.  Numeric results may apply
+      ``offset``, ``scale`` or ``wrap`` transforms and the type may be forced to
+      ``int``, ``int64``, ``float`` or ``double``.
+    - ``datetime`` – combine mnemonics for year, month, day, hour and minute
+      (and optionally second and hoursFromUtc) into an epoch time stored as
+      seconds since ``1970-01-01T00:00:00Z``.
+    - ``timeoffset`` – like ``datetime`` but the value is relative to a
+      ``referenceTime``.  Transforms may be used to convert units.
+    - specialised forms such as ``sensorScanAngle`` or
+      ``remappedBrightnessTemperature`` used in some satellite mappings.
 
-    * **category** Splits data based on values assocatied with a BUFR mnemonic. Constists of:
+``splits`` *(optional)*
+    Splits divide the dataset into categories.  The ``category`` split type
+    partitions the data by the value of a variable and can map integer values to
+    string names.
 
-      * **variable** The variable from the **variables** section to split on.
-      * *(optional)* **map** Associates integer values in BUFR mnemonic data to a string. Please not
-        that integer keys must be prepended with an **_** (ex: **_2**). Rows where where the mnemonic
-        value is not defined in the map will be rejected (won't appear in output).
-* *(optional)* **filters** List of filters to apply to the data before exporting. Filters exclude data
-  which does not meet their requirements. The following filters are supported:
+``filters`` *(optional)*
+    Filters remove rows prior to encoding.  The ``bounding`` filter keeps rows
+    whose values fall between ``lowerBound`` and ``upperBound`` (at least one of
+    these bounds must be supplied).
 
-  * **bounding**
+Encoder section
+---------------
 
-    * **variable** The variable from the *variables* section to filter on.
-    * *(optional)* **upperBound** The highest possible value to accept
-    * *(optional)* **lowerBound** The lowest possible value to accept
-
-.. note::
-    Either **upperBound**, **lowerBound**, or both must be present.
-
-Encoder Description
-~~~~~~~~~~~~~~~~~~~
-
-The **encoder** section defines the ObsGroup objects that will be created. Here is an example:
+The ``encoder`` section describes how the exported data should be written.  A
+shortened example is shown below:
 
 .. code-block:: yaml
 
   encoder:
+    type: netcdf
     dimensions:
       - name: nchans
         paths:
@@ -144,7 +126,10 @@ The **encoder** section defines the ObsGroup objects that will be created. Here 
           - "*/BRITCSTC"
         source: variables/channels  # optional
         labels: "1-5, 8, 10-20"  # optional
-
+    globals:
+      - name: "platformCommonName"
+        type: string
+        value: "ATMS"
     variables:
       - name: "MetaData/dateTime"
         source: "variables/timestamp"
@@ -172,36 +157,38 @@ The **encoder** section defines the ObsGroup objects that will be created. Here 
         chunks: [1000, 15]
         compressionLevel: 4
 
-* *dimensions* used to define dimension information in variables
+Encoder keys
+^^^^^^^^^^^^
 
-  * **name** arbitrary name for the dimension
-  * **paths** list of subqueries for that dimension (different paths for different BUFR subsets
-    only) **or** *path* Single subquery for that dimension ex: **\*/BRITCSTC**
-  * **source** *(optional)* The exported data that acts as the source field for this dimension.
-    The data dimension values (labels) will reflect this field. The source is validated
-    to make sure it makes sense for the dimension and that it is made up of repeated
-    values for each occurrence of the sequence. The source field must be inside the
-    dimension and be 1:1 with it.
-  * **labels** *(optional)* Manually override the labels that are assigned to this dimension.
-    The label is defined as a string pattern. Example: "1-5, 8" means 1, 2, 3, 4, 5, 8.
+``type`` *(optional)*
+    Output format such as ``netcdf`` or ``zarr``.
+
+``dimensions`` *(optional)*
+    List of named dimensions.  Each entry contains:
+
+    - ``name`` – dimension name.
+    - ``paths`` or ``path`` – queries used to determine the dimension.
+    - ``source`` *(optional)* – exported data used to label the dimension.
+    - ``labels`` *(optional)* – manual list of labels.  Use either ``source`` or ``labels``.
+
+``variables``
+    List of variables to create in the output file.  Each item includes:
+
+    - ``name`` – path ``group/variable``.
+    - ``source`` – reference to a variable defined in the ``bufr`` section.
+    - ``coordinates`` *(optional)* – names of coordinate variables.
+    - ``longName`` *(optional)* – descriptive name.
+    - ``units`` *(optional)* – units string.
+    - ``range`` *(optional)* – valid range ``[min, max]``.
+    - ``chunks`` *(optional)* – chunk sizes for chunked outputs.
+    - ``compressionLevel`` *(optional)* – gzip level ``0-9``.
+
+``globals`` *(optional)*
+    Global attributes to attach to the output file.  Each definition provides
+    ``name``, ``type`` (``string``, ``int``, ``float``, ``intVector`` or
+    ``floatVector``) and ``value``.
 
 .. warning::
 
-  Use either **source** or **labels** or neither of these.
+   ``MetaData/dateTime`` must use units ``seconds since 1970-01-01T00:00:00Z``.
 
-* **variables** List of output variable objects to create.
-
-  * **name** standardized pathname **group**/**var_name**.
-
-    * **group** group name to which this variable belongs (example: MetaData or ObsVal).
-    * **var_name** name for the variable
-  * **source** reference to exported BUFR data defined in **bufr** section ex: **variables/radiance**
-  * **coordinates** *(optional)*
-  * **longName** any arbitrary string.
-  * **units** string representing units (arbitrary but following udunits).
-  * *(optional)* **range** Possible range of values (list of 2 ints).
-  * *(optional)* **chunks** Size of chunked data elements ex: **[1000, 1000]**.
-  * *(optional)* **compressionLevel** GZip compression level (0-9).
-
-.. warning::
-    - MetaData/dateTime **units** must be "seconds since 1970-01-01T00:00:00Z"
