@@ -29,16 +29,6 @@ class EncoderBase
   #getEncoderDimensions(container:DataContainer, category:vector<string>) : EncoderDimensions
 }
 
-package zarr <<Folder>>
-{
-  class Encoder
-  {
-    +encode(data:DataContainer)
-  }
-
-  EncoderBase<|--Encoder
-}
-
 package netcdf <<Folder>>
 {
   class Encoder
