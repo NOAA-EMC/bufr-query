@@ -134,8 +134,11 @@ class ObsBuilder:
                 raise ValueError('Category must be found inside the cache categories')
 
         # Parse category and cache_categories strings
-        category = tuple(category.replace(' ', '').split(','))
-        cache_categories = [tuple(cat.replace(' ', '').split(',')) for cat in cache_categories]
+        if category:
+            category = tuple(category.replace(' ', '').split(','))
+
+        if cache_categories:
+            cache_categories = [tuple(cat.replace(' ', '').split(',')) for cat in cache_categories]
 
         if cache_categories:
             return self._create_obs_group_w_cache(input, env, category, cache_categories)
