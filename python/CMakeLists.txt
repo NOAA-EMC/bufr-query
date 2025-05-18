@@ -31,19 +31,20 @@ set(pyver python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
 
 AddPyLib(bufr_python bufr ${pyver})
 
+# Determine INSTALL_RPATH relative to the python module location
+file(RELATIVE_PATH _py_relpath
+    "${CMAKE_INSTALL_FULL_LIBDIR}/${pyver}/site-packages/bufr"
+    "${CMAKE_INSTALL_FULL_LIBDIR}")
 if(APPLE)
-	set_target_properties(bufr_python PROPERTIES
-		BUILD_RPATH_USE_ORIGIN TRUE
-		BUILD_WITH_INSTALL_RPATH TRUE
-		INSTALL_RPATH "@loader_path/../../"
-		)
+    set(_full_rpath "@loader_path/${_py_relpath}")
 else()
-	set_target_properties(bufr_python PROPERTIES
-		BUILD_RPATH_USE_ORIGIN TRUE # $ORIGIN
-		BUILD_WITH_INSTALL_RPATH TRUE
-		INSTALL_RPATH "\$ORIGIN/../../"
-		)
+    set(_full_rpath "\$ORIGIN/${_py_relpath}")
 endif()
+
+set_target_properties(bufr_python PROPERTIES
+        BUILD_RPATH_USE_ORIGIN TRUE
+        BUILD_WITH_INSTALL_RPATH TRUE
+        INSTALL_RPATH "${_full_rpath}")
 
 add_custom_command(
     TARGET bufr_python
@@ -57,5 +58,3 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bufr
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/${pyver}/site-packages
         COMPONENT Python
         FILES_MATCHING PATTERN "*.py")
-
-set_target_properties(bufr_python PROPERTIES INSTALL_RPATH "/opt/local/lib/libgcc")
