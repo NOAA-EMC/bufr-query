@@ -66,7 +66,14 @@ void setupDataContainer(py::module& m)
             paths[pathIdx] = QueryParser::parse(dimPaths[pathIdx])[0];
           }
 
-          auto dataObj = bufr::makeObject(fieldName, pyData);
+          py::array dataArray = pyData;
+          py::module numpyModule = py::module::import("numpy");
+          if (py::isinstance(pyData, numpyModule.attr("ma").attr("MaskedArray")))
+          {
+            dataArray = pyData.attr("filled")().cast<py::array>();
+          }
+
+          auto dataObj = bufr::makeObject(fieldName, dataArray);
           dataObj->setDimPaths(paths);
           self.add(fieldName, dataObj, categoryId);
         },
@@ -115,7 +122,14 @@ void setupDataContainer(py::module& m)
             }
           }
 
-          auto dataObj = bufr::makeObject(fieldName, pyData);
+          py::array dataArray = pyData;
+          py::module numpyModule = py::module::import("numpy");
+          if (py::isinstance(pyData, numpyModule.attr("ma").attr("MaskedArray")))
+          {
+            dataArray = pyData.attr("filled")().cast<py::array>();
+          }
+
+          auto dataObj = bufr::makeObject(fieldName, dataArray);
           dataObj->setDimPaths(data->getDimPaths());
           self.set(dataObj, fieldName, categoryId);
         },
