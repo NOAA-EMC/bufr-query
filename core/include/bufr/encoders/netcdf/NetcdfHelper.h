@@ -10,6 +10,7 @@
 #include <string>
 #include <netcdf>
 #include <ostream>
+#include <type_traits>
 
 #include "eckit/exception/Exceptions.h"
 
@@ -19,6 +20,14 @@ namespace nc = netCDF;
 namespace bufr {
 namespace encoders {
 namespace netcdf {
+
+    /// \brief Name of the attribute used to store fill values.
+    ///
+    /// NetCDF C++ 4.9 removed the global `_FillValue` symbol that earlier
+    /// versions exposed.  Define it locally so that the helper functions can
+    /// reference the attribute name without depending on the library to
+    /// provide it.
+    inline constexpr const char* _FillValue = "_FillValue";
 
     template<typename T>
     inline nc::NcType getNcType()
