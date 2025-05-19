@@ -43,7 +43,6 @@ bufr:
       query: "[*/WSPD, */AMDARNOL/WSPD]"
 
 encoder:
-  type: netcdf
 
   dimensions:
     - name: AmdarSequence

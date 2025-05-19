@@ -27,7 +27,6 @@ bufr:
       query: "*/ADRBLSEQ/TMDB"
 
 encoder:
-  type: netcdf
 
   #MetaData
   variables:

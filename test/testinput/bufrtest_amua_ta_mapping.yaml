@@ -76,7 +76,6 @@ bufr:
           _223: n19
 
 encoder:
-  type: netcdf
 
   dimensions:
     - name: Channel

@@ -34,7 +34,6 @@ bufr:
       query: "*/IDMSMDBS/BBYSTSL/DBSS"
 
 encoder:
-  type: netcdf
 
   globals:
     - name: "platformLongDescription"

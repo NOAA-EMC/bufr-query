@@ -22,7 +22,6 @@ bufr:
       query: "*/DTSCUR/SALN"
 
 encoder:
-  type: netcdf
 
   variables:
     - name: "MetaData/dateTime"

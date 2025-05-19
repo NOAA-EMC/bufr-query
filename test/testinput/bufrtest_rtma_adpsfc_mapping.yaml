@@ -94,7 +94,6 @@ bufr:
       query: "*/QMWN"
 
 encoder:
-  type: netcdf
 
   dimensions:
     - name: CloudSequence
