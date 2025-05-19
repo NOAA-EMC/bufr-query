@@ -6,7 +6,7 @@ Mapping YAML File
 The mapping YAML describes which BUFR fields to extract and how they will be
 written to an output file.  It is divided into two top level sections:
 ``bufr`` and ``encoder``.  The ``bufr`` section controls what data are read
-from the file while ``encoder`` describes how that data are encoded.  Complete
+from the file while ``encoder`` describes how these data are encoded.  Complete
 examples are available in ``test/testinput``.
 
 BUFR section
