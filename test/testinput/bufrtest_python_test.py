@@ -301,6 +301,17 @@ def test_highlevel_apply_mask():
     assert np.all(container.get('d0') == np.array([0, 3, 4, 7, 9]))
     assert np.all(container.get('d4') == np.array([0, 3, 4, 7, 9]))
 
+def test_add_replace_masked_array():
+    container = bufr.DataContainer()
+
+    arr = np.ma.array([1, 2, 3], mask=[False, True, False], fill_value=-99)
+    container.add('masked', arr, ['*'])
+    assert np.all(container.get('masked') == np.array([1, -99, 3]))
+
+    arr2 = np.ma.array([4, 5, 6], mask=[True, False, False], fill_value=-1)
+    container.replace('masked', arr2)
+    assert np.all(container.get('masked') == np.array([-1, 5, 6]))
+
 
 if __name__ == '__main__':
     # Low level interface tests
@@ -317,3 +328,4 @@ if __name__ == '__main__':
     test_highlevel_cache()
     test_highlevel_append()
     test_highlevel_apply_mask()
+    test_add_replace_masked_array()

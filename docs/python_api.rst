@@ -76,6 +76,12 @@ Here is what the DataContainer looks like:
 
           Replace the variable with the given name.
 
+      .. note::
+
+          ``add`` and ``replace`` automatically detect ``numpy.ma.MaskedArray``
+          inputs and use the filled version of the array, so calling
+          ``filled()`` beforehand is unnecessary.
+
       .. method:: get_category_map()
 
           Get the map of categories.
