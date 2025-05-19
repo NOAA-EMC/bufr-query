@@ -118,7 +118,6 @@ shortened example is shown below:
 .. code-block:: yaml
 
   encoder:
-    type: netcdf
     dimensions:
       - name: nchans
         paths:
@@ -159,9 +158,6 @@ shortened example is shown below:
 
 Encoder keys
 ^^^^^^^^^^^^
-
-``type`` *(optional)*
-    Output format such as ``netcdf`` or ``zarr``.
 
 ``dimensions`` *(optional)*
     List of named dimensions.  Each entry contains:
