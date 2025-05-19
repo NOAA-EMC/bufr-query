@@ -90,7 +90,6 @@ bufr:
           _5: metop-c
 
 encoder:
-  type: netcdf
 
   dimensions:
     - name: Channel
