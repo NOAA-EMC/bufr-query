@@ -27,7 +27,7 @@ namespace netcdf {
     /// versions exposed.  Define it locally so that the helper functions can
     /// reference the attribute name without depending on the library to
     /// provide it.
-    inline constexpr const char* _FillValue = "_FillValue";
+    static const char* FillValueStr = "_FillValue";
 
     template<typename T>
     inline nc::NcType getNcType()
@@ -62,7 +62,7 @@ namespace netcdf {
                                           const std::string& name,
                                           const std::string& value)
     {
-      if (name != _FillValue)
+      if (name != FillValueStr)
       {
         var.putAtt(name, value);
       }
