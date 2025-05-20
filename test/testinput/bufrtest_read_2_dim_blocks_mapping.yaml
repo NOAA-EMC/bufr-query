@@ -45,7 +45,6 @@ bufr:
       query: "*/QCPRMS[4]/PCCF"
 
 encoder:
-  type: netcdf
 
   dimensions:
     - name: "Confidence"

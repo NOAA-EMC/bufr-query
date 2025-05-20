@@ -6,7 +6,7 @@ if(NOT SKIP_DOWNLOAD_TEST_DATA)
   # Code borrowed from NCEPLIB-bufr project...
 
   set(DOWNLOAD_URL "https://ftp.emc.ncep.noaa.gov/static_files/public/bufr-query")
-  set(FILE_COLLECTION "bufr_query-0.0.1.tgz")
+  set(FILE_COLLECTION "bufr_query-0.0.2.tgz")
 
   # Get the test data if we don't have it.
   if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION}")

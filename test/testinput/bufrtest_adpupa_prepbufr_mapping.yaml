@@ -128,7 +128,6 @@ bufr:
 
 
 encoder:
-  type: netcdf
 
   backend: netcdf
   obsdataout: "./testrun/bufr_ncep_prepbufr_adpupa.nc"

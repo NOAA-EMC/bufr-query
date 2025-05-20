@@ -72,7 +72,6 @@ bufr:
           _207: n16
 
 encoder:
-  type: netcdf
 
   dimensions:
     - name: Channel
