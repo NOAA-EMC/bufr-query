@@ -52,9 +52,6 @@ def test_run_obs_builder():
 
 
 def test_run_obs_file():
-    # Test the ObsBuilder file creation
-    obs_builder = TestObsBuilder()
-
     input_path = 'testdata/gdas.t18z.1bmhs.tm00.bufr_d'
     output_path = 'testrun/bufrtest_mhs_basic.nc'
     compare_path = 'testoutput/bufrtest_mhs_basic.nc'
@@ -65,12 +62,7 @@ def test_run_obs_file():
     run_compare(compare_path, output_path)
 
 def test_run_obs_group():
-    # Test the ObsBuilder group creation
-    obs_builder = TestObsBuilder()
-
     input_path = 'testdata/gdas.t18z.1bmhs.tm00.bufr_d'
-    output_path = 'testrun/bufrtest_mhs_basic.nc'
-    compare_path = 'testoutput/bufrtest_mhs_basic.nc'
 
     env = {'comm_name':'world'}
     obs_group = create_obs_group(input_path, env)
