@@ -117,21 +117,22 @@ class ObsBuilder:
 
         # Guard Block
         if (cache_categories is not None) and (category is None):
-            raise ValueError('Category must be provided if cache_categories are specified')
+            raise ValueError('Category must be provided if cache_categories are specified.')
 
         if category:
             if not isinstance(category, str):
-                raise ValueError('Category must be a list of subcategories ex: \'npp\'')
+                raise ValueError('Category must be a comma seperated string of sub-categories '
+                                 'ex: \'npp\'.')
 
         if cache_categories:
             if not isinstance(cache_categories, list) or \
                not len(cache_categories) > 0 or \
                not isinstance(cache_categories[0], str):
-                raise ValueError('Cache categories must be a list of subcategories ex: [\'goes-17\''
-                                 ', \'goes-18\']')
+                raise ValueError('Cache categories must be a list of categories ex: [\'goes-17\''
+                                 ', \'goes-18\'].')
 
             if category not in cache_categories:
-                raise ValueError('Category must be found inside the cache categories')
+                raise ValueError(f'Category {category} not found in cache categories.')
 
         # Parse category and cache_categories strings
         if category:
