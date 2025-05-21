@@ -121,7 +121,7 @@ class ObsBuilder:
 
         if category:
             if not isinstance(category, str):
-                raise ValueError('Category must be a comma seperated string of sub-categories '
+                raise ValueError('Category must be a comma separated string of sub-categories '
                                  'ex: \'npp\'.')
 
         if cache_categories:
