@@ -110,8 +110,10 @@ class ObsBuilder:
 
         :param input: Input path to the BUFR file.
         :param env: The IODA environment. Dictionary with keys: start_time, end_time, comm_name
-        :param category: The category to encode (comma separated subcategories). (optional)
-        :param cache_categories: The list of categories to cache. (optional)
+        :param category: The category to encode (comma-separated subcategories). This string is
+                         parsed into a tuple of subcategories. (optional)
+        :param cache_categories: The list of categories to cache. Each category is a string that
+                                 is parsed into a tuple of subcategories. (optional)
         :return: IODA ObsGroup object.
         """
 
