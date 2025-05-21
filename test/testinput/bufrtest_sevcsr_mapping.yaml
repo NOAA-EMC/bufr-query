@@ -30,7 +30,6 @@ bufr:
       query: "*/RPSEQ7/SDTB"
 
 encoder:
-  type: netcdf
 
   dimensions:
     - name: "Channel"

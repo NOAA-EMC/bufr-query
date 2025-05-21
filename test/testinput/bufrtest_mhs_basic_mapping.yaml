@@ -40,7 +40,6 @@ bufr:
       query: "[*/BRITCSTC/TMBR, */BRIT/TMBR]"
 
 encoder:
-  type: netcdf
 
   dimensions:
     - name: Channel

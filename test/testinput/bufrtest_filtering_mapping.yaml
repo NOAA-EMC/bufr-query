@@ -30,7 +30,6 @@ bufr:
         lowerBound: -86.3
 
 encoder:
-  type: netcdf
 
   dimensions:
     - name: Channel

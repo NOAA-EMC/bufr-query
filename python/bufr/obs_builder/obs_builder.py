@@ -5,12 +5,11 @@ from typing import Union
 
 import bufr
 
-from ..encoders import netcdf, zarr
+from ..encoders import netcdf
 from .logger import Logger
 
 
-FILE_ENCODER_DICT = {'netcdf': netcdf.Encoder,
-                     'zarr': zarr.Encoder}
+FILE_ENCODER_DICT = {'netcdf': netcdf.Encoder}
 
 def add_encoder_type(name, encoder):
     FILE_ENCODER_DICT[name] = encoder
