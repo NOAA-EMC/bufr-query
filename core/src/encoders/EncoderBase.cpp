@@ -187,6 +187,13 @@ namespace encoders {
 
         std::cout << warningStr.str() << std::endl;
 
+        // Instead of skipping, add the dimension with size 0 and correct name
+        auto newDim = std::make_shared<EncoderDimension>(
+          std::make_shared<DimensionData<int>>(descDim.name, 0),
+          descDim,
+          paths);
+        dims.push_back(newDim);
+        
         continue;
       }
 
