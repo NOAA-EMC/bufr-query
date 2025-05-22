@@ -212,31 +212,34 @@ namespace encoders {
           }
           warningStr << ")";
           std::cout << warningStr.str() << std::endl;
-          continue;
-        }
 
-        // Validate the path for the source field makes sense for the dimension
-        if (std::find(descDim.paths.begin(),
-                      descDim.paths.end(),
-                      dataObject->getDimPaths().back()) == descDim.paths.end())
-        {
-          std::stringstream errStr;
-          errStr << "Source field " << descDim.source << " in ";
-          errStr << descDim.name << " is not in the correct path.";
-          throw eckit::BadParameter(errStr.str());
-        }
-
-        labels.resize(dataObject->getDims().back());
-        if (const auto obj = std::dynamic_pointer_cast<DataObject<int>>(dataObject))
-        {
-          for (size_t idx = 0; idx < labels.size(); idx++)
-          {
-            labels[idx] = obj->getRawData()[idx];
-          }
+          labels.resize(dataObject->getDims().back(), 0);
         }
         else
         {
-          throw eckit::BadParameter("Dimension data type not supported.");
+          // Validate the path for the source field makes sense for the dimension
+          if (std::find(descDim.paths.begin(),
+                        descDim.paths.end(),
+                        dataObject->getDimPaths().back()) == descDim.paths.end())
+          {
+            std::stringstream errStr;
+            errStr << "Source field " << descDim.source << " in ";
+            errStr << descDim.name << " is not in the correct path.";
+            throw eckit::BadParameter(errStr.str());
+          }
+
+          labels.resize(dataObject->getDims().back());
+          if (const auto obj = std::dynamic_pointer_cast<DataObject<int>>(dataObject))
+          {
+            for (size_t idx = 0; idx < labels.size(); idx++)
+            {
+              labels[idx] = obj->getRawData()[idx];
+            }
+          }
+          else
+          {
+            throw eckit::BadParameter("Dimension data type not supported.");
+          }
         }
       }
       // Create the labels for specified by the "labels" field
