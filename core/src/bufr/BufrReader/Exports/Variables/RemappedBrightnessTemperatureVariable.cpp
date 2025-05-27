@@ -108,9 +108,9 @@ namespace bufr {
                                                    &scanline, &error_status);
             }
         }
-       	else if (sensorOption == "ssmis")
+       	else if (sensorOption == "ssmis" || sensorOption == "gmi")
        	{
-	    std::cout << "Sensor is SSMIS." << std::endl;
+	    std::cout << "Sensor is " << sensorOption << "." << std::endl;
 
 	    // Read the variables from the map
             auto& satidObj = map.at(getExportKey(ConfKeys::SatelliteId));
@@ -119,15 +119,15 @@ namespace bufr {
             auto& rainflagObj = map.at(getExportKey(ConfKeys::RainFlag));
             if (!conf_.has(ConfKeys::SatelliteId))
             {
-              throw eckit::BadParameter("SatelliteId is missing for SSMIS.");
+              throw eckit::BadParameter("SatelliteId is missing for " + sensorOption + ".");
             }
             if (!conf_.has(ConfKeys::Longitude))
             {
-              throw eckit::BadParameter("Longitude is missing for SSMIS.");
+              throw eckit::BadParameter("Longitude is missing for " + sensorOption + ".");
             }            
             if (!conf_.has(ConfKeys::Latitude))
             {
-              throw eckit::BadParameter("Latitude is missing for SSMIS.");
+              throw eckit::BadParameter("Latitude is missing for " + sensorOption + ".");
             }            
             if (!conf_.has(ConfKeys::RainFlag))
             {
@@ -153,7 +153,7 @@ namespace bufr {
 	    {
                 int error_status;
 		float missingval = DataObject<float>::missingValue();
-	        Spatial_Average_f(satid[1], method, nobs, nchn, missingval, &fovn, &rainflag,  &obstime,
+		Spatial_Average_f(satid[1], method, nobs, nchn, missingval, &fovn, &rainflag,  &obstime,
                                        &lat, &lon, &btobs, &error_status);
             }
         }
@@ -161,7 +161,7 @@ namespace bufr {
        	{
 
             throw eckit::BadParameter("Invalid sensor type: " + sensorOption +
-                                      ". Must be either ATMS or SSMIS.");
+                                      ". Must be ATMS, GMI, or SSMIS.");
         }
 
         // Export remapped observation (btobs)

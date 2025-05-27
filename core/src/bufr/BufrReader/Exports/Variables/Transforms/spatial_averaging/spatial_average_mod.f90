@@ -254,8 +254,9 @@ CONTAINS
        do iobs = 2, num_obs
           t2    = time(iobs)
           tdiff = t2-t1
-          if (tdiff >= 0.00001_r_kind) then
-             nscan = nscan+1
+          if (tdiff >= 1_r_kind) then        ! tdiff unit: second
+
+                  nscan = nscan+1
              t1    = t2
           endif
           scanline(iobs) = nscan
