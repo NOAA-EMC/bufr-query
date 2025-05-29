@@ -313,6 +313,14 @@ def test_add_replace_masked_array():
     assert np.all(container.get('masked') == np.array([-1, 5, 6]))
 
 
+def test_get_missing_value():
+    assert bufr.get_missing_value(np.int32) == np.iinfo(np.int32).max
+    assert bufr.get_missing_value(np.int64) == np.iinfo(np.int64).max
+    assert bufr.get_missing_value(np.float32) == np.finfo(np.float32).max
+    assert bufr.get_missing_value(np.float64) == np.finfo(np.float64).max
+    assert bufr.get_missing_value(np.dtype('O')) == ""
+
+
 if __name__ == '__main__':
     # Low level interface tests
     test_basic_query()
@@ -329,3 +337,4 @@ if __name__ == '__main__':
     test_highlevel_append()
     test_highlevel_apply_mask()
     test_add_replace_masked_array()
+    test_get_missing_value()
