@@ -6,8 +6,6 @@
 
 namespace py = pybind11;
 
-namespace bufr {
-
 static const std::regex strRegex("[|\\<\\>]?[US]\\d*");
 
 // Return the missing value constant for the provided numpy dtype.
@@ -17,15 +15,15 @@ py::object getMissingValue(const py::object& dtypeObj) {
     std::cmatch m;
 
     if (dt.is(py::dtype::of<int64_t>())) {
-        return py::int_(DataObject<int64_t>::missingValue());
+        return py::int_(bufr::DataObject<int64_t>::missingValue());
     } else if (dt.is(py::dtype::of<int>())) {
-        return py::int_(DataObject<int>::missingValue());
+        return py::int_(bufr::DataObject<int>::missingValue());
     } else if (dt.is(py::dtype::of<double>())) {
-        return py::float_(DataObject<double>::missingValue());
+        return py::float_(bufr::DataObject<double>::missingValue());
     } else if (dt.is(py::dtype::of<float>())) {
-        return py::float_(DataObject<float>::missingValue());
+        return py::float_(bufr::DataObject<float>::missingValue());
     } else if (dtypeStr == "object" || std::regex_match(dtypeStr.c_str(), m, strRegex)) {
-        return py::str(DataObject<std::string>::missingValue());
+        return py::str(bufr::DataObject<std::string>::missingValue());
     }
 
     throw std::runtime_error("Unsupported dtype for get_missing_value");
@@ -36,5 +34,3 @@ void setupHelpers(py::module& m) {
           py::arg("dtype"),
           "Return the missing value constant for the given numpy dtype.");
 }
-
-} // namespace bufr
