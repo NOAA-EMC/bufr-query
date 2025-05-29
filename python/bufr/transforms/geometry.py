@@ -15,8 +15,6 @@ def compute_solar_angles(latitudes, longitudes, unix_times):
     :type longitudes: numpy.ndarray
     :param unix_times: Array of Unix timestamps (seconds since 1970-01-01T00:00:00Z).
     :type unix_times: numpy.ndarray
-    :param nprocs: Number of processes to use. Defaults to the number of CPU cores.
-    :type nprocs: int, optional
 
     :return: Two arrays: zenith angles and azimuth angles.
     :rtype: tuple(numpy.ndarray, numpy.ndarray)
