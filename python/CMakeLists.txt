@@ -18,6 +18,7 @@ list (APPEND PYTHON_SRCS
   py_encoder_base.cpp
   py_encoder_description.cpp
   py_netcdf_encoder.cpp
+  py_helpers.cpp
   py_mpi.h
   py_mpi.cpp
 )
