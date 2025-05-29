@@ -267,6 +267,20 @@ Example:
       return dataset
 
 
+Helper Functions
+----------------
+
+When creating new ``numpy.ma.MaskedArray`` objects you can obtain the
+appropriate missing value using :func:`get_missing_value`.
+
+.. code-block:: python
+
+   import bufr
+   import numpy as np
+
+   mv = bufr.get_missing_value(np.int64)
+
+
 
 Low Level API
 -------------

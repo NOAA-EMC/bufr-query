@@ -19,6 +19,7 @@ void setupNetcdfEncoder(py::module& m);
 void setupDataContainer(py::module& m);
 void setupDataCache(py::module& m);
 void setupMpi(py::module& m);
+void setupHelpers(py::module& m);
 
 PYBIND11_MODULE(bufr_python, m)
 {
@@ -30,6 +31,7 @@ PYBIND11_MODULE(bufr_python, m)
   setupResultSet(m);
   setupParser(m);
   setupDataCache(m);
+  setupHelpers(m);
 
   auto mpi_m = m.def_submodule("mpi", "MPI bindings");
   setupMpi(mpi_m);
