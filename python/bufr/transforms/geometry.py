@@ -20,7 +20,13 @@ def compute_solar_angles(latitudes, longitudes, unix_times):
     :rtype: tuple(numpy.ndarray, numpy.ndarray)
     """
 
-    assert len(latitudes) == len(longitudes) == len(unix_times), "Input arrays must be the same length"
+    if not (latitudes.shape == longitudes.shape == unix_times.shape):
+        raise ValueError(
+            "Input arrays must all have the same shape. "
+            f"Got latitudes.shape={latitudes.shape}, "
+            f"longitudes.shape={longitudes.shape}, "
+            f"unix_times.shape={unix_times.shape}."
+        )
 
     times = pd.to_datetime(unix_times, unit='s', utc=True)
     solpos = get_solarposition(times, latitudes, longitudes)
