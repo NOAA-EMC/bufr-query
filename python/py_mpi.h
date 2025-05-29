@@ -16,6 +16,7 @@ namespace mpi {
     eckit::mpi::Comm& getComm() { return comm_; }
     int rank() { return comm_.rank(); }
     int size() { return comm_.size(); }
+    void barrier() { comm_.barrier(); }
 
   private:
     eckit::mpi::Comm& comm_;
