@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 #include "bufr/DataObject.h"
 #include "Transforms/TransformBuilder.h"
@@ -60,7 +60,7 @@ namespace bufr {
         {
             std::ostringstream errStr;
             errStr << "Reference time MUST be formatted like 2021-11-29T22:43:51Z";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         auto timeOffsets = map.at(getExportKey(ConfKeys::Timeoffset));
@@ -118,7 +118,7 @@ namespace bufr {
 
         if (isKeyMissing)
         {
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
     }
 

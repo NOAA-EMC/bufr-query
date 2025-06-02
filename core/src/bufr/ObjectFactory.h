@@ -7,7 +7,7 @@
 #include <string>
 #include <ostream>
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 
 namespace bufr {
@@ -64,7 +64,7 @@ namespace bufr {
             {
                 std::ostringstream errStr;
                 errStr << "Trying to use unregistered object named " << objectName << ".";
-                throw eckit::BadParameter(errStr.str());
+                throw BadParameter(errStr.str());
             }
 
             return makers_[objectName]->make(args...);
@@ -83,7 +83,7 @@ namespace bufr {
                 errStr << objectName;
                 errStr << ". Name must be unique.";
 
-                throw eckit::BadParameter(errStr.str());
+                throw BadParameter(errStr.str());
             }
 
             makers_.insert({objectName, std::make_shared<ObjectMaker<T>>()});

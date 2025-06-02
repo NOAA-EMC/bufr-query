@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 #include "VectorMath.h"
 #include "bufr/DataObject.h"
@@ -21,7 +21,7 @@ namespace bufr {
     // Make sure we have accumulated frames otherwise something is wrong.
     if (frames_.size() == 0)
     {
-      throw eckit::BadValue("ResultSet has no data.");
+      throw BadValue("ResultSet has no data.");
     }
 
     // Get the metadata for the target
@@ -294,7 +294,7 @@ namespace bufr {
         errStr << "The GroupBy and Target Fields do not share a common path.\n";
         errStr << "GroupByField path: " << groupByPath.str() << std::endl;
         errStr << "TargetField path: " << targetPath.str() << std::endl;
-        throw eckit::BadParameter(errStr.str());
+        throw BadParameter(errStr.str());
       }
     }
   }
@@ -428,7 +428,7 @@ namespace bufr {
         std::ostringstream errMsg;
         errMsg << "Conversions between numbers and strings are not currently supported. ";
         errMsg << "See the export definition for \"" << fieldName << "\".";
-        throw eckit::BadParameter(errMsg.str());
+        throw BadParameter(errMsg.str());
       }
     }
 
@@ -491,7 +491,7 @@ namespace bufr {
     } else {
       std::ostringstream errMsg;
       errMsg << "Unknown or unsupported type " << overrideType << ".";
-      throw eckit::BadParameter(errMsg.str());
+      throw BadParameter(errMsg.str());
     }
 
     return object;

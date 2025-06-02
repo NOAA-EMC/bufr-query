@@ -11,6 +11,7 @@
 #include <string>
 
 #include "bufr/DataContainer.h"
+#include "bufr/Exceptions.h"
 
 #pragma once
 
@@ -57,7 +58,7 @@ namespace bufr {
 
           if (cache.find(key) == cache.end())
           {
-            throw eckit::BadParameter("DataCache::get: No cache entry for key " + key);
+            throw BadParameter("DataCache::get: No cache entry for key " + key);
           }
 
           return cache[key].data;
@@ -98,7 +99,7 @@ namespace bufr {
 
           if (cache.find(key) == cache.end())
           {
-            throw eckit::BadParameter("DataCache::markFinished: No cache entry for key " + key);
+            throw BadParameter("DataCache::markFinished: No cache entry for key " + key);
           }
 
           if (std::find(cache[key].cachedCategories.begin(),

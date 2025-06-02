@@ -10,7 +10,7 @@
 
 #include "bufr/DataObject.h"
 #include "../../../DataObjectBuilder.h"
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 namespace
 {
@@ -68,7 +68,7 @@ namespace bufr {
 
         // Required parameters
         if (!conf_.has(ConfKeys::Sensor) || !conf_.has(ConfKeys::ScanStart) || !conf_.has(ConfKeys::ScanStep)) {
-            throw eckit::BadParameter("Missing required parameters: sensor, scanStart and scanStep are required. Check configuration.");
+            throw BadParameter("Missing required parameters: sensor, scanStart and scanStep are required. Check configuration.");
         }
 
         // Extract required parameters
@@ -141,7 +141,7 @@ namespace bufr {
 
         if (isKeyMissing)
         {
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
     }
 

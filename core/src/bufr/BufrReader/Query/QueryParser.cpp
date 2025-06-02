@@ -5,7 +5,7 @@
 #include <iostream>
 #include <algorithm>
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 namespace bufr {
     std::vector<Query> QueryParser::parse(const std::string& queryStr)
@@ -14,7 +14,7 @@ namespace bufr {
 
         if (tokens.empty())
         {
-            throw eckit::BadParameter("QueryParser::parse: Invalid query string: " + queryStr);
+            throw BadParameter("QueryParser::parse: Invalid query string: " + queryStr);
         }
 
         const auto& token = tokens[0];
@@ -22,7 +22,7 @@ namespace bufr {
         if (!std::dynamic_pointer_cast<QueryToken>(token) &&
             !std::dynamic_pointer_cast<MultiQueryToken>(token))
         {
-            throw eckit::BadParameter("QueryParser::parse: Invalid query string: " + queryStr);
+            throw BadParameter("QueryParser::parse: Invalid query string: " + queryStr);
         }
 
         std::vector<Query> queries;

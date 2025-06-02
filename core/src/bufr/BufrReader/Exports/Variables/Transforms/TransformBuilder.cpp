@@ -2,7 +2,7 @@
 
 #include "TransformBuilder.h"
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 #include "ScalingTransform.h"
 #include "OffsetTransform.h"
@@ -32,7 +32,7 @@ namespace bufr {
         }
         else
         {
-            throw eckit::BadParameter("Tried to create unknown export transform type. "
+            throw BadParameter("Tried to create unknown export transform type. "
                                       "Check your configuration.");
         }
 

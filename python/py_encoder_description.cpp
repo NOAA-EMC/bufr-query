@@ -14,6 +14,7 @@
 #include <string>
 
 #include "bufr/encoders/Description.h"
+#include "bufr/Exceptions.h"
 
 
 namespace py = pybind11;
@@ -173,12 +174,12 @@ void setupEncoderDescription(py::module& m)
            }
            else
            {
-             throw eckit::BadValue("Unsupported data type encountered.");
+             throw bufr::BadValue("Unsupported data type encountered.");
            }
          }
          else
          {
-           throw eckit::BadValue("Unsupported data type encountered.");
+           throw bufr::BadValue("Unsupported data type encountered.");
          }
        },
        py::arg("name"),

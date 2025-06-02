@@ -9,7 +9,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 #include "bufr_interface.h"
 
 namespace bufr {
@@ -123,7 +123,7 @@ namespace bufr {
         {
             std::ostringstream errStr;
             errStr << "Tried to call DataProvider::initAllTableData, but the file is already open!";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         // Run through each message subset in order to cache the table information.

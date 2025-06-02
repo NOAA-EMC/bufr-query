@@ -5,7 +5,7 @@
 #include <ostream>
 #include <iostream>
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 #include "Filters/BoundingFilter.h"
 #include "Splits/CategorySplit.h"
@@ -87,7 +87,7 @@ namespace bufr {
         }
         else
         {
-            throw eckit::BadParameter("Missing export::variables section in configuration.");
+            throw BadParameter("Missing export::variables section in configuration.");
         }
 
         //  Make sure the groupByVariable field is valid.
@@ -105,7 +105,7 @@ namespace bufr {
 
             if (!groupByFound)
             {
-                throw eckit::BadParameter(
+                throw BadParameter(
                     "Group by variable not found in export::variables section.");
             }
         }
@@ -138,7 +138,7 @@ namespace bufr {
         {
             std::stringstream errStr;
             errStr << "bufr::exports::variables must contain a dictionary of variables!";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         for (const auto& key : conf.keys())
@@ -177,7 +177,7 @@ namespace bufr {
         {
             std::stringstream errStr;
             errStr << "bufr::exports::splits must contain a dictionary of splits!";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         for (const auto& key : conf.keys())
@@ -204,7 +204,7 @@ namespace bufr {
         {
             std::stringstream errStr;
             errStr << "bufr::exports::filters must contain a list of filters!";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         for (const auto& subConf : subConfs)

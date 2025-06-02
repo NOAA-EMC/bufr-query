@@ -4,7 +4,7 @@
 
 #include <ostream>
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 namespace
 {
@@ -101,7 +101,7 @@ namespace bufr {
                     std::stringstream errStr;
                     errStr << "Can not turn " << variable_ << " into a category as it contains ";
                     errStr << "non-integer values.";
-                    throw eckit::BadParameter(errStr.str());
+                    throw BadParameter(errStr.str());
                 }
             }
         }
@@ -110,7 +110,7 @@ namespace bufr {
         {
             std::stringstream errStr;
             errStr << "No categories could be identified for " << variable_ << ".";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
     }
 }  // namespace bufr

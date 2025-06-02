@@ -37,7 +37,7 @@ namespace encoders {
         {
           std::ostringstream errStr;
           errStr << "Could not find dimension for path " << path.str();
-          throw eckit::BadParameter(errStr.str());
+          throw BadParameter(errStr.str());
         }
       }
 
@@ -46,7 +46,7 @@ namespace encoders {
       {
         if (varDimNameMap[var.name].size() != 1)
         {
-          throw eckit::BadParameter(var.name + " variable must be one dimensional.");
+          throw BadParameter(var.name + " variable must be one dimensional.");
         }
       }
     }
@@ -78,7 +78,7 @@ namespace encoders {
           {
             std::ostringstream errStr;
             errStr << "Could not find dimension for path " << dimPath.str();
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
           }
         }
       }
@@ -89,7 +89,7 @@ namespace encoders {
           std::ostringstream errStr;
           errStr << "Number of chunk sizes does not match the number of dimensions for variable ";
           errStr << var.name;
-          throw eckit::BadParameter(errStr.str());
+          throw BadParameter(errStr.str());
         }
 
         size_t dimIdx = 0;
@@ -223,7 +223,7 @@ namespace encoders {
           std::stringstream errStr;
           errStr << "Source field " << descDim.source << " in ";
           errStr << descDim.name << " is not in the correct path.";
-          throw eckit::BadParameter(errStr.str());
+          throw BadParameter(errStr.str());
         }
 
         labels.resize(dataObject->getDims().back());
@@ -236,7 +236,7 @@ namespace encoders {
         }
         else
         {
-          throw eckit::BadParameter("Dimension data type not supported.");
+          throw BadParameter("Dimension data type not supported.");
         }
       }
       // Create the labels for specified by the "labels" field
@@ -250,7 +250,7 @@ namespace encoders {
           std::ostringstream errStr;
           errStr << "The number of labels (" << pathSize << ") ";
           errStr << "does not match the length of dimension \"" << descDim.name << "\".";
-          throw eckit::BadParameter(errStr.str());
+          throw BadParameter(errStr.str());
         }
       }
       // Set labels to the default (all 0's)
@@ -356,7 +356,7 @@ namespace encoders {
     }
     else
     {
-      throw eckit::BadParameter("Pattern " + str + " in dimension label is invalid.");
+      throw BadParameter("Pattern " + str + " in dimension label is invalid.");
     }
 
     return indices;
@@ -392,7 +392,7 @@ namespace encoders {
     }
     errStr << "in the container.";
 
-    throw eckit::BadParameter(errStr.str());
+    throw BadParameter(errStr.str());
   }
 
   bool EncoderBase::isDimPath(const std::shared_ptr<DataContainer>& container,

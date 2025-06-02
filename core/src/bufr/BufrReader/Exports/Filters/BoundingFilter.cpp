@@ -5,7 +5,7 @@
 #include <ostream>
 
 #include "Eigen/Dense"
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 namespace
 {
@@ -39,14 +39,14 @@ namespace bufr {
         {
             std::stringstream errStr;
             errStr << "BoundingFilter must contain either upperBound, lowerBound or both.";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         if (upperBound_ && lowerBound_ && (*upperBound_ < *lowerBound_))
         {
             std::stringstream errStr;
             errStr << "BoundingFilter upperBound must be greater or equal to lowerBound";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
     }
 
@@ -57,7 +57,7 @@ namespace bufr {
         {
             std::ostringstream errStr;
             errStr << "Unknown variable " << variable_ << " found in bounding filter.";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         if (const auto& var = std::dynamic_pointer_cast<DataObject<float>>(dataMap.at(variable_)))
@@ -106,7 +106,7 @@ namespace bufr {
         {
             std::stringstream errStr;
             errStr << "BoundingFilter variable must be a array of numbers (found list of strings).";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
     }
 }  // namespace bufr

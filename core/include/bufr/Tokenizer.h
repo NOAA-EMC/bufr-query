@@ -12,7 +12,7 @@
 #include <sstream>
 #include <set>
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 
 namespace bufr {
@@ -34,7 +34,7 @@ namespace bufr {
 
     /// \brief Get the subtokens for this token.
     virtual std::vector<std::shared_ptr<QueryToken>> queryTokens() const {
-      throw eckit::BadParameter("Token::queryTokens: called on wrong token type" + debugStr());
+      throw BadParameter("Token::queryTokens: called on wrong token type" + debugStr());
     }
 
   protected:
@@ -155,7 +155,7 @@ namespace bufr {
           }
         }
       } else {
-        throw eckit::BadParameter("FilterToken::indices: invalid filter: " + str_);
+        throw BadParameter("FilterToken::indices: invalid filter: " + str_);
       }
 
       indices_ = std::vector<size_t>(indices.begin(), indices.end());
@@ -218,7 +218,7 @@ namespace bufr {
         else if (auto index = IndexToken::parse(start, end))
           subTokens_.push_back(index);
         else
-          throw eckit::BadValue("Failed to parse query " + std::string(start, end));
+          throw BadValue("Failed to parse query " + std::string(start, end));
       }
     }
 
@@ -287,7 +287,7 @@ namespace bufr {
           queries_.push_back(QueryToken::parse(matchStart, matchEnd));
         }
       } else {
-        throw eckit::BadParameter("Invalid multi query " + str_ + ".");
+        throw BadParameter("Invalid multi query " + str_ + ".");
       }
     }
 
@@ -301,7 +301,7 @@ namespace bufr {
         if (auto sep = std::dynamic_pointer_cast<QueryToken>(token)) {
           queryTokens.push_back(token);
         } else {
-          throw eckit::BadParameter("ParseError: Expected list of queries" + str_ + ".");
+          throw BadParameter("ParseError: Expected list of queries" + str_ + ".");
         }
       }
 

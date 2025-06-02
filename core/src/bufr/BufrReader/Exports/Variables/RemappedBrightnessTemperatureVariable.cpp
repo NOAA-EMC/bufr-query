@@ -14,7 +14,7 @@
 #include "DatetimeVariable.h"
 #include "Transforms/atms/atms_spatial_average_interface.h"
 #include "Transforms/spatial_averaging/spatial_average_interface.h"
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 
 namespace
@@ -119,19 +119,19 @@ namespace bufr {
             auto& rainflagObj = map.at(getExportKey(ConfKeys::RainFlag));
             if (!conf_.has(ConfKeys::SatelliteId))
             {
-              throw eckit::BadParameter("SatelliteId is missing for SSMIS.");
+              throw BadParameter("SatelliteId is missing for SSMIS.");
             }
             if (!conf_.has(ConfKeys::Longitude))
             {
-              throw eckit::BadParameter("Longitude is missing for SSMIS.");
+              throw BadParameter("Longitude is missing for SSMIS.");
             }            
             if (!conf_.has(ConfKeys::Latitude))
             {
-              throw eckit::BadParameter("Latitude is missing for SSMIS.");
+              throw BadParameter("Latitude is missing for SSMIS.");
             }            
             if (!conf_.has(ConfKeys::RainFlag))
             {
-              throw eckit::BadParameter("RainFlag is missing for SSMIS.");
+              throw BadParameter("RainFlag is missing for SSMIS.");
             }            
 
 	    // Get satid
@@ -160,7 +160,7 @@ namespace bufr {
        	else
        	{
 
-            throw eckit::BadParameter("Invalid sensor type: " + sensorOption +
+            throw BadParameter("Invalid sensor type: " + sensorOption +
                                       ". Must be either ATMS or SSMIS.");
         }
 
@@ -202,7 +202,7 @@ namespace bufr {
 
         if (isKeyMissing)
         {
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
     }
 

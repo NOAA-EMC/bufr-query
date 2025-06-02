@@ -9,7 +9,7 @@
 #include "eckit/runtime/Main.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/config/YAMLConfiguration.h"
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
 
 #include "bufr/BufrParser.h"
@@ -93,7 +93,7 @@ namespace mpi {
     }
     else
     {
-        eckit::BadParameter("No section named \"encoder\"");
+        BadParameter("No section named \"encoder\"");
     }
 
     logElapsedTime("Total Time", startTime);
@@ -113,7 +113,7 @@ namespace mpi {
 
     if (!yaml->has("encoder"))
     {
-      throw eckit::BadParameter("No section named \"encoder\"");
+      throw BadParameter("No section named \"encoder\"");
     }
 
     auto parser = BufrParser(obsFile, yaml->getSubConfiguration("bufr"), tablePath);
