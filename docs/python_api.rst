@@ -281,6 +281,30 @@ appropriate missing value using :func:`get_missing_value`.
    mv = bufr.get_missing_value(np.int64)
 
 
+Exceptions
+----------
+
+Custom exceptions from the underlying C++ library are exposed so that they can
+be caught explicitly in Python code.  The base class is ``bufr.Exception`` and
+the following derived exceptions are available:
+
+``bufr.BadParameter``
+    Raised when an invalid argument is supplied.
+``bufr.BadValue``
+    Raised when a value is outside the expected range.
+``bufr.MissingData``
+    Raised when required data are missing.
+
+.. code-block:: python
+
+   import bufr
+
+   try:
+       ...
+   except bufr.BadParameter:
+       handle_error()
+
+
 
 Low Level API
 -------------

@@ -6,6 +6,7 @@
 */
 
 #include <pybind11/pybind11.h>
+#include "bufr/Exceptions.h"
 
 namespace py = pybind11;
 
@@ -24,6 +25,12 @@ void setupHelpers(py::module& m);
 PYBIND11_MODULE(bufr_python, m)
 {
   m.doc() = "Python bindings for the bufr library";
+
+  // Register custom exception classes so python can catch them
+  auto exc = py::register_exception<bufr::Exception>(m, "Exception");
+  py::register_exception<bufr::BadParameter>(m, "BadParameter", exc.ptr());
+  py::register_exception<bufr::BadValue>(m, "BadValue", exc.ptr());
+  py::register_exception<bufr::MissingData>(m, "MissingData", exc.ptr());
 
   setupDataContainer(m);
   setupQuerySet(m);
