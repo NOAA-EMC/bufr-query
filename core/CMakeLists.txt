@@ -23,8 +23,9 @@ list(APPEND BUFR_PUBLIC
 	include/bufr/QueryParser.h
 	include/bufr/ResultSet.h
 	include/bufr/Tokenizer.h
-	include/bufr/SubsetTable.h
-	include/bufr/Data.h
+        include/bufr/SubsetTable.h
+        include/bufr/Data.h
+        include/bufr/Exceptions.h
 )
 
 list (APPEND ENCODERS_PUBLIC
@@ -34,12 +35,12 @@ list (APPEND ENCODERS_PUBLIC
 )
 
 list(APPEND BUFR_PRIVATE
-	src/bufr/ObjectFactory.h
-	src/bufr/DataContainer.cpp
-	src/bufr/DataObject.cpp
-	src/bufr/DataObjectBuilder.h
-	src/bufr/Log.h
-	src/bufr/BufrReader/BufrDescription.cpp
+        src/bufr/ObjectFactory.h
+        src/bufr/DataContainer.cpp
+        src/bufr/DataObject.cpp
+        src/bufr/DataObjectBuilder.h
+        src/bufr/Log.h
+        src/bufr/BufrReader/BufrDescription.cpp
 	src/bufr/BufrReader/BufrParser.cpp
 	src/bufr/BufrReader/Exports/Export.cpp
 	src/bufr/BufrReader/Exports/Filters/BoundingFilter.h
