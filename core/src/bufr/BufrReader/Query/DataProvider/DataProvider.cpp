@@ -74,7 +74,7 @@ namespace bufr {
             std::ostringstream errStr;
             errStr << "No BUFR messages were found! ";
             errStr << "Please make sure that " << filePath_ << " exists and is a valid BUFR file.";
-            throw BadValue(errStr.str());
+            throw MissingData(errStr.str());
         }
 
         if (!foundBufrSubset)
@@ -84,7 +84,7 @@ namespace bufr {
             errStr << "Please make sure you are querying for valid subsets that exist in ";
             errStr << filePath_ << ". ";
             errStr << "Otherwise there might be a problem with the BUFR file (no subsets).";
-            throw BadValue(errStr.str());
+            throw MissingData(errStr.str());
         }
     }
 
