@@ -14,7 +14,7 @@
 #include "bufr/ResultSet.h"
 #include "bufr/Export.h"
 #include "bufr/Split.h"
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 #include "../Log.h"
 
 namespace bufr {

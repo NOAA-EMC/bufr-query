@@ -11,7 +11,7 @@
 #include <netcdf>
 #include <ostream>
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 namespace nc = netCDF;
 

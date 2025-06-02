@@ -2,7 +2,7 @@
 
 #include "bufr/encoders/Description.h"
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/filesystem/PathName.h"
 
@@ -79,7 +79,7 @@ namespace encoders {
             {
                 std::stringstream errStr;
                 errStr << "netcdf dimensions must contain a list of dimensions!";
-                throw eckit::BadParameter(errStr.str());
+                throw BadParameter(errStr.str());
             }
 
             for (const auto &dimConf: dimConfs)
@@ -99,7 +99,7 @@ namespace encoders {
                         QueryParser::parse(dimConf.getString(ConfKeys::Dimension::Path));
                 } else
                 {
-                    throw eckit::BadParameter(
+                    throw BadParameter(
                         R"(dimensions section must have either "path" or "paths".)");
                 }
 
@@ -122,7 +122,7 @@ namespace encoders {
         {
             std::stringstream errStr;
             errStr << "netcdf variables must contain a list of variables!";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         for (const auto &varConf: varConfs)
@@ -175,7 +175,7 @@ namespace encoders {
                 int compressionLevel = varConf.getInt(ConfKeys::Variable::CompressionLevel);
                 if (compressionLevel < 0 || compressionLevel > 9)
                 {
-                    throw eckit::BadParameter("GZip compression level must be a number 0-9");
+                    throw BadParameter("GZip compression level must be a number 0-9");
                 }
 
                 variable.compressionLevel = varConf.getInt(ConfKeys::Variable::CompressionLevel);
@@ -226,7 +226,7 @@ namespace encoders {
                     addGlobal(global);
                 } else
                 {
-                    throw eckit::BadParameter("Unsupported global attribute type");
+                    throw BadParameter("Unsupported global attribute type");
                 }
             }
         }
@@ -238,7 +238,7 @@ namespace encoders {
         {
             std::stringstream errStr;
             errStr << "Dimension " << dim.name << " can not have both source and labels.";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         dimensions_.push_back(dim);
@@ -260,7 +260,7 @@ namespace encoders {
         {
             std::stringstream errStr;
             errStr << "Variable " << name << " not found.";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         variables_.erase(it);
@@ -298,7 +298,7 @@ namespace encoders {
         {
             std::stringstream errStr;
             errStr << "Dimension " << name << " not found.";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         dimensions_.erase(it);
@@ -315,7 +315,7 @@ namespace encoders {
         {
             std::stringstream errStr;
             errStr << "Global " << name << " not found.";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         globals_.erase(it);
@@ -349,7 +349,7 @@ namespace encoders {
         {
             if (range.size() != 2)
             {
-                throw eckit::BadParameter("Range is the wrong size.");
+                throw BadParameter("Range is the wrong size.");
             }
 
             auto newRange = std::make_shared<Range>();

@@ -11,6 +11,7 @@
 #include <regex>  // NOLINT
 
 #include "DataObjectFunctions.h"
+#include "bufr/Exceptions.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -111,7 +112,7 @@ namespace bufr {
     }
     else
     {
-      throw eckit::BadParameter("ERROR: Unsupported data type.");
+      throw bufr::BadParameter("ERROR: Unsupported data type.");
     }
 
     return dataObj;

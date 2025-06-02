@@ -8,7 +8,7 @@
 #include <iostream>
 #include <unordered_map>
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 
 namespace bufr {
@@ -22,7 +22,7 @@ namespace bufr {
         {
             std::ostringstream errStr;
             errStr << "Tried to call DataProvider::run, but the file is not open!";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         static int SubsetLen = 9;
@@ -74,7 +74,7 @@ namespace bufr {
             std::ostringstream errStr;
             errStr << "No BUFR messages were found! ";
             errStr << "Please make sure that " << filePath_ << " exists and is a valid BUFR file.";
-            throw eckit::BadValue(errStr.str());
+            throw BadValue(errStr.str());
         }
 
         if (!foundBufrSubset)
@@ -84,7 +84,7 @@ namespace bufr {
             errStr << "Please make sure you are querying for valid subsets that exist in ";
             errStr << filePath_ << ". ";
             errStr << "Otherwise there might be a problem with the BUFR file (no subsets).";
-            throw eckit::BadValue(errStr.str());
+            throw BadValue(errStr.str());
         }
     }
 
@@ -94,7 +94,7 @@ namespace bufr {
       {
         std::ostringstream errStr;
         errStr << "Tried to call DataProvider::numMessages, but the file is not open!";
-        throw eckit::BadParameter(errStr.str());
+        throw BadParameter(errStr.str());
       }
 
       static int SubsetLen = 9;

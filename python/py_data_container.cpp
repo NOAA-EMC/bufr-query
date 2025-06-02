@@ -17,6 +17,7 @@
 #include "bufr/DataContainer.h"
 #include "bufr/Tokenizer.h"
 #include "bufr/QueryParser.h"
+#include "bufr/Exceptions.h"
 
 #include "DataObjectFunctions.h"
 #include "py_mpi.h"
@@ -49,7 +50,7 @@ void setupDataContainer(py::module& m)
             std::ostringstream errorStr;
             errorStr << "ERROR: Invalid category " << self.makeSubCategoryStr(categoryId);
             errorStr << " for field " << fieldName << "." << std::endl;
-            throw eckit::BadParameter(errorStr.str());
+            throw bufr::BadParameter(errorStr.str());
           }
 
           if (self.hasKey(fieldName, categoryId))
@@ -57,7 +58,7 @@ void setupDataContainer(py::module& m)
             std::ostringstream errorStr;
             errorStr << "ERROR: Field called " << fieldName << " already exists ";
             errorStr << "for subcategory " << self.makeSubCategoryStr(categoryId) << std::endl;
-            throw eckit::BadParameter(errorStr.str());
+            throw bufr::BadParameter(errorStr.str());
           }
 
           auto paths = std::vector<Query>(dimPaths.size());
@@ -104,21 +105,21 @@ void setupDataContainer(py::module& m)
           // Guard statements
           if (!self.hasKey(fieldName, categoryId))
           {
-            throw eckit::BadParameter("ERROR: Field " + fieldName +  " does not exist.");
+            throw bufr::BadParameter("ERROR: Field " + fieldName +  " does not exist.");
           }
 
           const auto& data = self.get(fieldName, categoryId);
 
           if (pyData.ndim() != data->getDims().size())
           {
-            throw eckit::BadParameter("ERROR: Dimension mismatch.");
+            throw bufr::BadParameter("ERROR: Dimension mismatch.");
           }
 
           for (size_t idx = 0; idx < pyData.ndim(); idx++)
           {
             if (pyData.shape(idx) != data->getDims()[idx])
             {
-              throw eckit::BadParameter("ERROR: Dimension mismatch.");
+              throw bufr::BadParameter("ERROR: Dimension mismatch.");
             }
           }
 

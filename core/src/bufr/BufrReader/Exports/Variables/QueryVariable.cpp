@@ -5,7 +5,7 @@
 #include <ostream>
 
 #include "Transforms/TransformBuilder.h"
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 namespace
 {
@@ -33,7 +33,7 @@ namespace bufr {
             std::stringstream errStr;
             errStr << "Export named " << getExportName();
             errStr << " could not be found during export.";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         auto dataObject = map.at(getExportName());

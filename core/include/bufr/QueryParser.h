@@ -8,6 +8,7 @@
 #include <unordered_set>
 
 #include "Tokenizer.h"
+#include "bufr/Exceptions.h"
 
 namespace bufr {
 
@@ -49,7 +50,7 @@ namespace bufr {
             }
             else
             {
-                throw eckit::BadParameter("QueryParser::parseQueryToken: Invalid subset in query "
+                throw BadParameter("QueryParser::parseQueryToken: Invalid subset in query "
                                           "string: " + component->name);
             }
 
@@ -71,7 +72,7 @@ namespace bufr {
         {
             if (tokens.size() < 1 && tokens.size() > 2)
             {
-                throw eckit::BadParameter("QueryParser::parseQueryToken: Invalid path component "
+                throw BadParameter("QueryParser::parseQueryToken: Invalid path component "
                                           "query string: " + tokens[0]->str());
             }
 
@@ -83,7 +84,7 @@ namespace bufr {
             }
             else
             {
-                throw eckit::BadParameter("QueryParser::parseQueryToken: Invalid path component "
+                throw BadParameter("QueryParser::parseQueryToken: Invalid path component "
                                           "query string: " + tokens[0]->str());
             }
 
@@ -134,7 +135,7 @@ namespace bufr {
             }
             else
             {
-                throw eckit::BadParameter(
+                throw BadParameter(
                     "QueryParser::parseQueryToken: Invalid query string: " + queryStr_);
             }
 
@@ -165,7 +166,7 @@ namespace bufr {
                 }
                 else
                 {
-                    throw eckit::BadParameter(
+                    throw BadParameter(
                         "QueryParser::parseQueryToken: Invalid query string: " + queryStr_);
                 }
             }

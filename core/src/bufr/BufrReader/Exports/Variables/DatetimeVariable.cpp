@@ -12,7 +12,7 @@
 
 #include "../../../Log.h"
 #include "../../../DataObjectBuilder.h"
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 
 #include "bufr/DataObject.h"
@@ -80,7 +80,7 @@ namespace bufr {
         || (!secondQuery_.empty() && !yearVar->hasSamePath(map.at(getExportKey(ConfKeys::Second))))) {
       std::ostringstream errStr;
       errStr << "Datetime variables are not all from the same path.";
-      throw eckit::BadParameter(errStr.str());
+      throw BadParameter(errStr.str());
     }
 
     for (unsigned int idx = 0; idx < map.at(getExportKey(ConfKeys::Year))->size(); idx++) {
@@ -162,7 +162,7 @@ namespace bufr {
     errStr << " could not be found during export of datetime object.";
 
     if (isKeyMissing) {
-      throw eckit::BadParameter(errStr.str());
+      throw BadParameter(errStr.str());
     }
   }
 

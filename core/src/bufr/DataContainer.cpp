@@ -5,7 +5,7 @@
 #include <string>
 #include <ostream>
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 #include "Log.h"
 
@@ -23,7 +23,7 @@ namespace bufr {
       std::ostringstream errorStr;
       errorStr << "ERROR: Field called " << fieldName << " already exists ";
       errorStr << "for subcategory " << makeSubCategoryStr(categoryId) << std::endl;
-      throw eckit::BadParameter(errorStr.str());
+      throw BadParameter(errorStr.str());
     }
 
     dataSets_.at(categoryId).insert({dropPath(fieldName), data});
@@ -38,7 +38,7 @@ namespace bufr {
         errStr << " or category " << makeSubCategoryStr(categoryId);
         errStr << " does not exist. Cannot set non-existent field.";
 
-        throw eckit::BadParameter(errStr.str());
+        throw BadParameter(errStr.str());
     }
 
     dataSets_.at(categoryId).at(dropPath(fieldName)) = data;
@@ -52,7 +52,7 @@ namespace bufr {
       errStr << " or category " << makeSubCategoryStr(categoryId);
       errStr << " does not exist.";
 
-      throw eckit::BadParameter(errStr.str());
+      throw BadParameter(errStr.str());
     }
 
     return dataSets_.at(categoryId).at(dropPath(fieldName));
@@ -79,7 +79,7 @@ namespace bufr {
       errStr << " or category " << makeSubCategoryStr(categoryId);
       errStr << " does not exist.";
 
-      throw eckit::BadParameter(errStr.str());
+      throw BadParameter(errStr.str());
     }
 
     auto& dataObject             = dataSets_.at(categoryId).at(dropPath(fieldName));
@@ -144,7 +144,7 @@ namespace bufr {
       errStr << "ERROR: Category called " << makeSubCategoryStr(categoryId);
       errStr << " does not exist.";
 
-      throw eckit::BadParameter(errStr.str());
+      throw BadParameter(errStr.str());
     }
 
     return subCategory;
@@ -156,7 +156,7 @@ namespace bufr {
       errStr << "ERROR: Category called " << makeSubCategoryStr(categoryId);
       errStr << " does not exist.";
 
-      throw eckit::BadParameter(errStr.str());
+      throw BadParameter(errStr.str());
     }
 
     return dataSets_.at(categoryId).begin()->second->getDims().at(0);
@@ -263,7 +263,7 @@ namespace bufr {
             errStr << "Error: encountered mismatch when combining DataContainers.";
             errStr << " Field \"" << field << "\" category \"" << makeSubCategoryStr(subCat)
                    << "\" does not exist in this DataContainer.";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
           }
 
           get(field, subCat)->append(other.get(field, subCat));
@@ -326,7 +326,7 @@ namespace bufr {
       std::ostringstream errStr;
       errStr << "ERROR: The category " << makeSubCategoryStr(categoryId);
       errStr << " does not exist. Cannot apply the mask.";
-      throw eckit::BadParameter(errStr.str());
+      throw BadParameter(errStr.str());
     }
 
     for (const auto &field: getFieldNames())

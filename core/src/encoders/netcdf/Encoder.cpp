@@ -11,7 +11,7 @@
 
 #include <netcdf>
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 #include "../../bufr/Log.h"
 #include "bufr/DataObject.h"
@@ -192,7 +192,7 @@ namespace netcdf {
         }
         else
         {
-            throw eckit::BadParameter("Unsupported type for NetCDF.");
+            throw BadParameter("Unsupported type for NetCDF.");
         }
 
         return var;
@@ -383,7 +383,7 @@ namespace netcdf {
                 std::ostringstream errStr;
                 errStr << "Prototype path string does not contain a substitution for " << key <<".";
                 errStr << " example: " << makePathPrototype(subMap);
-                throw eckit::BadParameter(errStr.str());
+                throw BadParameter(errStr.str());
             }
         }
 
@@ -399,7 +399,7 @@ namespace netcdf {
             {
                 std::ostringstream errStr;
                 errStr << "Can not find " << subs.first << ". No category with that name.";
-                throw eckit::BadParameter(errStr.str());
+                throw BadParameter(errStr.str());
             }
         }
 
@@ -446,7 +446,7 @@ namespace netcdf {
                 }
                 else
                 {
-                    throw eckit::BadParameter("Unmatched { found in output filename.");
+                    throw BadParameter("Unmatched { found in output filename.");
                 }
             }
         }
@@ -505,7 +505,7 @@ namespace netcdf {
         }
         else
         {
-            throw eckit::BadParameter("Variable name must contain a group name");
+            throw BadParameter("Variable name must contain a group name");
         }
 
         return std::make_pair(groupName, varName);

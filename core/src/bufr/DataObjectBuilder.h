@@ -9,6 +9,7 @@
 #include "bufr/DataProvider.h"
 #include "bufr/DataObject.h"
 #include "bufr/SubsetTable.h"
+#include "bufr/Exceptions.h"
 
 
 namespace bufr {
@@ -38,7 +39,7 @@ namespace bufr {
           std::ostringstream errMsg;
           errMsg << "Conversions between numbers and strings are not currently supported. ";
           errMsg << "See the export definition for \"" << fieldName << "\".";
-          throw eckit::BadParameter(errMsg.str());
+          throw BadParameter(errMsg.str());
         }
       }
 
@@ -124,7 +125,7 @@ namespace bufr {
       } else {
         std::ostringstream errMsg;
         errMsg << "Unknown or unsupported type " << overrideType << ".";
-        throw eckit::BadParameter(errMsg.str());
+        throw BadParameter(errMsg.str());
       }
 
       return object;

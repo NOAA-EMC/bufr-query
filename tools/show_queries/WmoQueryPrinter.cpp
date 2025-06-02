@@ -9,7 +9,7 @@
 #include <unordered_set>
 #include <sstream>
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 #include "bufr/WmoDataProvider.h"
 #include "bufr/SubsetTable.h"
@@ -23,7 +23,7 @@ namespace bufr {
     if (dataProvider_->isFileOpen()) {
       std::ostringstream errStr;
       errStr << "Tried to call QueryPrinter::getTable, but the file is already open!";
-      throw eckit::BadParameter(errStr.str());
+      throw BadParameter(errStr.str());
     }
 
     dataProvider_->open();
@@ -60,7 +60,7 @@ namespace bufr {
     if (dataProvider_->isFileOpen()) {
       std::ostringstream errStr;
       errStr << "Tried to call QueryPrinter::getSubsetVariants but the file is already open!";
-      throw eckit::BadParameter(errStr.str());
+      throw BadParameter(errStr.str());
     }
 
     dataProvider_->open();

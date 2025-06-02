@@ -6,7 +6,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 #include "bufr/NcepDataProvider.h"
 
 #include "QueryPrinter.h"
@@ -25,7 +25,7 @@ namespace bufr {
         {
             std::ostringstream errStr;
             errStr << "Tried to call QueryPrinter::getTable, but the file is already open!";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         bool finished = false;
@@ -61,7 +61,7 @@ namespace bufr {
         {
             std::ostringstream errStr;
             errStr << "Tried to call QueryPrinter::getSubsetVariants but the file is already open!";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         dataProvider_->open();

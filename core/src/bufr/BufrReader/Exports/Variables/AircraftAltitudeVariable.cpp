@@ -10,7 +10,7 @@
 
 #include "bufr/DataObject.h"
 #include "../../../DataObjectBuilder.h"
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 namespace
 {
@@ -73,7 +73,7 @@ namespace bufr {
             {
                 std::ostringstream errStr;
                 errStr << "Inconsistent dimensions found in source data.";
-                throw eckit::BadParameter(errStr.str());
+                throw BadParameter(errStr.str());
             }
         }
 
@@ -162,7 +162,7 @@ namespace bufr {
 
         if (isKeyMissing)
         {
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
     }
 

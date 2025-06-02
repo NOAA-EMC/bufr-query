@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 #include "bufr/DataObject.h"
 #include "../../../DataObjectBuilder.h"
 #include "../../../Log.h"
@@ -50,7 +50,7 @@ namespace bufr {
         }
         else
         {
-            throw eckit::BadParameter("Missing required parameters: sensor"
+            throw BadParameter("Missing required parameters: sensor"
                                       "Check your configuration.");
         }
 
@@ -115,7 +115,7 @@ namespace bufr {
 
         if (isKeyMissing)
         {
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
     }
 

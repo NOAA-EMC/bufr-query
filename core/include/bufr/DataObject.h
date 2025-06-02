@@ -18,6 +18,7 @@
 
 #include "QueryParser.h"
 #include "Data.h"
+#include "bufr/Exceptions.h"
 
 
 namespace bufr {
@@ -89,7 +90,7 @@ namespace bufr {
             std::ostringstream str;
             str << "Cannot write data of type " << typeid(T).name() << " with writer of type ";
             str << typeid(writer).name();
-            throw eckit::BadParameter(str.str());
+            throw BadParameter(str.str());
         }
     }
 
@@ -375,7 +376,7 @@ namespace bufr {
           std::ostringstream str;
           str << "Multiplying integer field \"" << fieldName_ << "\" with a non-integer is ";
           str << "illegal. Please convert it to a float or double.";
-          throw eckit::BadParameter(str.str());
+          throw BadParameter(str.str());
         }
       }
 
@@ -418,7 +419,7 @@ namespace bufr {
         {
           std::ostringstream str;
           str << "Can not make numerical field from string data.";
-          throw eckit::BadParameter(str.str());
+          throw BadParameter(str.str());
         }
         else
         {
@@ -456,7 +457,7 @@ namespace bufr {
           std::ostringstream str;
           str << "Can not write data of type " << typeid(T).name() << " with writer of type ";
           str << typeid(writer).name();
-          throw eckit::BadParameter(str.str());
+          throw BadParameter(str.str());
         }
       }
 
@@ -705,7 +706,7 @@ namespace bufr {
         {
           std::ostringstream str;
           str << "Supplied mask does not match the number of rows in the data object.";
-          throw eckit::BadParameter(str.str());
+          throw BadParameter(str.str());
         }
 
         const int newNumRows = std::accumulate(mask.begin(), mask.end(), 0, std::plus());
@@ -742,7 +743,7 @@ namespace bufr {
         {
           std::ostringstream str;
           str << "Cannot append data of type " << typeid(data).name();
-          throw eckit::BadParameter(str.str());
+          throw BadParameter(str.str());
         }
 
         dims_[0] += other->dims_[0];
@@ -752,7 +753,7 @@ namespace bufr {
           {
             std::ostringstream str;
             str << "Cannot append data with different dimensions.";
-            throw eckit::BadParameter(str.str());
+            throw BadParameter(str.str());
           }
         }
         data_.insert(data_.end(), other->data_.begin(), other->data_.end());
@@ -786,7 +787,7 @@ namespace bufr {
             std::stringstream errStr;
             errStr << "Dimension " << name << " has an invalid source field. ";
             errStr << "The values do not repeat in each sequence.";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
           }
         }
 
@@ -882,14 +883,14 @@ namespace bufr {
       /// \return Integer data.
       int getAsInt(const Location& loc) const final
       {
-        throw eckit::BadParameter("Cannot convert string to int");
+        throw BadParameter("Cannot convert string to int");
       };
 
       /// \brief Get the data at the location as an float.
       /// \return Float data.
       float getAsFloat(const Location& loc) const final
       {
-        throw eckit::BadParameter("Cannot convert string to float");
+        throw BadParameter("Cannot convert string to float");
       };
 
       /// \brief Get the data at the Location as an string.
@@ -910,14 +911,14 @@ namespace bufr {
       /// \return Int data.
       int getAsInt(size_t idx) const final
       {
-        throw eckit::BadParameter("Cannot convert string to int");
+        throw BadParameter("Cannot convert string to int");
       }
 
       /// \brief Get the data at the index as an float.
       /// \return Float data.
       float getAsFloat(size_t idx) const
       {
-        throw eckit::BadParameter("Cannot convert string to float");
+        throw BadParameter("Cannot convert string to float");
       }
 
       /// \brief Get the data at the index as an string.
@@ -946,21 +947,21 @@ namespace bufr {
       /// \param val Scalar to multiply to the data.
       void multiplyBy(double val) final
       {
-        throw eckit::BadParameter("Trying to multiply a string by a number");
+        throw BadParameter("Trying to multiply a string by a number");
       }
 
       /// \brief Wrap the stored values into a range of values
       /// \param range The range to wrap the data into.
       void wrap(std::vector<float> range) final
       {
-        throw eckit::BadParameter("Can't wrap a string field.");
+        throw BadParameter("Can't wrap a string field.");
       }
 
       /// \brief Add a scalar to the stored values in this data object (string version).
       /// \param val Scalar to add to the data.
       void offsetBy(double val) final
       {
-        throw eckit::BadParameter("Trying to offset a string by a number");
+        throw BadParameter("Trying to offset a string by a number");
       }
 
       /// \brief Set the data associated with this data object (string DataObject).
@@ -1018,7 +1019,7 @@ namespace bufr {
           std::ostringstream str;
           str << "Can not write data of type " << typeid(std::string).name() << " with writer of type ";
           str << typeid(writer).name();
-          throw eckit::BadParameter(str.str());
+          throw BadParameter(str.str());
         }
       }
 
@@ -1301,7 +1302,7 @@ namespace bufr {
         {
           std::ostringstream str;
           str << "Supplied mask does not match the number of rows in the data object.";
-          throw eckit::BadParameter(str.str());
+          throw BadParameter(str.str());
         }
 
         const int newNumRows = std::accumulate(mask.begin(), mask.end(), 0);
@@ -1331,7 +1332,7 @@ namespace bufr {
         {
           std::ostringstream str;
           str << "Cannot append data of type " << typeid(data).name();
-          throw eckit::BadParameter(str.str());
+          throw BadParameter(str.str());
         }
 
         dims_[0] += other->dims_[0];
@@ -1341,7 +1342,7 @@ namespace bufr {
           {
             std::ostringstream str;
             str << "Cannot append data with different dimensions.";
-            throw eckit::BadParameter(str.str());
+            throw BadParameter(str.str());
           }
         }
         data_.insert(data_.end(), other->data_.begin(), other->data_.end());
@@ -1370,7 +1371,7 @@ namespace bufr {
             std::stringstream errStr;
             errStr << "Dimension " << name << " has an invalid source field. ";
             errStr << "The values do not repeat in each sequence.";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
           }
         }
 

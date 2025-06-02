@@ -13,7 +13,7 @@
 
 #include "bufr/DataObject.h"
 #include "../../../DataObjectBuilder.h"
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 namespace
 {
@@ -140,7 +140,7 @@ namespace bufr {
 
         if (isKeyMissing)
         {
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
     }
 

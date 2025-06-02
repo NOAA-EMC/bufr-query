@@ -12,7 +12,7 @@
 #include <string>
 #include <sstream>
 
-#include "eckit/exception/Exceptions.h"
+#include "bufr/Exceptions.h"
 
 #include "bufr/DataObject.h"
 #include "../../../DataObjectBuilder.h"
@@ -61,7 +61,7 @@ namespace bufr {
         {
             std::ostringstream errStr;
             errStr << "Wigosid variables are not all from the same path.";
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
 
         for (unsigned int idx = 0; idx < map.at(getExportKey(ConfKeys::Wgosids))->size(); idx++)
@@ -121,7 +121,7 @@ namespace bufr {
 
         if (isKeyMissing)
         {
-            throw eckit::BadParameter(errStr.str());
+            throw BadParameter(errStr.str());
         }
     }
 
