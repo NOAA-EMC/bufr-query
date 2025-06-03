@@ -34,7 +34,7 @@ namespace bufr {
       {
         object = objectByType(overrideType);
 
-        if ((overrideType == "string" && !info.isString())
+        if ((overrideType == "string" && (!info.isString() && !info.isUnknown()))
             || (overrideType != "string" && info.isString())) {
           std::ostringstream errMsg;
           errMsg << "Conversions between numbers and strings are not currently supported. ";
@@ -69,6 +69,24 @@ namespace bufr {
       object->setQuery(query);
 
       return object;
+    }
+
+    static std::string typeString(const TypeInfo& info)
+    {
+      std::string typeString;
+      if (info.isString()) {
+        typeString = "string";
+      } else if (info.isInteger()) {
+        if (info.isSigned()) {
+          typeString = info.is64Bit() ? "int64" : "int32";
+        } else {
+          typeString = info.is64Bit() ? "uint64" : "uint32";
+        }
+      } else {
+        typeString = info.is64Bit() ? "double" : "float";
+      }
+
+      return typeString;
     }
 
   private:
