@@ -117,7 +117,25 @@ namespace mpi {
     }
 
     auto parser = BufrParser(obsFile, yaml->getSubConfiguration("bufr"), tablePath);
-    auto data = parser.parse(comm);
+
+    std::shared_ptr<DataContainer> data;
+
+    int dataMissing = 0;
+    try
+    {
+      data = parser.parse(comm);
+    }
+    catch (const MissingData& e)
+    {
+      dataMissing = 1;
+    }
+
+    comm.allReduceInPlace(dataMissing, eckit::mpi::Operation::SUM);
+
+    if (dataMissing == comm.size() && comm.rank() == 0)
+    {
+      throw MissingData("No data found in file " + obsFile);
+    }
 
     if (separateFiles)
     {
