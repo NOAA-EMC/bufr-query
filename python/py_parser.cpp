@@ -46,5 +46,7 @@ void setupParser(py::module& m)
           return self.parse(comm.getComm());
         },
         py::arg("comm"),
-        "Get Parser to parse a config file and get the data container in parallel.");
+        "Get Parser to parse a config file and get the data container in parallel.")
+    .def("create_empty_container", &BufrParser::createEmptyContainer,
+         "Create an empty DataContainer using the parser description.");
 }

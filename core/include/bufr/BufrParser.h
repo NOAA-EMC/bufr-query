@@ -49,6 +49,9 @@ namespace bufr {
         /// \brief Start over from beginning of the BUFR file
         void reset();
 
+        /// \brief Create an empty data container matching the description
+        std::shared_ptr<DataContainer> createEmptyContainer();
+
      private:
         typedef std::map<std::vector<std::string>, BufrDataMap> CatDataMap;
 

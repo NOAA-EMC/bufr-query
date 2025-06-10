@@ -10,6 +10,9 @@
 
 #include "bufr/DataContainer.h"
 #include "bufr/DataObject.h"
+#include "../DataObjectBuilder.h"
+#include "bufr/QueryParser.h"
+#include "bufr/DataProvider.h"
 #include "bufr/QuerySet.h"
 #include "bufr/ResultSet.h"
 #include "bufr/Export.h"
@@ -227,6 +230,51 @@ namespace bufr {
     void BufrParser::reset()
     {
         file_.rewind();
+    }
+
+    std::shared_ptr<DataContainer> BufrParser::createEmptyContainer()
+    {
+        auto exportDescription = description_.getExport();
+
+        auto splits = exportDescription.getSplits();
+        auto vars = exportDescription.getVariables();
+
+        // Determine categories from splits (if possible)
+        CategoryMap catMap;
+        BufrDataMap emptyMap;
+        for (const auto &split : splits)
+        {
+            std::ostringstream catName;
+            catName << "splits/" << split->getName();
+            std::vector<std::string> cats;
+            try
+            {
+                cats = split->subCategories(emptyMap);
+            }
+            catch (...)
+            {
+                cats = {};
+            }
+
+            catMap.insert({catName.str(), cats});
+        }
+
+        auto container = std::make_shared<DataContainer>(catMap);
+
+        // Create empty objects for all variables in all categories
+        Data emptyData;
+        std::vector<int> dims = {0};
+        std::vector<Query> paths;
+        for (const auto &subCat : container->allSubCategories())
+        {
+            for (const auto &var : vars)
+            {
+                auto obj = DataObjectBuilder::make(var->getExportName(), "", TypeInfo(), "", emptyData, dims, paths);
+                container->add(var->getExportName(), obj, subCat);
+            }
+        }
+
+        return container;
     }
 
     void BufrParser::printMap(const BufrParser::CatDataMap &map)
