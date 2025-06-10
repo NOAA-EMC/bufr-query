@@ -199,7 +199,7 @@ class ObsBuilder:
         self.log.comm = comm
 
         container = self.make_obs(comm, input)
-        container.gather(comm)
+        container.all_gather(comm)
 
         # Encode the data
         if not category:
