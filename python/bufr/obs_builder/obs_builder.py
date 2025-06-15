@@ -114,6 +114,21 @@ class ObsBuilder:
 
         self.log.info(f'Return the encoded data')
 
+    def _encode_by_rank(self, container, subcategories, output, type, append, rank, size):
+        """
+        Helper function: Encode subcategories in parallel using MPI ranks.
+        """
+        encoder_class = FILE_ENCODER_DICT[type]
+
+        for i, subcat in enumerate(subcategories):
+            if i % size != rank:
+                continue  # Skip subcategories not assigned to this rank
+
+            self.log.info_all(f"Rank {rank} encoding subcategory: {subcat}")
+            sub_container = container.get_sub_container(subcat)
+            encoder = encoder_class(self.description)
+            encoder.encode(sub_container, output, append)
+
     def create_obs_group(self, input, env, category:list=None, cache_categories:list=None):
         """
         Create an observation file from the input data. Override this method if you want to
