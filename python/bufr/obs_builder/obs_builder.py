@@ -92,14 +92,43 @@ class ObsBuilder:
         comm = bufr.mpi.Comm("world")
         self.log.comm = comm
 
+        # Create observation container
         container = self.make_obs(comm, input)
-        container.gather(comm)
 
-        # Encode the data
-        if comm.rank() == 0:
-            FILE_ENCODER_DICT[type](self.description).encode(container, output, append)
+        # Gather and encode data 
+        rank = comm.rank()
+        size = comm.size()
+        subcategories = container.all_sub_categories()
+
+        # Container has no category (subcategories=[[]]; This is list with one empty list inside)
+        # Empty list is falsy  
+        if not subcategories[0] or all(len(sub) == 0 for sub in subcategories): 
+            self.log.info("Container with no cagegories defined - encoding the container at rank 0.")
+            container.gather(comm)
+            if rank == 0:
+                FILE_ENCODER_DICT[type](self.description).encode(container, output, append)
+        # Container has categories 
+        else:
+            self.log.info("Container with categories defined - encoding subcategories in parallel.")
+            container.all_gather(comm)
+            self._encode_by_rank(container, subcategories, output, type, append, rank, size)
 
         self.log.info(f'Return the encoded data')
+
+    def _encode_by_rank(self, container, subcategories, output, type, append, rank, size):
+        """
+        Helper function: Encode subcategories in parallel using MPI ranks.
+        """
+        encoder_class = FILE_ENCODER_DICT[type]
+
+        for i, subcat in enumerate(subcategories):
+            if i % size != rank:
+                continue  # Skip subcategories not assigned to this rank
+
+            self.log.info_all(f"Rank {rank} encoding subcategory: {subcat}")
+            sub_container = container.get_sub_container(subcat)
+            encoder = encoder_class(self.description)
+            encoder.encode(sub_container, output, append)
 
     def create_obs_group(self, input, env, category:str=None, cache_categories:list=None):
         """

@@ -21,12 +21,12 @@ def add_main_functions(cls, execute_main=True):
         from bufr import mpi
         from bufr.obs_builder import Logger
 
-        logger = Logger(os.path.basename(__file__))
-
         start_time = time.time()
 
         mpi.App(sys.argv)
         comm = mpi.Comm("world")
+
+        logger = Logger(os.path.basename(__file__), comm)
 
         create_file_sig = inspect.signature(create_obs_file)
 
@@ -49,7 +49,7 @@ def add_main_functions(cls, execute_main=True):
 
         end_time = time.time()
         running_time = end_time - start_time
-        logger.info(f'Total running time: {running_time} seconds')
+        logger.info_all(f'Total running time (default_main): {running_time} seconds')
 
     def _create_module_func(cls, method_name):
         """Create a module-level function that calls cls.method_name with the same signature."""
