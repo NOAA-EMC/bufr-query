@@ -88,7 +88,6 @@ class ObsBuilder:
         :param type: Data type to encode into (optional)
         :param append: Add to the file if it exists or create a new file. (optional)
         """
-
         comm = bufr.mpi.Comm("world")
         self.log.comm = comm
 
@@ -102,7 +101,7 @@ class ObsBuilder:
 
         # Container has no category (subcategories=[[]]; This is list with one empty list inside)
         # Empty list is falsy  
-        if not subcategories[0] or all(len(sub) == 0 for sub in subcategories): 
+        if not subcategories[0] or all(len(sub) == 0 for sub in subcategories):
             self.log.info("Container with no cagegories defined - encoding the container at rank 0.")
             container.gather(comm)
             if rank == 0:
@@ -115,22 +114,7 @@ class ObsBuilder:
 
         self.log.info(f'Return the encoded data')
 
-    def _encode_by_rank(self, container, subcategories, output, type, append, rank, size):
-        """
-        Helper function: Encode subcategories in parallel using MPI ranks.
-        """
-        encoder_class = FILE_ENCODER_DICT[type]
-
-        for i, subcat in enumerate(subcategories):
-            if i % size != rank:
-                continue  # Skip subcategories not assigned to this rank
-
-            self.log.info_all(f"Rank {rank} encoding subcategory: {subcat}")
-            sub_container = container.get_sub_container(subcat)
-            encoder = encoder_class(self.description)
-            encoder.encode(sub_container, output, append)
-
-    def create_obs_group(self, input, env, category:str=None, cache_categories:list=None):
+    def create_obs_group(self, input, env, category:list=None, cache_categories:list=None):
         """
         Create an observation file from the input data. Override this method if you want to
         customize the file creation process or if you need a different function signature (ex: you
@@ -138,45 +122,38 @@ class ObsBuilder:
 
         :param input: Input path to the BUFR file.
         :param env: The IODA environment. Dictionary with keys: start_time, end_time, comm_name
-        :param category: The category to encode (comma-separated subcategories). This string is
-                         parsed into a tuple of subcategories. (optional)
-        :param cache_categories: The list of categories to cache. Each category is a string that
-                                 is parsed into a tuple of subcategories. (optional)
+        :param category: The category to encode. (optional)
+        :param cache_categories: The list of categories to cache. (optional)
         :return: IODA ObsGroup object.
         """
 
         # Guard Block
         if (cache_categories is not None) and (category is None):
-            raise ValueError('Category must be provided if cache_categories are specified.')
+            raise ValueError('Category must be provided if cache_categories are specified')
 
         if category:
-            if not isinstance(category, str):
-                raise ValueError('Category must be a comma separated string of sub-categories '
-                                 'ex: \'npp\'.')
+            if not isinstance(category, list) or \
+               not len(category) > 0 or \
+               not isinstance(category[0], str):
+                raise ValueError('Category must be a list of subcategories ex: [\'npp\']')
 
         if cache_categories:
             if not isinstance(cache_categories, list) or \
                not len(cache_categories) > 0 or \
-               not isinstance(cache_categories[0], str):
-                raise ValueError('Cache categories must be a list of categories ex: [\'goes-17\''
-                                 ', \'goes-18\'].')
+               not isinstance(cache_categories[0], list) or \
+               not len(cache_categories[0]) > 0 or \
+               not isinstance(cache_categories[0][0], str):
+                raise ValueError('Cache categories must be a list of subcategories ex: [[\'npp\']]')
 
             if category not in cache_categories:
-                raise ValueError(f'Category {category} not found in cache categories.')
-
-        # Parse category and cache_categories strings
-        if category:
-            category = tuple(category.replace(' ', '').split(','))
-
-        if cache_categories:
-            cache_categories = [tuple(cat.replace(' ', '').split(',')) for cat in cache_categories]
+                raise ValueError('Category must be found inside the cache categories')
 
         if cache_categories:
             return self._create_obs_group_w_cache(input, env, category, cache_categories)
         else:
             return self._create_obs_group_no_cache(input, env, category)
 
-    def _create_obs_group_w_cache(self, input, env, category:tuple, cache_categories:list):
+    def _create_obs_group_w_cache(self, input, env, category:list, cache_categories:list):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
 
         comm = bufr.mpi.Comm(env["comm_name"])
@@ -221,7 +198,7 @@ class ObsBuilder:
         self.log.info(f'Return the encoded data for {category}')
         return data
 
-    def _create_obs_group_no_cache(self, input, env, category:tuple = None):
+    def _create_obs_group_no_cache(self, input, env, category:list = None):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
 
         comm = bufr.mpi.Comm(env["comm_name"])
