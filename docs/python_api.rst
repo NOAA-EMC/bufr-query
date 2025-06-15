@@ -209,6 +209,7 @@ to make this easy. Please see the following example:
       comm = bufr.mpi.Comm("world")  # Get the MPI communicator
       container = bufr.Parser(DATA_PATH, YAML_PATH).parse(comm)  # Parse the BUFR file with mpi
       container.gather(comm)  # (OPTIONAL) Gather the DataContainer data from all the ranks
+      comm.barrier()          # Synchronize all ranks before continuing
 
       if comm.rank() == 0:
           netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH) # Encode the DataContainer object
