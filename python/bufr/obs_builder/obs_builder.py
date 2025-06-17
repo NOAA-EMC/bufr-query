@@ -119,15 +119,14 @@ class ObsBuilder:
         """
         Helper function: Encode subcategories in parallel using MPI ranks.
         """
-        encoder_class = FILE_ENCODER_DICT[type]
+        encoder = FILE_ENCODER_DICT[type](self.description)
 
         for i, subcat in enumerate(subcategories):
             if i % size != rank:
                 continue  # Skip subcategories not assigned to this rank
 
-            self.log.info_all(f"Rank {rank} encoding subcategory: {subcat}")
+            self.log.info_all(f"Encoding subcategory: {subcat}")
             sub_container = container.get_sub_container(subcat)
-            encoder = encoder_class(self.description)
             encoder.encode(sub_container, output, append)
 
     def create_obs_group(self, input, env, category:str=None, cache_categories:list=None):
