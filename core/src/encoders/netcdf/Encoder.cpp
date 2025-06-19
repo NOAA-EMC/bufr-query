@@ -147,7 +147,7 @@ namespace netcdf {
           var.setCompression(true, true, compressionLevel);
         }
 
-        addAttribute(var, _FillValue, obj->missingValue());
+        addAttribute(var, FillValueStr, obj->missingValue());
         obj->write(std::make_shared<VarWriter<T>>(var));
 
         return var;
@@ -307,7 +307,7 @@ namespace netcdf {
             {
                 const auto& ncDim = file->addDim(dim->dimObj->name, dim->dimObj->size());
                 auto ncVar = file->addVar(dim->dimObj->name, nc::NcType::nc_INT, ncDim);
-                addAttribute(ncVar, _FillValue, DataObject<int>::missingValue());
+                addAttribute(ncVar, FillValueStr, DataObject<int>::missingValue());
                 dim->dimObj->write(std::make_shared<VarWriter<int>>(ncVar));
             }
 
