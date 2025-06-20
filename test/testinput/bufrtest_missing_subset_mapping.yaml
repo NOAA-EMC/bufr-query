@@ -1,6 +1,8 @@
 # (C) Copyright 2023 NOAA/NWS/NCEP/EMC
 
 bufr:
+  subsets:
+    - MISSING
   variables:
     timestamp:
       datetime:
