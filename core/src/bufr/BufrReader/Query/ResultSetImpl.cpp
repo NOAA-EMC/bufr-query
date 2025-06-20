@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 
+#include "eckit/mpi/Comm.h"
 #include "eckit/exception/Exceptions.h"
 
 #include "VectorMath.h"
@@ -18,10 +19,28 @@ namespace bufr {
                                                      const std::string& groupByFieldName,
                                                      const std::string& overrideType) const
 {
-    // Make sure we have accumulated frames otherwise something is wrong.
     if (frames_.size() == 0)
     {
-      throw eckit::BadValue("ResultSet has no data.");
+      static bool printWarning = true;
+      if (printWarning) {
+        std::cerr << "WARNING: ResultSet has no frames. Returning empty DataObject." << std::endl;
+        printWarning = false;
+      }
+
+      auto data = details::ResultData();
+      data.buffer = {};
+      data.dims = {0};
+      data.dimPaths = {Query()};
+
+      auto object = DataObjectBuilder::make(fieldName,
+                                            groupByFieldName,
+                                            TypeInfo(),
+                                            overrideType,
+                                            data.buffer,
+                                            data.dims,
+                                            data.dimPaths);
+
+      return object;
     }
 
     // Get the metadata for the target
@@ -43,6 +62,67 @@ namespace bufr {
                                           data.dimPaths);
 
     return object;
+  }
+
+  std::string ResultSetImpl::resolveType(const eckit::mpi::Comm& comm,
+                                         const std::string& fieldName) const
+  {
+    TypeInfo typeInfo;
+    if (!frames_.empty())
+    {
+      typeInfo = analyzeTarget(fieldName)->typeInfo;
+    }
+
+    std::vector<int> bits(comm.size());
+    std::vector<int> scale(comm.size());
+    std::vector<int> reference(comm.size());
+
+    comm.allGather(typeInfo.bits, bits.begin(), bits.end());
+    comm.allGather(typeInfo.scale, scale.begin(), scale.end());
+    comm.allGather(typeInfo.reference, reference.begin(), reference.end());
+
+    std::vector<std::string> unit(comm.size());
+    {
+      size_t charsToSend = typeInfo.unit.size();
+
+      size_t charsToReceive = charsToSend;
+      comm.allReduce(charsToReceive, charsToReceive, eckit::mpi::Operation::SUM);
+
+      auto sizeArray = std::vector<int>(comm.size());
+      comm.allGather(static_cast<int>(charsToSend), sizeArray.begin(), sizeArray.end());
+
+      std::vector<char> rcvBuffer(charsToReceive, 0);
+      auto rcvCounts = std::vector<int>(comm.size());
+
+      std::vector<int> displacement(comm.size(), 0);
+      for (size_t i = 1; i < comm.size(); i++)
+      {
+        displacement[i] = displacement[i - 1] + sizeArray[i - 1];
+      }
+
+      comm.allGatherv(typeInfo.unit.begin(), typeInfo.unit.end(), rcvBuffer.begin(),
+                      sizeArray.data(), displacement.data());
+
+      for (size_t i = 0; i < comm.size(); i++)
+      {
+        unit[i] = std::string(rcvBuffer.begin() + displacement[i],
+                              rcvBuffer.begin() + displacement[i] + sizeArray[i]);
+      }
+    }
+
+    for (size_t bitIdx=0; bitIdx < bits.size(); ++bitIdx)
+    {
+      if (bits[bitIdx] != 0)
+      {
+        typeInfo.bits = bits[bitIdx];
+        typeInfo.scale = scale[bitIdx];
+        typeInfo.reference = reference[bitIdx];
+        typeInfo.unit = unit[bitIdx];
+        break;
+      }
+    }
+
+    return DataObjectBuilder::typeString(typeInfo);
   }
 
   details::TargetMetaDataPtr ResultSetImpl::analyzeTarget(const std::string& name) const {
