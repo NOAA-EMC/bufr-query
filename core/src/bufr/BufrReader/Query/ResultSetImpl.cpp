@@ -12,6 +12,7 @@
 #include "VectorMath.h"
 #include "bufr/DataObject.h"
 #include "../../DataObjectBuilder.h"
+#include "../../Log.h"
 
 
 namespace bufr {
@@ -23,7 +24,7 @@ namespace bufr {
     {
       static bool printWarning = true;
       if (printWarning) {
-        std::cerr << "WARNING: ResultSet has no frames. Returning empty DataObject." << std::endl;
+        log::warning() << "WARNING: ResultSet has no frames. Returning empty DataObjects." << std::endl;
         printWarning = false;
       }
 
