@@ -139,7 +139,12 @@ namespace bufr {
       {
         for (const auto& queryInfo : var->getQueryList())
         {
-          auto typeStr =  resultSet.resolveType(comm, queryInfo.name);
+          auto typeStr = queryInfo.type;
+          if (typeStr.empty())
+          {
+            typeStr =  resultSet.resolveType(comm, queryInfo.name);
+          }
+
           srcData[queryInfo.name] = resultSet.get(
             queryInfo.name, queryInfo.groupByField, typeStr);
         }
