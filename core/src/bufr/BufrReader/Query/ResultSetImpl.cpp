@@ -2,6 +2,7 @@
 
 #include "ResultSetImpl.h"
 
+#include <array>
 #include <algorithm>
 #include <iostream>
 #include <string>
@@ -111,19 +112,33 @@ namespace bufr {
       }
     }
 
-    for (size_t bitIdx=0; bitIdx < bits.size(); ++bitIdx)
+    const std::vector<std::string> precedence = {"string", "uint32", "uint64", "int32", "int64", "float", "double"};
+
+    size_t highestPrecedence = 0;
+    for (size_t taskIdx = 0; taskIdx < comm.size(); ++taskIdx)
     {
-      if (bits[bitIdx] != 0)
+      TypeInfo taskTypeInfo;
+      taskTypeInfo.bits = bits[taskIdx];
+      taskTypeInfo.scale = scale[taskIdx];
+      taskTypeInfo.reference = reference[taskIdx];
+      taskTypeInfo.unit = unit[taskIdx];
+
+      auto taskTypeStr = DataObjectBuilder::typeString(taskTypeInfo);
+      auto precIt = std::find(precedence.begin(), precedence.end(), taskTypeStr);
+      if (precIt != precedence.end())
       {
-        typeInfo.bits = bits[bitIdx];
-        typeInfo.scale = scale[bitIdx];
-        typeInfo.reference = reference[bitIdx];
-        typeInfo.unit = unit[bitIdx];
-        break;
+        auto precIdx = static_cast<size_t>(std::distance(precedence.begin(), precIt));
+        highestPrecedence = std::max(highestPrecedence, precIdx);
+      }
+      else
+      {
+        std::ostringstream errMsg;
+        errMsg << "Unkonwn type " << taskTypeStr << " encountered in ResultSet::resolveType." << std::endl;
+        throw eckit::BadParameter(errMsg.str());
       }
     }
 
-    return DataObjectBuilder::typeString(typeInfo);
+    return precedence[highestPrecedence];
   }
 
   details::TargetMetaDataPtr ResultSetImpl::analyzeTarget(const std::string& name) const {

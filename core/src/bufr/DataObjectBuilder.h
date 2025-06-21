@@ -73,7 +73,10 @@ namespace bufr {
     static std::string typeString(const TypeInfo& info)
     {
       std::string typeString;
-      if (info.isString()) {
+      if (info.isUnknown()) {
+        typeString = "uint32";
+      }
+      else if (info.isString() || info.isLongString()) {
         typeString = "string";
       } else if (info.isInteger()) {
         if (info.isSigned()) {
@@ -93,8 +96,10 @@ namespace bufr {
     static std::shared_ptr<DataObjectBase> objectByTypeInfo(const TypeInfo& info)
     {
       std::shared_ptr<DataObjectBase> object;
-
-      if (info.isString() || info.isLongString()) {
+      if (info.isUnknown()) {
+        object = std::make_shared<DataObject<uint32_t>>();
+      }
+      else if (info.isString() || info.isLongString()) {
         object = std::make_shared<DataObject<std::string>>();
       } else if (info.isInteger()) {
         if (info.isSigned()) {
