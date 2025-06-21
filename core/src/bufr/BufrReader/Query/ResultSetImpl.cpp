@@ -2,7 +2,6 @@
 
 #include "ResultSetImpl.h"
 
-#include <array>
 #include <algorithm>
 #include <iostream>
 #include <string>
@@ -25,7 +24,7 @@ namespace bufr {
     {
       static bool printWarning = true;
       if (printWarning) {
-        log::warning() << "WARNING: ResultSet has no frames. Returning empty DataObjects." << std::endl;
+        log::warning() << "WARNING: ResultSet is empty. Returning empty DataObjects." << std::endl;
         printWarning = false;
       }
 
