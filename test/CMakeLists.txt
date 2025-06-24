@@ -94,6 +94,7 @@ list( APPEND test_input
   testinput/bufrtest_python_mpi_test.py
   testinput/bufrtest_python_obsbuilder.py
   testinput/bufrtest_python_obsbuilder_mod_sig.py
+  testinput/bufrtest_missing_subset_mapping.yaml
 )
 
 # create test directories and make links to the input files
@@ -528,6 +529,13 @@ ecbuild_add_test( TARGET  test_bufr_dim_labels
                                                                  testinput/bufrtest_dim_labels_mapping.yaml
                                                                  testrun/bufrtest_hrs_basic.nc"
   bufrtest_hrs_basic.nc)
+
+ecbuild_add_test( TARGET  test_missing_subset_data
+                  TYPE    SCRIPT
+                  COMMAND ${CMAKE_BINARY_DIR}/bin/bufr2netcdf.x
+                  ARGS    " testdata/gdas.t00z.1bhrs4.tm00.bufr_d
+                            testinput/bufrtest_missing_subset_mapping.yaml
+                            testrun/empty.nc")
 
 ecbuild_add_test( TARGET  test_bufr_show_queries_ncep
                   TYPE    SCRIPT

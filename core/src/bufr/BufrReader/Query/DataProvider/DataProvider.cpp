@@ -10,6 +10,8 @@
 
 #include "eckit/exception/Exceptions.h"
 
+#include "../../../Log.h"
+
 
 namespace bufr {
     void DataProvider::run(const QuerySet& querySet,
@@ -71,20 +73,17 @@ namespace bufr {
 
         if (!foundBufrMsg)
         {
-            std::ostringstream errStr;
-            errStr << "No BUFR messages were found! ";
-            errStr << "Please make sure that " << filePath_ << " exists and is a valid BUFR file.";
-            throw eckit::BadValue(errStr.str());
+            std::ostringstream warnStr;
+            warnStr << "WARNING: No BUFR messages were found in ";
+            warnStr << filePath_ << "." << std::endl;
+            log::warning() << warnStr.str();
         }
-
-        if (!foundBufrSubset)
+        else if (!foundBufrSubset)
         {
-            std::ostringstream errStr;
-            errStr << "No valid BUFR subsets were found from your queries! ";
-            errStr << "Please make sure you are querying for valid subsets that exist in ";
-            errStr << filePath_ << ". ";
-            errStr << "Otherwise there might be a problem with the BUFR file (no subsets).";
-            throw eckit::BadValue(errStr.str());
+            std::ostringstream warnStr;
+            warnStr << "WARNING: No valid BUFR subsets were found from your queries in ";
+            warnStr << filePath_ << "." << std::endl;
+            log::warning() << warnStr.str();
         }
     }
 
