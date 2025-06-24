@@ -111,7 +111,8 @@ namespace bufr {
       }
     }
 
-    const std::vector<std::string> precedence = {"string", "uint32", "uint64", "int32", "int64", "float", "double"};
+    const std::vector<std::string> precedence = {"unknown", "string", "uint32", "uint64",
+                                              "int32", "int64", "float", "double"};
 
     size_t highestPrecedence = 0;
     for (size_t taskIdx = 0; taskIdx < comm.size(); ++taskIdx)

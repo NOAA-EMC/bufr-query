@@ -74,7 +74,7 @@ namespace bufr {
     {
       std::string typeString;
       if (info.isUnknown()) {
-        typeString = "uint32";
+        typeString = "unknown";
       }
       else if (info.isString() || info.isLongString()) {
         typeString = "string";
@@ -97,7 +97,7 @@ namespace bufr {
     {
       std::shared_ptr<DataObjectBase> object;
       if (info.isUnknown()) {
-        object = std::make_shared<DataObject<uint32_t>>();
+        object = std::make_shared<DataObject<int32_t>>();
       }
       else if (info.isString() || info.isLongString()) {
         object = std::make_shared<DataObject<std::string>>();
