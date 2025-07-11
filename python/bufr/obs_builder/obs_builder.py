@@ -135,12 +135,13 @@ class ObsBuilder:
             if category not in cache_categories:
                 raise ValueError('Category must be found inside the cache categories')
 
+        category = tuple(category)
         if cache_categories:
             return self._create_obs_group_w_cache(input, env, category, cache_categories)
         else:
             return self._create_obs_group_no_cache(input, env, category)
 
-    def _create_obs_group_w_cache(self, input, env, category:list, cache_categories:list):
+    def _create_obs_group_w_cache(self, input, env, category:tuple, cache_categories:list):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
 
         comm = bufr.mpi.Comm(env["comm_name"])
@@ -185,7 +186,7 @@ class ObsBuilder:
         self.log.info(f'Return the encoded data for {category}')
         return data
 
-    def _create_obs_group_no_cache(self, input, env, category:list = None):
+    def _create_obs_group_no_cache(self, input, env, category:tuple = None):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
 
         comm = bufr.mpi.Comm(env["comm_name"])
