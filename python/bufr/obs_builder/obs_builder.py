@@ -113,6 +113,9 @@ class ObsBuilder:
         :param cache_categories: The list of categories to cache. (optional)
         :return: IODA ObsGroup object.
         """
+        # Work around for older versions of IODA
+        if isinstance(category, str):
+            category = [category]
 
         # Guard Block
         if (cache_categories is not None) and (category is None):
