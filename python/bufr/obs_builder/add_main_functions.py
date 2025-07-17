@@ -82,7 +82,6 @@ def add_main_functions(cls, execute_main=True):
             if not isinstance(config, dict):
                 raise ValueError(f'Config must resolve to a dict.')
 
-            bufr.mpi.App(sys.argv)
             return getattr(make_obs_builder(config), method_name)(*args, **kwargs)
 
         # Use functools.wraps to copy name, docstring, etc., from the original method
