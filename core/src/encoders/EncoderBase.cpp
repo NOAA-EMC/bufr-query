@@ -82,6 +82,15 @@ namespace encoders {
           }
         }
       }
+      else if (varObj->size() == 0)  // Empty data object.
+      {
+        size_t dimIdx = 0;
+        for (const auto& chunkSize : var.chunks)
+        {
+          varChunkMap[var.name].push_back(0);
+          dimIdx++;
+        }
+      }
       else
       {
         if (var.chunks.size() != varObj->getDimPaths().size())

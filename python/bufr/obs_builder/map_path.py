@@ -1,5 +1,6 @@
 
 import os
+import inspect
 
 def map_path(map_file_name, base_dir=None):
     """
@@ -18,8 +19,14 @@ def map_path(map_file_name, base_dir=None):
 
     :raises FileNotFoundError: If the resolved file path does not exist.
     """
-    root_dir = base_dir if base_dir is not None else os.getcwd()
-    path = os.path.join(root_dir, map_file_name)
+    if base_dir:
+        path = os.path.join(base_dir, map_file_name)
+    else:
+        caller_frame = inspect.stack()[1]
+        caller_file_path = caller_frame.filename
+        # Get the directory name of that file
+        caller_directory = os.path.dirname(os.path.abspath(caller_file_path))
+        path = os.path.join(caller_directory, map_file_name)
 
     if not os.path.exists(path):
         raise FileNotFoundError(f"Mapping file not found: {path}")

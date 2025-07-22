@@ -39,7 +39,7 @@ class ObsBuilder:
         self.config = config
         self.description = self._make_description()
 
-    # Virtual Method
+    # Virtual Methods
     def make_obs(self, comm, input : Union[str, dict]) -> bufr.DataContainer:
         """
         This method is the main method that can be overridden (optional). Its objective is to read
@@ -65,6 +65,15 @@ class ObsBuilder:
             container.append(bufr.Parser(input, mapping_path).parse(comm))
 
         return container
+
+    def finalize_container(self, container:bufr.DataContainer) -> None:
+        """
+        Virtual method which can be overridden if you need to update the assembled
+        DataContainer object (data from all the MPI tasks).
+
+        :param container: The DataContainer to Mutate
+        """
+        pass
 
     def _make_description(self) -> bufr.encoders.Description:
         """
@@ -97,6 +106,7 @@ class ObsBuilder:
 
         # Encode the data
         if comm.rank() == 0:
+            self.finalize_container(container)
             FILE_ENCODER_DICT[type](self.description).encode(container, output, append)
 
         self.log.info(f'Return the encoded data')
@@ -115,6 +125,9 @@ class ObsBuilder:
                                  is parsed into a tuple of subcategories. (optional)
         :return: IODA ObsGroup object.
         """
+        # Work around for older versions of IODA
+        if isinstance(category, str):
+            category = [category]
 
         # Guard Block
         if (cache_categories is not None) and (category is None):
@@ -142,6 +155,7 @@ class ObsBuilder:
         if cache_categories:
             cache_categories = [tuple(cat.replace(' ', '').split(',')) for cat in cache_categories]
 
+        category = tuple(category)
         if cache_categories:
             return self._create_obs_group_w_cache(input, env, category, cache_categories)
         else:
@@ -174,6 +188,8 @@ class ObsBuilder:
         self.log.info(f'Gather data from all tasks into all tasks')
         container.all_gather(comm)
 
+        self.finalize_container(container)
+
         self.log.info(f'Add container to cache')
         # Add the container to the cache
         bufr.DataCache.add(cache_input_path,
@@ -200,6 +216,8 @@ class ObsBuilder:
 
         container = self.make_obs(comm, input)
         container.all_gather(comm)
+
+        self.finalize_container(container)
 
         # Encode the data
         if not category:
