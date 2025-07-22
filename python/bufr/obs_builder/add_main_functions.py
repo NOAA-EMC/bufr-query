@@ -19,11 +19,14 @@ def add_main_functions(cls, execute_main=True):
         import time
         import yaml
         import argparse
+        from bufr import mpi
         from bufr.obs_builder import Logger
 
         logger = Logger(os.path.basename(__file__))
 
         start_time = time.time()
+
+        mpi.App(sys.argv)
 
         create_file_sig = inspect.signature(create_obs_file)
 
