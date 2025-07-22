@@ -125,9 +125,6 @@ class ObsBuilder:
                                  is parsed into a tuple of subcategories. (optional)
         :return: IODA ObsGroup object.
         """
-        # Work around for older versions of IODA
-        if isinstance(category, str):
-            category = [category]
 
         # Guard Block
         if (cache_categories is not None) and (category is None):
@@ -155,7 +152,6 @@ class ObsBuilder:
         if cache_categories:
             cache_categories = [tuple(cat.replace(' ', '').split(',')) for cat in cache_categories]
 
-        category = tuple(category)
         if cache_categories:
             return self._create_obs_group_w_cache(input, env, category, cache_categories)
         else:
