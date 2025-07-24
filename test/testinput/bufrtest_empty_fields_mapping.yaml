@@ -21,7 +21,6 @@ bufr:
       query: "NC000000/WAVSQ3/POSW"
 
 encoder:
-  type: netcdf
 
   variables:
     - name: "MetaData/dateTime"

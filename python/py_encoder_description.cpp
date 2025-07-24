@@ -63,13 +63,18 @@ void setupEncoderDescription(py::module& m)
           // Required parameters
           auto name = var_dict["name"].cast<std::string>();
           auto source = var_dict["source"].cast<std::string>();
-          auto units = var_dict["units"].cast<std::string>();
 
           // Optional parameters
           std::string longName;
           if (var_dict.contains("longName"))
           {
             longName = var_dict["longName"].cast<std::string>();
+          }
+
+          std::string units;
+          if (var_dict.contains("units"))
+          {
+            units = var_dict["units"].cast<std::string>();
           }
 
           std::string coordinates;

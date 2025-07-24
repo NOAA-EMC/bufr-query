@@ -23,7 +23,6 @@ bufr:
       query: "*/TDWPRAOB/WSPD"
 
 encoder:
-  type: netcdf
 
   dimensions:
     - name: Level

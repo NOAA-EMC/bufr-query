@@ -98,7 +98,6 @@ bufr:
       query: "NC004010/QMRKH[4]"
 
 encoder:
-  type: netcdf
 
   variables:
     # MetaData

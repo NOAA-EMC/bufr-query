@@ -76,6 +76,12 @@ Here is what the DataContainer looks like:
 
           Replace the variable with the given name.
 
+      .. note::
+
+          ``add`` and ``replace`` automatically detect ``numpy.ma.MaskedArray``
+          inputs and use the filled version of the array, so calling
+          ``filled()`` beforehand is unnecessary.
+
       .. method:: get_category_map()
 
           Get the map of categories.
@@ -203,6 +209,7 @@ to make this easy. Please see the following example:
       comm = bufr.mpi.Comm("world")  # Get the MPI communicator
       container = bufr.Parser(DATA_PATH, YAML_PATH).parse(comm)  # Parse the BUFR file with mpi
       container.gather(comm)  # (OPTIONAL) Gather the DataContainer data from all the ranks
+      comm.barrier()          # Synchronize all ranks before continuing
 
       if comm.rank() == 0:
           netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH) # Encode the DataContainer object
@@ -259,6 +266,20 @@ Example:
 
       dataset = netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)[category]
       return dataset
+
+
+Helper Functions
+----------------
+
+When creating new ``numpy.ma.MaskedArray`` objects you can obtain the
+appropriate missing value using :func:`get_missing_value`.
+
+.. code-block:: python
+
+   import bufr
+   import numpy as np
+
+   mv = bufr.get_missing_value(np.int64)
 
 
 

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <functional>
 #include <string>
 #include <vector>
 #include <memory>
@@ -12,14 +13,19 @@
 
 
 namespace bufr {
+
+    /// \brief Function type for computing scan angles
+    using ComputeFn = std::function<std::vector<float>(const eckit::LocalConfiguration& conf,
+		                                       const BufrDataMap& map)>;
+
     /// \brief Exports parsed data as SensorScanAngle  using speciefied Mnemonics
     class SensorScanAngleVariable final : public Variable
     {
      public:
         SensorScanAngleVariable() = delete;
         SensorScanAngleVariable(const std::string& exportName,
-                                 const std::string& groupByField,
-                                 const eckit::LocalConfiguration& conf);
+                                const std::string& groupByField,
+                                const eckit::LocalConfiguration& conf);
 
         ~SensorScanAngleVariable() final = default;
 
@@ -36,5 +42,17 @@ namespace bufr {
 
         /// \brief get the export key string
         std::string getExportKey(const std::string& name) const;
+
+	/// \brief Compute scan angle for IASI instrument
+        static std::vector<float> computeIasi(const eckit::LocalConfiguration& conf,
+		                      	      const BufrDataMap& map);
+
+        /// \brief Compute scan angle for CrIS instrument
+        static std::vector<float> computeCris(const eckit::LocalConfiguration& conf,
+		                  	      const BufrDataMap& map);
+
+        /// \brief Compute scan angle using generic (default) logic
+        static std::vector<float> computeGeneric(const eckit::LocalConfiguration& conf,
+		                        	 const BufrDataMap& map);
     };
 }  // namespace bufr

@@ -1,9 +1,11 @@
 
 import os
+import sys
 import inspect
 import functools
 import yaml
 import json
+import bufr
 
 def add_main_functions(cls, execute_main=True):
 
@@ -14,19 +16,14 @@ def add_main_functions(cls, execute_main=True):
             return cls()
 
     def default_main():
-        import sys
         import time
         import yaml
         import argparse
-        from bufr import mpi
         from bufr.obs_builder import Logger
 
         logger = Logger(os.path.basename(__file__))
 
         start_time = time.time()
-
-        mpi.App(sys.argv)
-        comm = mpi.Comm("world")
 
         create_file_sig = inspect.signature(create_obs_file)
 

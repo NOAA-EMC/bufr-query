@@ -5,12 +5,11 @@ from typing import Union
 
 import bufr
 
-from ..encoders import netcdf, zarr
+from ..encoders import netcdf
 from .logger import Logger
 
 
-FILE_ENCODER_DICT = {'netcdf': netcdf.Encoder,
-                     'zarr': zarr.Encoder}
+FILE_ENCODER_DICT = {'netcdf': netcdf.Encoder}
 
 def add_encoder_type(name, encoder):
     FILE_ENCODER_DICT[name] = encoder
@@ -114,6 +113,9 @@ class ObsBuilder:
         :param cache_categories: The list of categories to cache. (optional)
         :return: IODA ObsGroup object.
         """
+        # Work around for older versions of IODA
+        if isinstance(category, str):
+            category = [category]
 
         # Guard Block
         if (cache_categories is not None) and (category is None):
@@ -136,12 +138,13 @@ class ObsBuilder:
             if category not in cache_categories:
                 raise ValueError('Category must be found inside the cache categories')
 
+        category = tuple(category)
         if cache_categories:
             return self._create_obs_group_w_cache(input, env, category, cache_categories)
         else:
             return self._create_obs_group_no_cache(input, env, category)
 
-    def _create_obs_group_w_cache(self, input, env, category:list, cache_categories:list):
+    def _create_obs_group_w_cache(self, input, env, category:tuple, cache_categories:list):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
 
         comm = bufr.mpi.Comm(env["comm_name"])
@@ -186,14 +189,14 @@ class ObsBuilder:
         self.log.info(f'Return the encoded data for {category}')
         return data
 
-    def _create_obs_group_no_cache(self, input, env, category:list = None):
+    def _create_obs_group_no_cache(self, input, env, category:tuple = None):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
 
         comm = bufr.mpi.Comm(env["comm_name"])
         self.log.comm = comm
 
         container = self.make_obs(comm, input)
-        container.gather(comm)
+        container.all_gather(comm)
 
         # Encode the data
         if not category:

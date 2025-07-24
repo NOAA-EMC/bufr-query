@@ -3,7 +3,6 @@ import sys
 
 import bufr
 from bufr.encoders import netcdf
-from bufr.encoders import zarr
 import numpy as np
 
 
@@ -302,15 +301,25 @@ def test_highlevel_apply_mask():
     assert np.all(container.get('d0') == np.array([0, 3, 4, 7, 9]))
     assert np.all(container.get('d4') == np.array([0, 3, 4, 7, 9]))
 
-def test_zarr_encoder():
-    DATA_PATH = 'testdata/gdas.t18z.1bmhs.tm00.bufr_d'
-    YAML_PATH = 'testinput/bufrtest_mhs_basic_mapping.yaml'
-    OUTPUT_PATH = 'testrun/bufrtest_python_test.zarr'
+def test_add_replace_masked_array():
+    container = bufr.DataContainer()
 
-    container = bufr.Parser(DATA_PATH, YAML_PATH).parse()
+    arr = np.ma.array([1, 2, 3], mask=[False, True, False], fill_value=-99)
+    container.add('masked', arr, ['*'])
+    assert np.all(container.get('masked') == np.array([1, -99, 3]))
 
-    dataset = next(iter(zarr.Encoder(YAML_PATH).encode(container, OUTPUT_PATH).values()))
-    assert abs(dataset['ObsValue/brightnessTemperature'][0,0] - 215.89) < 1e-3
+    arr2 = np.ma.array([4, 5, 6], mask=[True, False, False], fill_value=-1)
+    container.replace('masked', arr2)
+    assert np.all(container.get('masked') == np.array([-1, 5, 6]))
+
+
+def test_get_missing_value():
+    assert bufr.get_missing_value(np.int32) == np.iinfo(np.int32).max
+    assert bufr.get_missing_value(np.int64) == np.iinfo(np.int64).max
+    assert bufr.get_missing_value(np.float32) == np.finfo(np.float32).max
+    assert bufr.get_missing_value(np.float64) == np.finfo(np.float64).max
+    assert bufr.get_missing_value(np.dtype('O')) == ""
+
 
 if __name__ == '__main__':
     # Low level interface tests
@@ -327,7 +336,5 @@ if __name__ == '__main__':
     test_highlevel_cache()
     test_highlevel_append()
     test_highlevel_apply_mask()
-
-    # Test Encoders
-    test_zarr_encoder()
-
+    test_add_replace_masked_array()
+    test_get_missing_value()

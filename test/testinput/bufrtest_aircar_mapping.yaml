@@ -55,7 +55,6 @@ bufr:
       query: "*/QMWN"
 
 encoder:
-  type: netcdf
 
   variables:
     #MetaData

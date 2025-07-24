@@ -51,7 +51,6 @@ bufr:
         upperBound: 180
 
 encoder:
-  type: netcdf
 
   dimensions:
     - name: "Confidence"

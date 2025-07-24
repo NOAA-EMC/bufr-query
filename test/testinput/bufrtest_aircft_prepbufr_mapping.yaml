@@ -90,7 +90,6 @@ bufr:
       query: "*/PRSLEVLA/W___INFO/W__BACKG/WOE"
 
 encoder:
-  type: netcdf
 
   dimensions:
     - name: PressureEvent

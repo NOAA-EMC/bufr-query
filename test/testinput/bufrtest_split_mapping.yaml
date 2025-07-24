@@ -30,7 +30,6 @@ bufr:
           _7: seven
 
 encoder:
-  type: netcdf
 
   dimensions:
     - name: "Channel"

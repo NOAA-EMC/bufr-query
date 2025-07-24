@@ -36,7 +36,6 @@ bufr:
 
 
 encoder:
-  type: netcdf
 
   variables:
     - name: "MetaData/dateTime"

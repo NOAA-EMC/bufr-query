@@ -1,6 +1,8 @@
-# (C) Copyright 2020 NOAA/NWS/NCEP/EMC
+# (C) Copyright 2025 NOAA/NWS/NCEP/EMC
 
 bufr:
+  subsets:
+    - MISSING
   variables:
     timestamp:
       datetime:
@@ -9,21 +11,26 @@ bufr:
         day: "*/DAYS"
         hour: "*/HOUR"
         minute: "*/MINU"
+        second: "*/SECO"
     longitude:
-      query: "*/CLONH"
+      query: "*/CLON"
     latitude:
-      query: "*/CLATH"
-    wgoslid:
-      query: "*/WGOSLID"
-    lstn:
-      query: "*/LSTN"
-    borg:
-      query: "*/BORG"
+      query: "*/CLAT"
+    channel:
+      query: "[*/BRITCSTC/CHNM, */BRIT/CHNM]"
+    brightnessTemp:
+      query: "[*/BRITCSTC/TMBR, */BRIT/TMBR]"
 
 encoder:
 
-  variables:
+  dimensions:
+    - name: Channel
+      paths:
+        - "*/BRIT"
+        - "*/BRITCSTC"
+      source: variables/channel
 
+  variables:
     - name: "MetaData/dateTime"
       source: variables/timestamp
       longName: "dateTime"
@@ -41,22 +48,9 @@ encoder:
       units: "degrees_east"
       range: [-180, 180]
 
-    - name: "ObsValue/obsval"
-      source: variables/longitude
-      longName: "obsval"
-      units: "degrees_east"
-
-    - name: "MetaData/wgoslid"
-      source: variables/wgoslid
-      longName: "wgoslid"
-      units: ""
-
-    - name: "MetaData/lstn"
-      source: variables/lstn
-      longName: "lstn"
-      units: ""
-
-    - name: "MetaData/borg"
-      source: variables/borg
-      longName: "borg"
-      units: ""
+    - name: "ObsValue/brightnessTemperature"
+      coordinates: "longitude latitude Channel"
+      source: variables/brightnessTemp
+      longName: "Brightness temperature"
+      units: "K"
+      range: [120, 500]

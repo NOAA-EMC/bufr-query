@@ -6,11 +6,13 @@
 #include <iostream>
 #include <string>
 
+#include "eckit/mpi/Comm.h"
 #include "eckit/exception/Exceptions.h"
 
 #include "VectorMath.h"
 #include "bufr/DataObject.h"
 #include "../../DataObjectBuilder.h"
+#include "../../Log.h"
 
 
 namespace bufr {
@@ -18,10 +20,28 @@ namespace bufr {
                                                      const std::string& groupByFieldName,
                                                      const std::string& overrideType) const
 {
-    // Make sure we have accumulated frames otherwise something is wrong.
     if (frames_.size() == 0)
     {
-      throw eckit::BadValue("ResultSet has no data.");
+      static bool printWarning = true;
+      if (printWarning) {
+        log::warning() << "WARNING: ResultSet is empty. Returning empty DataObjects." << std::endl;
+        printWarning = false;
+      }
+
+      auto data = details::ResultData();
+      data.buffer = {};
+      data.dims = {0};
+      data.dimPaths = {Query()};
+
+      auto object = DataObjectBuilder::make(fieldName,
+                                            groupByFieldName,
+                                            TypeInfo(),
+                                            overrideType,
+                                            data.buffer,
+                                            data.dims,
+                                            data.dimPaths);
+
+      return object;
     }
 
     // Get the metadata for the target
@@ -43,6 +63,82 @@ namespace bufr {
                                           data.dimPaths);
 
     return object;
+  }
+
+  std::string ResultSetImpl::resolveType(const eckit::mpi::Comm& comm,
+                                         const std::string& fieldName) const
+  {
+    TypeInfo typeInfo;
+    if (!frames_.empty())
+    {
+      typeInfo = analyzeTarget(fieldName)->typeInfo;
+    }
+
+    std::vector<int> bits(comm.size());
+    std::vector<int> scale(comm.size());
+    std::vector<int> reference(comm.size());
+
+    comm.allGather(typeInfo.bits, bits.begin(), bits.end());
+    comm.allGather(typeInfo.scale, scale.begin(), scale.end());
+    comm.allGather(typeInfo.reference, reference.begin(), reference.end());
+
+    std::vector<std::string> unit(comm.size());
+    {
+      size_t charsToSend = typeInfo.unit.size();
+
+      size_t charsToReceive = charsToSend;
+      comm.allReduce(charsToReceive, charsToReceive, eckit::mpi::Operation::SUM);
+
+      auto sizeArray = std::vector<int>(comm.size());
+      comm.allGather(static_cast<int>(charsToSend), sizeArray.begin(), sizeArray.end());
+
+      std::vector<char> rcvBuffer(charsToReceive, 0);
+      auto rcvCounts = std::vector<int>(comm.size());
+
+      std::vector<int> displacement(comm.size(), 0);
+      for (size_t i = 1; i < comm.size(); i++)
+      {
+        displacement[i] = displacement[i - 1] + sizeArray[i - 1];
+      }
+
+      comm.allGatherv(typeInfo.unit.begin(), typeInfo.unit.end(), rcvBuffer.begin(),
+                      sizeArray.data(), displacement.data());
+
+      for (size_t i = 0; i < comm.size(); i++)
+      {
+        unit[i] = std::string(rcvBuffer.begin() + displacement[i],
+                              rcvBuffer.begin() + displacement[i] + sizeArray[i]);
+      }
+    }
+
+    const std::vector<std::string> precedence = {"unknown", "string", "uint32", "uint64",
+                                              "int32", "int64", "float", "double"};
+
+    size_t highestPrecedence = 0;
+    for (size_t taskIdx = 0; taskIdx < comm.size(); ++taskIdx)
+    {
+      TypeInfo taskTypeInfo;
+      taskTypeInfo.bits = bits[taskIdx];
+      taskTypeInfo.scale = scale[taskIdx];
+      taskTypeInfo.reference = reference[taskIdx];
+      taskTypeInfo.unit = unit[taskIdx];
+
+      auto taskTypeStr = DataObjectBuilder::typeString(taskTypeInfo);
+      auto precIt = std::find(precedence.begin(), precedence.end(), taskTypeStr);
+      if (precIt != precedence.end())
+      {
+        auto precIdx = static_cast<size_t>(std::distance(precedence.begin(), precIt));
+        highestPrecedence = std::max(highestPrecedence, precIdx);
+      }
+      else
+      {
+        std::ostringstream errMsg;
+        errMsg << "Unkonwn type " << taskTypeStr << " encountered in ResultSet::resolveType." << std::endl;
+        throw eckit::BadParameter(errMsg.str());
+      }
+    }
+
+    return precedence[highestPrecedence];
   }
 
   details::TargetMetaDataPtr ResultSetImpl::analyzeTarget(const std::string& name) const {
