@@ -72,7 +72,9 @@ jobs:
             git clone https://gitlab.com/remikz/nccmp.git
             cd nccmp
             autoreconf -fiv
-            ./configure  --with-netcdf=/usr
+            CPPFLAGS="-I/usr/include" \
+            LDFLAGS="-L/usr/lib/x86_64-linux-gnu" \
+              ./configure  --with-netcdf=/usr
             make -j$(nproc)
             make install
             nccmp --version
