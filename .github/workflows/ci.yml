@@ -2,9 +2,12 @@ name: CI
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ ** ]
+    # branches: [ develop ]
   pull_request:
-    branches: [ develop ]
+    branches: [ ** ]
+    # branches: [ develop ]
+  workflow_dispatch:
 
 jobs:
   build-and-test:
@@ -49,6 +52,9 @@ jobs:
             cmake .. &&
             make -j$(nproc)
           "
+
+    - name: Print debug
+      run: echo "Done building"
 
     - name: Test in Docker
       run: |
