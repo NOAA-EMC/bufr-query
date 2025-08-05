@@ -59,3 +59,4 @@ jobs:
           /bin/bash -c "
             ctest --output-on-failure
           "
+
