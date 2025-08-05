@@ -54,8 +54,8 @@ jobs:
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
-      -w /workspace/build \
-      jcsda/docker-gnu-openmpi-dev:latest \
-      /bin/bash -c "
-        ctest --output-on-failure
-      "
+          -w /workspace/build \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c "
+            ctest --output-on-failure
+          "
