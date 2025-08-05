@@ -62,13 +62,19 @@ jobs:
           -w /workspace \
           jcsda/docker-gnu-openmpi-dev:latest \
           /bin/bash -c "
-            apt-get update && apt-get install -y autoconf automake libtool netcdf-bin libnetcdf-dev &&
-            git clone https://github.com/Unidata/nccmp.git &&
-            cd nccmp &&
-            ./autogen.sh &&
-            ./configure &&
-            make -j$(nproc) &&
+            set -e -x
+            apt-get update 
+            apt-get install -y \
+              git autoconf automake libtool \
+              netcdf-bin libnetcdf-dev \
+              libhdf5-dev libhdf5-cpp-dev libhdf5-fortran-dev
+            git clone https://github.com/Unidata/nccmp.git
+            cd nccmp
+            ./autogen.sh
+            ./configure
+            make -j$(nproc)
             make install
+            ccache -s || true  # optional
           "
 
     - name: Test in Docker
