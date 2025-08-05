@@ -67,13 +67,14 @@ jobs:
             apt-get install -y \
               git autoconf automake libtool \
               netcdf-bin libnetcdf-dev \
-              libhdf5-dev libhdf5-cpp-dev libhdf5-fortran-dev
+              libhdf5-dev
             git clone https://github.com/Unidata/nccmp.git
             cd nccmp
             ./autogen.sh
             ./configure
             make -j$(nproc)
             make install
+            nccmp --version
             ccache -s || true  # optional
           "
 
