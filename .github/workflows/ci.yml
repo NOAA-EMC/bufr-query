@@ -37,23 +37,23 @@ jobs:
       with:
         submodules: recursive
 
-- name: Build in Docker
-  run: |
-    docker run --rm \
-      -v ${{ github.workspace }}:/workspace \
-      -w /workspace \
-      jcsda/docker-gnu-openmpi-dev:latest \
-      /bin/bash -c "
-        mkdir -p build &&
-        cd build &&
-        cmake .. &&
-        make -j$(nproc)
-      "
+    - name: Build in Docker
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}:/workspace \
+          -w /workspace \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c "
+            mkdir -p build &&
+            cd build &&
+            cmake .. &&
+            make -j$(nproc)
+          "
 
-- name: Test in Docker
-  run: |
-    docker run --rm \
-      -v ${{ github.workspace }}:/workspace \
+    - name: Test in Docker
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}:/workspace \
       -w /workspace/build \
       jcsda/docker-gnu-openmpi-dev:latest \
       /bin/bash -c "
