@@ -2,10 +2,10 @@ name: CI
 
 on:
   push:
-    branches: [ ** ]
+    branches: [ "**" ]
     # branches: [ develop ]
   pull_request:
-    branches: [ ** ]
+    branches: [ "**" ]
     # branches: [ develop ]
   workflow_dispatch:
 
