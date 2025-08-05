@@ -53,9 +53,10 @@ jobs:
           "
 
     - name: Print debug
-      run: echo "Done building"
+      run: |
+        echo "Done building"
+        nccmp --version
 
-# didn't work: git clone https://github.com/Unidata/nccmp.git
     - name: Install nccmp from source
       run: |
         docker run --rm \
@@ -74,7 +75,7 @@ jobs:
             autoreconf -fiv
             CPPFLAGS="-I/usr/include" \
             LDFLAGS="-L/usr/lib/x86_64-linux-gnu" \
-              ./configure  --with-netcdf=/usr
+              ./configure  --with-netcdf=/usr || cat config.log
             make -j$(nproc)
             make install
             nccmp --version
