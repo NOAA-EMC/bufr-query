@@ -69,9 +69,9 @@ jobs:
               git autoconf automake libtool \
               netcdf-bin libnetcdf-dev \
               libhdf5-dev
-            curl -L https://github.com/Unidata/nccmp/archive/refs/tags/v1.9.1.0.tar.gz | tar xz
-            cd nccmp-1.9.1.0
-            ./autogen.sh
+            git clone https://gitlab.com/remikz/nccmp.git
+            cd nccmp
+            autoreconf -fiv
             ./configure
             make -j$(nproc)
             make install
