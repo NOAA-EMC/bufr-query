@@ -56,6 +56,28 @@ jobs:
       run: |
         echo "Done building"
         nccmp --version || true
+        # docker run --rm -it jcsda/docker-gnu-openmpi-dev:latest /bin/bash
+        # dpkg -l | grep netcdf
+        # ls /usr/lib/x86_64-linux-gnu/libnetcdf.*
+
+    - name: Check for NetCDF installation
+      run: |
+        set -e
+        echo "Checking for NetCDF installation..."
+        if ! ldconfig -p | grep -q netcdf; then
+          echo "NetCDF libraries NOT found."
+          exit 1
+        fi
+        if ! find /usr/include /usr/local/include -name netcdf.h 2>/dev/null | grep -q netcdf.h; then
+          echo "NetCDF headers NOT found."
+          exit 1
+        fi
+        if ! command -v nc-config >/dev/null 2>&1; then
+          echo "nc-config utility NOT found."
+          exit 1
+        fi
+        echo "NetCDF installation looks good!"
+        nc-config --all
 
     - name: Install nccmp from source
       run: |
