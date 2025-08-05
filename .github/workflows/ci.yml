@@ -55,6 +55,7 @@ jobs:
     - name: Print debug
       run: echo "Done building"
 
+# didn't work: git clone https://github.com/Unidata/nccmp.git
     - name: Install nccmp from source
       run: |
         docker run --rm \
@@ -68,7 +69,7 @@ jobs:
               git autoconf automake libtool \
               netcdf-bin libnetcdf-dev \
               libhdf5-dev
-            git clone https://github.com/Unidata/nccmp.git
+            curl -L https://github.com/Unidata/nccmp/archive/refs/heads/master.tar.gz | tar xz
             cd nccmp
             ./autogen.sh
             ./configure
