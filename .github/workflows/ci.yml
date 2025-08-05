@@ -11,21 +11,51 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - name: Cache Docker Image
+      uses: actions/cache@v3
+      with:
+        path: /tmp/.docker-cache
+        key: docker-${{ runner.os }}-jcsda/docker-gnu-openmpi-dev
+        restore-keys: |
+          docker-${{ runner.os }}-
 
-    - name: Install dependencies
-      run: sudo apt-get update && sudo apt-get install -y cmake g++ make
+    - name: Load Cached Docker Image
+      run: |
+        mkdir -p /tmp/.docker-cache
+        if [ -f /tmp/.docker-cache/jcsda/docker-gnu-openmpi-dev.tar ]; then
+          docker load -i /tmp/.docker-cache/jcsda/docker-gnu-openmpi-dev.tar || true
+        fi
 
-    - name: Create build directory
-      run: mkdir build
+    - name: Pull or Use Cached Image
+      run: |
+        docker pull jcsda/docker-gnu-openmpi-dev:latest || true
+        mkdir -p /tmp/.docker-cache/jcsda/
+        docker save -o /tmp/.docker-cache/jcsda/docker-gnu-openmpi-dev.tar jcsda/docker-gnu-openmpi-dev:latest
 
-    - name: Configure with CMake
-      run: cmake -S . -B build
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
 
-    - name: Build
-      run: cmake --build build
+- name: Build in Docker
+  run: |
+    docker run --rm \
+      -v ${{ github.workspace }}:/workspace \
+      -w /workspace \
+      jcsda/docker-gnu-openmpi-dev:latest \
+      /bin/bash -c "
+        mkdir -p build &&
+        cd build &&
+        cmake .. &&
+        make -j$(nproc)
+      "
 
-    - name: Run tests
-      run: ctest --test-dir build --output-on-failure
-
+- name: Test in Docker
+  run: |
+    docker run --rm \
+      -v ${{ github.workspace }}:/workspace \
+      -w /workspace/build \
+      jcsda/docker-gnu-openmpi-dev:latest \
+      /bin/bash -c "
+        ctest --output-on-failure
+      "
