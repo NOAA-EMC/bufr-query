@@ -56,6 +56,19 @@ jobs:
     - name: Print debug
       run: echo "Done building"
 
+    # - name: Install nccmp
+      # run: |
+        # docker run --rm \
+          # -v ${{ github.workspace }}:/workspace \
+          # -w /workspace/build \
+          # jcsda/docker-gnu-openmpi-dev:latest \
+          # /bin/bash -c "
+            # apt-get update && \
+            # apt-get install -y nccmp && \
+            # ctest --output-on-failure
+          # "
+
+
     - name: Test in Docker
       run: |
         docker run --rm \
@@ -63,6 +76,8 @@ jobs:
           -w /workspace/build \
           jcsda/docker-gnu-openmpi-dev:latest \
           /bin/bash -c "
+            apt-get update && \
+            apt-get install -y nccmp && \
             ctest --output-on-failure
           "
 
