@@ -55,7 +55,7 @@ jobs:
     - name: Print debug
       run: |
         echo "Done building"
-        nccmp --version
+        nccmp --version || true
 
     - name: Install nccmp from source
       run: |
