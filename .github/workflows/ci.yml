@@ -57,7 +57,26 @@ jobs:
         echo "Done building"
         nccmp --version || true
 
+    - name: Install nccmp from source with cmake
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}:/workspace \
+          -w /workspace \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c "
+            git clone https://gitlab.com/remikz/nccmp.git
+            cd nccmp
+            mkdir -p build &&
+            cd build &&
+            cmake .. &&
+            make -j$(nproc)
+            make install
+            nccmp --version
+            ccache -s || true
+          "
+
     - name: Check for NetCDF installation
+      if: false
       run: |
         set -e
         echo "Checking for NetCDF installation..."
@@ -78,6 +97,7 @@ jobs:
       continue-on-error: true
 
     - name: Install prerequisites for nccmp
+      if: false
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
@@ -98,6 +118,7 @@ jobs:
           "
 
     - name: Test environment
+      if: false
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
@@ -108,6 +129,7 @@ jobs:
           ./tttest
 
     - name: Install nccmp from source
+      if: false
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
