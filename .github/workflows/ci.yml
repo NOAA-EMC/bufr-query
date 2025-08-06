@@ -91,6 +91,9 @@ jobs:
             export PYTHONPATH=$BUFR_QUERY_ROOT/build/lib/python3.9/site-packages/
             export LD_LIBRARY_PATH=$BUFR_QUERY_ROOT/build/lib:$LD_LIBRARY_PATH
             cd build
+            ls
+            echo 'lib'
+            ls lib
             ls lib/python3.9/site-packages/
             echo 'testdata'
             ls test/testdata
