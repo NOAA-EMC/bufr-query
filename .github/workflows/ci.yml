@@ -80,13 +80,13 @@ jobs:
         nc-config --all
       continue-on-error: true
 
-    - name: Install nccmp from source
+    - name: Install prerequisites for nccmp
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
           -w /workspace \
           jcsda/docker-gnu-openmpi-dev:latest \
-          /bin/bash -c "
+          /bin/bash - c "
             set -e -x
             apt-get update 
             apt-get install -y \
@@ -98,7 +98,25 @@ jobs:
               libssl-dev build-essential
             export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/hdf5/serial:$LD_LIBRARY_PATH
             export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
+          "
 
+    - name: Test environment
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}:/workspace \
+          -w /workspace \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          echo -e '#include <stdio.h>\nint main() { printf("Test\\n"); return 0; }' > test.c && \
+          gcc -o test test.c && \
+          ./test
+
+    - name: Install nccmp from source
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}:/workspace \
+          -w /workspace \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c "
             git clone https://gitlab.com/remikz/nccmp.git
             cd nccmp
             autoreconf -fiv
