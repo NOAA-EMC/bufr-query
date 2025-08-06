@@ -81,7 +81,6 @@ jobs:
           ./tttest
 
     - name: Test environment
-      if: false
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
