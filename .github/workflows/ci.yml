@@ -92,14 +92,16 @@ jobs:
             apt-get install -y \
               git autoconf automake libtool \
               netcdf-bin libnetcdf-dev \
-              libhdf5-dev
+              libhdf5-dev \
+              libcurl4-openssl-dev \
+              zlib1g-dev libzstd-dev libbrotli-dev            
             git clone https://gitlab.com/remikz/nccmp.git
             cd nccmp
             autoreconf -fiv
-            ./configure CPPFLAGS="`nc-config --cflags`" LDFLAGS="`nc-config --libs`" || cat config.log
-            # CPPFLAGS="-I/usr/include" \
-            # LDFLAGS="-L/usr/lib/x86_64-linux-gnu" \
-              # ./configure  --with-netcdf=/usr || cat config.log
+            ./configure \
+              CPPFLAGS=\"$(nc-config --cflags) -I/usr/include/hdf5/serial\" \
+              LDFLAGS=\"$(nc-config --libs) -L/usr/lib/x86_64-linux-gnu/hdf5/serial -lcurl -lz -lzstd -lbrotli\" \
+              --with-netcdf=/usr || cat config.log
             make -j$(nproc)
             make install
             nccmp --version
