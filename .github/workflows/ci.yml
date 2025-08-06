@@ -52,12 +52,7 @@ jobs:
             make -j$(nproc)
           "
 
-    - name: Print debug
-      run: |
-        echo "Done building"
-        nccmp --version || true
-
-    - name: Install nccmp from source with cmake
+    - name: Install nccmp in docker from source with cmake
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
@@ -72,7 +67,6 @@ jobs:
             make -j$(nproc)
             make install
             nccmp --version
-            ccache -s || true
           "
 
     - name: Check for NetCDF installation
@@ -146,15 +140,7 @@ jobs:
             make -j$(nproc)
             make install
             nccmp --version
-            ccache -s || true
           "
-
-    - name: check nccmp
-      run: |
-        echo "checking nccmp"
-        nccmp --version
-
-
 
     - name: Test in Docker
       run: |
