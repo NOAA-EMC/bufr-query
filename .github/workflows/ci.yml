@@ -78,7 +78,7 @@ jobs:
         fi
         echo "NetCDF installation looks good!"
         nc-config --all
-    continue-on-error: true
+      continue-on-error: true
 
     - name: Install nccmp from source
       run: |
