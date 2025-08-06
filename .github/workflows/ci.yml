@@ -94,13 +94,17 @@ jobs:
               netcdf-bin libnetcdf-dev \
               libhdf5-dev \
               libcurl4-openssl-dev \
-              zlib1g-dev libzstd-dev libbrotli-dev            
+              zlib1g-dev libzstd-dev libbrotli-dev \
+              libssl-dev build-essential
+            export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/hdf5/serial:$LD_LIBRARY_PATH
+            export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
+
             git clone https://gitlab.com/remikz/nccmp.git
             cd nccmp
             autoreconf -fiv
             ./configure \
               CPPFLAGS=\"$(nc-config --cflags) -I/usr/include/hdf5/serial\" \
-              LDFLAGS=\"$(nc-config --libs) -L/usr/lib/x86_64-linux-gnu/hdf5/serial -lcurl -lz -lzstd -lbrotli\" \
+              LDFLAGS=\"$(nc-config --libs) -L/usr/lib/x86_64-linux-gnu/hdf5/serial -L/usr/lib/x86_64-linux-gnu -lcurl -lz -lzstd -lbrotli -lssl -lcrypto\" \
               --with-netcdf=/usr || cat config.log
             make -j$(nproc)
             make install
