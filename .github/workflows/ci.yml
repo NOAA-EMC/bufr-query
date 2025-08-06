@@ -56,9 +56,6 @@ jobs:
       run: |
         echo "Done building"
         nccmp --version || true
-        # docker run --rm -it jcsda/docker-gnu-openmpi-dev:latest /bin/bash
-        # dpkg -l | grep netcdf
-        # ls /usr/lib/x86_64-linux-gnu/libnetcdf.*
 
     - name: Check for NetCDF installation
       run: |
@@ -127,8 +124,15 @@ jobs:
             make -j$(nproc)
             make install
             nccmp --version
-            ccache -s || true  # optional
+            ccache -s || true
           "
+
+    - name: check nccmp
+      run: |
+        echo "checking nccmp"
+        nccmp --version
+
+
 
     - name: Test in Docker
       run: |
