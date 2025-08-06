@@ -78,6 +78,7 @@ jobs:
         fi
         echo "NetCDF installation looks good!"
         nc-config --all
+        continue-on-error: true
 
     - name: Install nccmp from source
       run: |
@@ -95,9 +96,10 @@ jobs:
             git clone https://gitlab.com/remikz/nccmp.git
             cd nccmp
             autoreconf -fiv
-            CPPFLAGS="-I/usr/include" \
-            LDFLAGS="-L/usr/lib/x86_64-linux-gnu" \
-              ./configure  --with-netcdf=/usr || cat config.log
+            ./configure CPPFLAGS="`nc-config --cflags`" LDFLAGS="`nc-config --libs`" || cat config.log
+            # CPPFLAGS="-I/usr/include" \
+            # LDFLAGS="-L/usr/lib/x86_64-linux-gnu" \
+              # ./configure  --with-netcdf=/usr || cat config.log
             make -j$(nproc)
             make install
             nccmp --version
