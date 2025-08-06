@@ -92,7 +92,7 @@ jobs:
             ls test/testdata
             echo 'testinput'
             ls test/testinput
-            bin/bufr2netcdf.x testdata/gdas.t18z.1bmhs.tm00.bufr_d testinput/bufrtest_filtering_mapping.yaml jjj.nc
+            bin/bufr2netcdf.x test/testdata/gdas.t18z.1bmhs.tm00.bufr_d test/testinput/bufrtest_filtering_mapping.yaml jjj.nc
           "
 
     - name: Test in Docker
