@@ -106,9 +106,9 @@ jobs:
           -v ${{ github.workspace }}:/workspace \
           -w /workspace \
           jcsda/docker-gnu-openmpi-dev:latest \
-          echo -e '#include <stdio.h>\nint main() { printf("Test\\n"); return 0; }' > test.c && \
-          gcc -o test test.c && \
-          ./test
+          echo -e '#include <stdio.h>\nint main() { printf("Test\\n"); return 0; }' > tttest.c && \
+          gcc -o tttest tttest.c && \
+          ./tttest
 
     - name: Install nccmp from source
       run: |
