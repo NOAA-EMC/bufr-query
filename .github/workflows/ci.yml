@@ -69,49 +69,7 @@ jobs:
             nccmp --version
           "
 
-    - name: Check for NetCDF installation
-      if: false
-      run: |
-        set -e
-        echo "Checking for NetCDF installation..."
-        if ! ldconfig -p | grep -q netcdf; then
-          echo "NetCDF libraries NOT found."
-          exit 1
-        fi
-        if ! find /usr/include /usr/local/include -name netcdf.h 2>/dev/null | grep -q netcdf.h; then
-          echo "NetCDF headers NOT found."
-          exit 1
-        fi
-        if ! command -v nc-config >/dev/null 2>&1; then
-          echo "nc-config utility NOT found."
-          exit 1
-        fi
-        echo "NetCDF installation looks good!"
-        nc-config --all
-      continue-on-error: true
-
-    - name: Install prerequisites for nccmp
-      if: false
-      run: |
-        docker run --rm \
-          -v ${{ github.workspace }}:/workspace \
-          -w /workspace \
-          jcsda/docker-gnu-openmpi-dev:latest \
-          /bin/bash -c "
-            set -e -x
-            apt-get update 
-            apt-get install -y \
-              git autoconf automake libtool \
-              netcdf-bin libnetcdf-dev \
-              libhdf5-dev \
-              libcurl4-openssl-dev \
-              zlib1g-dev libzstd-dev libbrotli-dev \
-              libssl-dev build-essential
-            export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/hdf5/serial:$LD_LIBRARY_PATH
-            export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
-          "
-
-    - name: Test environment
+    - name: Test gcc
       if: false
       run: |
         docker run --rm \
@@ -122,7 +80,7 @@ jobs:
           gcc -o tttest tttest.c && \
           ./tttest
 
-    - name: Install nccmp from source
+    - name: Test environment
       if: false
       run: |
         docker run --rm \
@@ -130,16 +88,12 @@ jobs:
           -w /workspace \
           jcsda/docker-gnu-openmpi-dev:latest \
           /bin/bash -c "
-            git clone https://gitlab.com/remikz/nccmp.git
-            cd nccmp
-            autoreconf -fiv
-            ./configure \
-              CPPFLAGS=\"$(nc-config --cflags) -I/usr/include/hdf5/serial\" \
-              LDFLAGS=\"$(nc-config --libs) -L/usr/lib/x86_64-linux-gnu/hdf5/serial -L/usr/lib/x86_64-linux-gnu -lcurl -lz -lzstd -lbrotli -lssl -lcrypto\" \
-              --with-netcdf=/usr || cat config.log
-            make -j$(nproc)
-            make install
-            nccmp --version
+            cd build 
+            echo 'testdata'
+            ls test/testdata
+            echo 'testinput'
+            ls test/testinput
+            bin/bufr2netcdf.x testdata/gdas.t18z.1bmhs.tm00.bufr_d testinput/bufrtest_filtering_mapping.yaml jjj.nc
           "
 
     - name: Test in Docker
