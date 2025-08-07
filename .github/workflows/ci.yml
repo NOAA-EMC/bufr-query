@@ -78,7 +78,6 @@ jobs:
             # ls -l /usr/bin/python* 2>/dev/null
             # ls -l /usr/local/bin/python* 2>/dev/null
           "
-    
     - name: Find and Set Python Variables
       run: |
         docker run --rm \
@@ -99,7 +98,7 @@ jobs:
             # Set Python variables
             PYTHON_BIN=\$(which python3)
             PYTHON_INCLUDE_DIR=\$(python3 -c 'import sysconfig; print(sysconfig.get_path(\"include\"))' 2>/dev/null || find / -name 'Python.h' 2>/dev/null | head -n1 | xargs dirname)
-            PYTHON_LIBRARY=\$(find / -name 'libpython3.11.so' 2>/dev/null | head -n1 || python3 -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\") + \"/libpython3.11.so\")' 2>/dev/null)
+            PYTHON_LIBRARY=\$(find /opt/views/view -name 'libpython3.11.so' 2>/dev/null | head -n1 || find / -name 'libpython3.11.so' 2>/dev/null | head -n1 || python3 -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\") + \"/libpython3.11.so\")' 2>/dev/null)
             echo PYTHON_BIN
             echo \$PYTHON_BIN
             echo PYTHON_INCLUDE_DIR
@@ -109,12 +108,13 @@ jobs:
             # Verify Python version
             python3 --version || echo 'python3 version failed'
             python3 -c 'import sys; print(sys.version_info)' || echo 'Python version info failed'
-            # Export variables to GitHub Actions
-            echo \"::set-env name=PYTHON_BIN::\$PYTHON_BIN\"
-            echo \"::set-env name=PYTHON_INCLUDE_DIR::\$PYTHON_INCLUDE_DIR\"
-            echo \"::set-env name=PYTHON_LIBRARY::\$PYTHON_LIBRARY\"
+            # Write to GITHUB_ENV
+            echo \"PYTHON_BIN=\$PYTHON_BIN\" >> \$GITHUB_ENV
+            echo \"PYTHON_INCLUDE_DIR=\$PYTHON_INCLUDE_DIR\" >> \$GITHUB_ENV
+            echo \"PYTHON_LIBRARY=\$PYTHON_LIBRARY\" >> \$GITHUB_ENV
           "
       shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+      
           
     - name: Build bufr-query in the container
       run: |
