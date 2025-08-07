@@ -54,7 +54,31 @@ jobs:
             echo $PYTHONPATH
           "
 
+
     - name: Build in Docker
+      run: |
+        docker run --rm \
+          -v /home/runner/work/bufr-query/bufr-query:/workspace \
+          -w /workspace \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash <<'EOF'
+            set -e
+            cd /workspace
+            mkdir -p build
+            cd build
+            PYTHON_BIN=$(which python3)
+            PYTHON_INCLUDE_DIR=$(python3 -c 'from sysconfig import get_paths as gp; print(gp()["include"])')
+            PYTHON_LIBRARY=$(find /opt -name 'libpython3.11.so' 2>/dev/null | head -n1)
+            cmake .. \
+              -DPython3_EXECUTABLE="$PYTHON_BIN" \
+              -DPython3_INCLUDE_DIR="$PYTHON_INCLUDE_DIR" \
+              -DPython3_LIBRARY="$PYTHON_LIBRARY"
+            make -j$(nproc)
+          EOF
+
+
+    - name: old Build in Docker
+      if: false
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
