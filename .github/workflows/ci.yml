@@ -39,6 +39,21 @@ jobs:
       with:
         submodules: recursive
 
+    - name: check python3
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}:/workspace \
+          -w /workspace \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c "
+            which python3
+            find / -type f -name "python3" 2>/dev/null
+            python3 --version
+            find / -type f -name "Python.h" 2>/dev/null
+            echo $PATH
+            echo $PYTHONPATH
+          "
+
     - name: Build in Docker
       run: |
         docker run --rm \
