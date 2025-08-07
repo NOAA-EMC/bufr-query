@@ -39,7 +39,8 @@ jobs:
       with:
         submodules: recursive
 
-    - name: check python3
+    - name: old check python3
+      if: false
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
@@ -64,6 +65,47 @@ jobs:
             echo PYTHON_LIBRARY
             echo $PYTHON_LIBRARY
           "
+
+    - name: check python3
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}:/workspace \
+          -w /workspace \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c "
+            # Update PATH to include Python 3 directory
+            export PATH=\$PATH:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
+            # Install python3-dev if needed
+            # apt-get update && apt-get install -y python3-dev || true
+            # Debug Python location and version
+            which python3 || echo 'No python3 in PATH'
+            find / -type f -name 'python3' 2>/dev/null
+            python3 --version || echo 'python3 version failed'
+            find / -type f -name 'Python.h' 2>/dev/null
+            echo PATH
+            echo \$PATH
+            echo PYTHONPATH
+            echo \$PYTHONPATH
+            # Set PYTHON_BIN
+            PYTHON_BIN=\$(which python3)
+            # Set PYTHON_INCLUDE_DIR with fallback
+            PYTHON_INCLUDE_DIR=\$(python3 -c 'import sysconfig; print(sysconfig.get_path(\"include\"))' 2>/dev/null || find / -name 'Python.h' 2>/dev/null | head -n1 | xargs dirname)
+            # Set PYTHON_LIBRARY with broader search
+            PYTHON_LIBRARY=\$(find / -name 'libpython3*.so' 2>/dev/null | head -n1 || python3 -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\") + \"/libpython3.11.so\")' 2>/dev/null)
+            echo PYTHON_BIN
+            echo \$PYTHON_BIN
+            echo PYTHON_INCLUDE_DIR
+            echo \$PYTHON_INCLUDE_DIR
+            echo PYTHON_LIBRARY
+            echo \$PYTHON_LIBRARY
+            # Additional debugging
+            python3 -c 'import sys; print(sys.version_info)' || echo 'Python version info failed'
+            ls -l /opt/views/view/bin/python* 2>/dev/null
+            ls -l /usr/bin/python* 2>/dev/null
+            ls -l /usr/local/bin/python* 2>/dev/null
+          "
+
+
 
     - name: Build inside Docker
       run: |
