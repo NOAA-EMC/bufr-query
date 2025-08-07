@@ -40,6 +40,7 @@ jobs:
         submodules: recursive
 
     - name: check python3
+      if: false
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
@@ -78,7 +79,80 @@ jobs:
             # ls -l /usr/local/bin/python* 2>/dev/null
           "
     
-    - name: Build with CMake
+    - name: Find and Set Python Variables
+      run: |
+        docker run --rm \
+          -v /home/runner/work/bufr-query/bufr-query:/workspace \
+          -w /workspace \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c "
+            # Install dependencies
+            apt-get update && apt-get install -y python3-dev python3-pip || true
+            pip3 install pybind11 pyyaml || true
+            # Update PATH and PYTHONPATH
+            export PATH=\$PATH:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
+            export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:\$PYTHONPATH
+            echo PATH
+            echo \$PATH
+            echo PYTHONPATH
+            echo \$PYTHONPATH
+            # Set Python variables
+            PYTHON_BIN=\$(which python3)
+            PYTHON_INCLUDE_DIR=\$(python3 -c 'import sysconfig; print(sysconfig.get_path(\"include\"))' 2>/dev/null || find / -name 'Python.h' 2>/dev/null | head -n1 | xargs dirname)
+            PYTHON_LIBRARY=\$(find / -name 'libpython3.11.so' 2>/dev/null | head -n1 || python3 -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\") + \"/libpython3.11.so\")' 2>/dev/null)
+            echo PYTHON_BIN
+            echo \$PYTHON_BIN
+            echo PYTHON_INCLUDE_DIR
+            echo \$PYTHON_INCLUDE_DIR
+            echo PYTHON_LIBRARY
+            echo \$PYTHON_LIBRARY
+            # Verify Python version
+            python3 --version || echo 'python3 version failed'
+            python3 -c 'import sys; print(sys.version_info)' || echo 'Python version info failed'
+            # Export variables to GitHub Actions
+            echo \"::set-env name=PYTHON_BIN::\$PYTHON_BIN\"
+            echo \"::set-env name=PYTHON_INCLUDE_DIR::\$PYTHON_INCLUDE_DIR\"
+            echo \"::set-env name=PYTHON_LIBRARY::\$PYTHON_LIBRARY\"
+          "
+      shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+          
+    - name: Build bufr-query in the container
+      run: |
+        docker run --rm \
+          -v /home/runner/work/bufr-query/bufr-query:/workspace \
+          -w /workspace \
+          -e PYTHON_BIN \
+          -e PYTHON_INCLUDE_DIR \
+          -e PYTHON_LIBRARY \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c "
+            # Update PATH and PYTHONPATH
+            export PATH=\$PATH:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
+            export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:\$PYTHONPATH
+            # Verify environment variables
+            echo PYTHON_BIN
+            echo \$PYTHON_BIN
+            echo PYTHON_INCLUDE_DIR
+            echo \$PYTHON_INCLUDE_DIR
+            echo PYTHON_LIBRARY
+            echo \$PYTHON_LIBRARY
+            # Build bufr-query
+            mkdir -p build
+            cd build
+            rm -rf CMakeCache.txt CMakeFiles  # Clear cache
+            cmake .. \
+              -DPython3_ROOT_DIR=/opt/views/view \
+              -DPython3_EXECUTABLE=\$PYTHON_BIN \
+              -DPython3_INCLUDE_DIR=\$PYTHON_INCLUDE_DIR \
+              -DPython3_LIBRARY=\$PYTHON_LIBRARY \
+              -DPython3_FIND_STRATEGY=LOCATION \
+              -DPython3_FIND_FRAMEWORK=LAST
+            make -j$(nproc)
+          "
+      shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+      
+    - name: old Build with CMake
+      if: false
       run: |
         docker run --rm \
           -v /home/runner/work/bufr-query/bufr-query:/workspace \
@@ -122,42 +196,6 @@ jobs:
           "
       shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
 
-    - name: old Build inside Docker
-      if: false
-      run: |
-        docker run --rm \
-          -v /home/runner/work/bufr-query/bufr-query:/workspace \
-          -w /workspace \
-          jcsda/docker-gnu-openmpi-dev:latest \
-          /bin/bash -c "
-            mkdir -p build
-            cd build
-            # Update PATH to include Python 3 directory
-            export PATH=\$PATH:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
-            echo PATH
-            echo \$PATH
-            echo PYTHONPATH
-            echo \$PYTHONPATH
-            # Set PYTHON_BIN
-            PYTHON_BIN=\$(which python3)
-            # Set PYTHON_INCLUDE_DIR with fallback
-            PYTHON_INCLUDE_DIR=\$(python3 -c 'import sysconfig; print(sysconfig.get_path(\"include\"))' 2>/dev/null || find / -name 'Python.h' 2>/dev/null | head -n1 | xargs dirname)
-            # Set PYTHON_LIBRARY with broader search
-            PYTHON_LIBRARY=\$(find / -name 'libpython3*.so' 2>/dev/null | head -n1 || python3 -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\") + \"/libpython3.11.so\")' 2>/dev/null)
-            echo PYTHON_BIN
-            echo \$PYTHON_BIN
-            echo PYTHON_INCLUDE_DIR
-            echo \$PYTHON_INCLUDE_DIR
-            echo PYTHON_LIBRARY
-            echo \$PYTHON_LIBRARY
-            cmake .. \
-              -DPython3_EXECUTABLE=\$PYTHON_BIN \
-              -DPython3_INCLUDE_DIR=\$PYTHON_INCLUDE_DIR \
-              -DPython3_LIBRARY=\$PYTHON_LIBRARY
-            make
-          "
-      shell: bash
-
     - name: Install nccmp in docker from source with cmake
       run: |
         docker run --rm \
@@ -175,6 +213,46 @@ jobs:
             nccmp --version
           "
 
+    - name: Download and Build wxflow
+      run: |
+        docker run --rm \
+          -v /home/runner/work/bufr-query/bufr-query:/workspace \
+          -w /workspace \
+          -e PYTHON_BIN \
+          -e PYTHON_INCLUDE_DIR \
+          -e PYTHON_LIBRARY \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c "
+            # Install dependencies
+            apt-get update && apt-get install -y python3-dev python3-pip libyaml-cpp-dev || true
+            pip3 install pybind11 pyyaml || true
+            # Update PATH and PYTHONPATH
+            export PATH=\$PATH:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
+            export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:\$PYTHONPATH
+            # Verify environment variables
+            echo PYTHON_BIN
+            echo \$PYTHON_BIN
+            echo PYTHON_INCLUDE_DIR
+            echo \$PYTHON_INCLUDE_DIR
+            echo PYTHON_LIBRARY
+            echo \$PYTHON_LIBRARY
+            # Clone wxflow
+            git clone https://github.com/NOAA-EMC/wxflow.git wxflow
+            # Build wxflow
+            mkdir -p wxflow/build
+            cd wxflow/build
+            rm -rf CMakeCache.txt CMakeFiles  # Clear cache
+            cmake .. \
+              -DPython3_ROOT_DIR=/opt/views/view \
+              -DPython3_EXECUTABLE=\$PYTHON_BIN \
+              -DPython3_INCLUDE_DIR=\$PYTHON_INCLUDE_DIR \
+              -DPython3_LIBRARY=\$PYTHON_LIBRARY \
+              -DPython3_FIND_STRATEGY=LOCATION \
+              -DPython3_FIND_FRAMEWORK=LAST
+            make -j$(nproc)
+          "
+      shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+    
     - name: Test environment
       if: false
       run: |
