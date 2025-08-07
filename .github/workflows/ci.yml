@@ -104,10 +104,53 @@ jobs:
             # ls -l /usr/bin/python* 2>/dev/null
             # ls -l /usr/local/bin/python* 2>/dev/null
           "
+    
+    - name: Build with CMake
+      run: |
+        docker run --rm \
+          -v /home/runner/work/bufr-query/bufr-query:/workspace \
+          -w /workspace \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c "
+            # Install python3-dev and dependencies
+            apt-get update && apt-get install -y python3-dev python3-pip || true
+            # Update PATH
+            export PATH=\$PATH:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
+            export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages
+            echo PATH
+            echo \$PATH
+            echo PYTHONPATH
+            echo \$PYTHONPATH
+            # Set Python variables
+            PYTHON_BIN=\$(which python3)
+            PYTHON_INCLUDE_DIR=\$(python3 -c 'import sysconfig; print(sysconfig.get_path(\"include\"))' 2>/dev/null || find / -name 'Python.h' 2>/dev/null | head -n1 | xargs dirname)
+            PYTHON_LIBRARY=\$(find / -name 'libpython3.11.so' 2>/dev/null | head -n1 || python3 -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\") + \"/libpython3.11.so\")' 2>/dev/null)
+            echo PYTHON_BIN
+            echo \$PYTHON_BIN
+            echo PYTHON_INCLUDE_DIR
+            echo \$PYTHON_INCLUDE_DIR
+            echo PYTHON_LIBRARY
+            echo \$PYTHON_LIBRARY
+            # Verify Python version
+            python3 --version || echo 'python3 version failed'
+            python3 -c 'import sys; print(sys.version_info)' || echo 'Python version info failed'
+            # Build with CMake
+            mkdir -p build
+            cd build
+            rm -rf CMakeCache.txt CMakeFiles  # Clear cache
+            cmake .. \
+              -DPython3_ROOT_DIR=/opt/views/view \
+              -DPython3_EXECUTABLE=\$PYTHON_BIN \
+              -DPython3_INCLUDE_DIR=\$PYTHON_INCLUDE_DIR \
+              -DPython3_LIBRARY=\$PYTHON_LIBRARY \
+              -DPython3_FIND_STRATEGY=LOCATION \
+              -DPython3_FIND_FRAMEWORK=LAST
+            make
+          "
+      shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
 
-
-
-    - name: Build inside Docker
+    - name: old Build inside Docker
+      if: false
       run: |
         docker run --rm \
           -v /home/runner/work/bufr-query/bufr-query:/workspace \
