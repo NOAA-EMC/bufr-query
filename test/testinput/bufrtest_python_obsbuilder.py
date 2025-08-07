@@ -74,4 +74,11 @@ if __name__ == '__main__':
     test_basic_obs_builder_interface()
     test_run_obs_builder()
     test_run_obs_file()
-    test_run_obs_group()
+
+    try:
+        import pyioda
+        test_run_obs_group()
+    except ImportError as e:
+        pass
+    except Exception as e:
+        raise e
