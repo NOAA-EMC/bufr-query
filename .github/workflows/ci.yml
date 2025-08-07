@@ -74,7 +74,7 @@ jobs:
               -DPython3_INCLUDE_DIR="$PYTHON_INCLUDE_DIR" \
               -DPython3_LIBRARY="$PYTHON_LIBRARY"
             make -j$(nproc)
-          EOF
+            EOF
 
 
     - name: old Build in Docker
