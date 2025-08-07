@@ -50,13 +50,18 @@ jobs:
             find / -type f -name "python3" 2>/dev/null
             python3 --version
             find / -type f -name "Python.h" 2>/dev/null
+            echo PATH
             echo $PATH
+            echo PYTHONPATH
             echo $PYTHONPATH
             PYTHON_BIN=$(which python3)
             PYTHON_INCLUDE_DIR=$(python3 -c 'from sysconfig import get_paths as gp; print(gp()["include"])')
             PYTHON_LIBRARY=$(find /opt -name 'libpython3.11.so' 2>/dev/null | head -n1)
+            echo PYTHON_BIN
             echo $PYTHON_BIN
+            echo PYTHON_INCLUDE_DIR
             echo $PYTHON_INCLUDE_DIR
+            echo PYTHON_LIBRARY
             echo $PYTHON_LIBRARY
           "
 
