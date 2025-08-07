@@ -116,15 +116,24 @@ jobs:
           /bin/bash -c "
             mkdir -p build
             cd build
+            # Update PATH to include Python 3 directory
+            export PATH=\$PATH:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
+            echo PATH
+            echo \$PATH
+            echo PYTHONPATH
+            echo \$PYTHONPATH
+            # Set PYTHON_BIN
+            PYTHON_BIN=\$(which python3)
+            # Set PYTHON_INCLUDE_DIR with fallback
+            PYTHON_INCLUDE_DIR=\$(python3 -c 'import sysconfig; print(sysconfig.get_path(\"include\"))' 2>/dev/null || find / -name 'Python.h' 2>/dev/null | head -n1 | xargs dirname)
+            # Set PYTHON_LIBRARY with broader search
+            PYTHON_LIBRARY=\$(find / -name 'libpython3*.so' 2>/dev/null | head -n1 || python3 -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\") + \"/libpython3.11.so\")' 2>/dev/null)
             echo PYTHON_BIN
             echo \$PYTHON_BIN
             echo PYTHON_INCLUDE_DIR
             echo \$PYTHON_INCLUDE_DIR
             echo PYTHON_LIBRARY
             echo \$PYTHON_LIBRARY
-            # PYTHON_BIN=$(which python3)
-            # PYTHON_INCLUDE_DIR=$(python3 -c 'from sysconfig import get_paths as gp; print(gp()[\"include\"])')
-            # PYTHON_LIBRARY=$(find /opt -name 'libpython3.11.so' 2>/dev/null | head -n1)
             cmake .. \
               -DPython3_EXECUTABLE=\$PYTHON_BIN \
               -DPython3_INCLUDE_DIR=\$PYTHON_INCLUDE_DIR \
