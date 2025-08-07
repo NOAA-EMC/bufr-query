@@ -39,33 +39,6 @@ jobs:
       with:
         submodules: recursive
 
-    - name: old check python3
-      if: false
-      run: |
-        docker run --rm \
-          -v ${{ github.workspace }}:/workspace \
-          -w /workspace \
-          jcsda/docker-gnu-openmpi-dev:latest \
-          /bin/bash -c "
-            which python3
-            find / -type f -name "python3" 2>/dev/null
-            python3 --version
-            find / -type f -name "Python.h" 2>/dev/null
-            echo PATH
-            echo $PATH
-            echo PYTHONPATH
-            echo $PYTHONPATH
-            PYTHON_BIN=$(which python3)
-            PYTHON_INCLUDE_DIR=$(python3 -c 'from sysconfig import get_paths as gp; print(gp()["include"])')
-            PYTHON_LIBRARY=$(find /opt -name 'libpython3.11.so' 2>/dev/null | head -n1)
-            echo PYTHON_BIN
-            echo $PYTHON_BIN
-            echo PYTHON_INCLUDE_DIR
-            echo $PYTHON_INCLUDE_DIR
-            echo PYTHON_LIBRARY
-            echo $PYTHON_LIBRARY
-          "
-
     - name: check python3
       run: |
         docker run --rm \
@@ -185,26 +158,6 @@ jobs:
           "
       shell: bash
 
-    - name: old Build in Docker
-      if: false
-      run: |
-        docker run --rm \
-          -v ${{ github.workspace }}:/workspace \
-          -w /workspace \
-          jcsda/docker-gnu-openmpi-dev:latest \
-          /bin/bash -c "
-            mkdir -p build
-            cd build
-            PYTHON_BIN=$(which python3)
-            PYTHON_INCLUDE_DIR=$(python3 -c "from sysconfig import get_paths as gp; print(gp()['include'])")
-            PYTHON_LIBRARY=$(find /opt -name "libpython3.11.so" 2>/dev/null | head -n1)
-            cmake .. \
-              -DPython3_EXECUTABLE="$PYTHON_BIN" \
-              -DPython3_INCLUDE_DIR="$PYTHON_INCLUDE_DIR" \
-              -DPython3_LIBRARY="$PYTHON_LIBRARY"
-            make -j$(nproc)
-          "
-
     - name: Install nccmp in docker from source with cmake
       run: |
         docker run --rm \
@@ -222,18 +175,8 @@ jobs:
             nccmp --version
           "
 
-    - name: Test gcc
-      if: false
-      run: |
-        docker run --rm \
-          -v ${{ github.workspace }}:/workspace \
-          -w /workspace \
-          jcsda/docker-gnu-openmpi-dev:latest \
-          echo -e '#include <stdio.h>\nint main() { printf("Test\\n"); return 0; }' > tttest.c && \
-          gcc -o tttest tttest.c && \
-          ./tttest
-
     - name: Test environment
+      if: false
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
