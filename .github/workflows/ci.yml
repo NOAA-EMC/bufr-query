@@ -116,10 +116,28 @@ jobs:
             python3 -c 'import wxflow; print(wxflow.__version__)' || echo 'wxflow not found'
           "
       shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
-
+    
+    - name: Run tests inside container
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}:/workspace \
+          -w /workspace/build \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c "
+            set -e -x
+            pip3 install wxflow
+            python3 -m site
+            export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:$PYTHONPATH
+            export PATH=/usr/local/bin:/usr/bin:/bin:$PATH
+            export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/hdf5/serial:$LD_LIBRARY_PATH
+            id -u testuser || useradd -m -u 1001 -s /bin/bash testuser
+            chown -R testuser:testuser /workspace
+            su testuser -c \"echo RUNNING TESTS as testuser\"
+            su testuser -c \"env PATH=$PATH LD_LIBRARY_PATH=$LD_LIBRARY_PATH PYTHONPATH=$PYTHONPATH ctest --output-on-failure\"
+          "
 
     - name: Test in Docker
-      if: true
+      if: false
       run: |
         docker run --rm \
               -v /home/runner/work/bufr-query/bufr-query:/workspace \
