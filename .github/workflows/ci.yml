@@ -100,41 +100,34 @@ jobs:
             make install
             nccmp --version
           "
+        
 
-    - name: install wxflow
-      if: false
+    - name: Test in Docker
+      if: true
       run: |
         docker run --rm \
-          -v /home/runner/work/bufr-query/bufr-query:/workspace \
-          -w /workspace \
-          jcsda/docker-gnu-openmpi-dev:latest \
-          /bin/bash -c "
-            # Install dependencies
-            # apt-get update && apt-get install -y  libyaml-cpp-dev || true
-            # pip3 install pybind11 pyyaml || true
-            pip3 install wxflow
-            python3 -c 'import wxflow; print(wxflow.__version__)' || echo 'wxflow not found'
-          "
-      shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
-    
-    - name: Run tests inside container
-      run: |
-        docker run --rm \
-          -v ${{ github.workspace }}:/workspace \
-          -w /workspace/build \
-          jcsda/docker-gnu-openmpi-dev:latest \
-          /bin/bash -c "
-            set -e -x
-            pip3 install wxflow
-            python3 -m site
-            export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:$PYTHONPATH
-            export PATH=/usr/local/bin:/usr/bin:/bin:$PATH
-            export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/hdf5/serial:$LD_LIBRARY_PATH
-            id -u testuser || useradd -m -u 1001 -s /bin/bash testuser
-            chown -R testuser:testuser /workspace
-            su testuser -c \"echo RUNNING TESTS as testuser\"
-            su testuser -c \"env PATH=$PATH LD_LIBRARY_PATH=$LD_LIBRARY_PATH PYTHONPATH=$PYTHONPATH ctest --output-on-failure\"
-          "
+            -v /home/runner/work/bufr-query/bufr-query:/workspace \
+            -w /workspace/build \
+            jcsda/docker-gnu-openmpi-dev:latest \
+            /bin/bash -c "
+              set -e -x
+              pip3 install wxflow
+              python3 -m site
+              # Set environment variables
+              export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:$PYTHONPATH
+              export PATH=/usr/local/bin:/usr/bin:/bin
+              export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/hdf5/serial:$LD_LIBRARY_PATH
+              # Create non-root user with a different UID if 1000 is taken
+              id -u testuser || useradd -m -u 1001 -s /bin/bash testuser
+              chown -R testuser:testuser /workspace
+              # Verify environment as testuser
+              su testuser -c 'echo RUNNING TESTS as testuser; echo PATH=$PATH; echo PYTHONPATH=$PYTHONPATH; echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH'
+              # Run tests as non-root user, explicitly preserve environment
+              su testuser -c 'export PATH=/usr/local/bin:/usr/bin:/bin; export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/hdf5/serial:$LD_LIBRARY_PATH; export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:$PYTHONPATH; ctest --output-on-failure'
+            "
+          shell: /usr/bin/bash -e {0}
+
+
 
     - name: Test in Docker
       if: false
