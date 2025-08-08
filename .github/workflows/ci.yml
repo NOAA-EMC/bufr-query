@@ -225,25 +225,7 @@ jobs:
             # Install dependencies
             apt-get update && apt-get install -y  libyaml-cpp-dev || true
             pip3 install pybind11 pyyaml || true
-            export PATH=\$PATH:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
-            export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:\$PYTHONPATH
-            PYTHON_BIN=\$(which python3)
-            PYTHON_INCLUDE_DIR=\$(python3 -c 'import sysconfig; print(sysconfig.get_path(\"include\"))' 2>/dev/null || find / -name 'Python.h' 2>/dev/null | head -n1 | xargs dirname)
-            PYTHON_LIBRARY=\$(find / -name 'libpython3.11.so' 2>/dev/null | head -n1 || python3 -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\") + \"/libpython3.11.so\")' 2>/dev/null)          
-            # Clone wxflow
-            git clone https://github.com/NOAA-EMC/wxflow.git wxflow
-            # Build wxflow
-            mkdir -p wxflow/build
-            cd wxflow/build
-            rm -rf CMakeCache.txt CMakeFiles  # Clear cache
-            cmake .. \
-              -DPython3_ROOT_DIR=/opt/views/view \
-              -DPython3_EXECUTABLE=\$PYTHON_BIN \
-              -DPython3_INCLUDE_DIR=\$PYTHON_INCLUDE_DIR \
-              -DPython3_LIBRARY=\$PYTHON_LIBRARY \
-              -DPython3_FIND_STRATEGY=LOCATION \
-              -DPython3_FIND_FRAMEWORK=LAST
-            make -j$(nproc)
+            pip install wxflow
           "
       shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
     
