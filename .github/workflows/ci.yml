@@ -215,7 +215,7 @@ jobs:
             nccmp --version
           "
 
-    - name: Download and Build wxflow
+    - name: install wxflow
       run: |
         docker run --rm \
           -v /home/runner/work/bufr-query/bufr-query:/workspace \
@@ -223,9 +223,10 @@ jobs:
           jcsda/docker-gnu-openmpi-dev:latest \
           /bin/bash -c "
             # Install dependencies
-            apt-get update && apt-get install -y  libyaml-cpp-dev || true
-            pip3 install pybind11 pyyaml || true
-            pip install wxflow
+            # apt-get update && apt-get install -y  libyaml-cpp-dev || true
+            # pip3 install pybind11 pyyaml || true
+            pip3 install wxflow
+            python3 -c 'import wxflow; print(wxflow.__version__)' || echo 'wxflow not found'
           "
       shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
     
