@@ -39,121 +39,7 @@ jobs:
       with:
         submodules: recursive
 
-    - name: check python3
-      if: false
-      run: |
-        docker run --rm \
-          -v ${{ github.workspace }}:/workspace \
-          -w /workspace \
-          jcsda/docker-gnu-openmpi-dev:latest \
-          /bin/bash -c "
-            # Update PATH to include Python 3 directory
-            export PATH=\$PATH:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
-            # Install python3-dev if needed
-            # apt-get update && apt-get install -y python3-dev || true
-            # Debug Python location and version
-            # which python3 || echo 'No python3 in PATH'
-            # find / -type f -name 'python3' 2>/dev/null
-            # python3 --version || echo 'python3 version failed'
-            # find / -type f -name 'Python.h' 2>/dev/null
-            echo PATH
-            echo \$PATH
-            echo PYTHONPATH
-            echo \$PYTHONPATH
-            # Set PYTHON_BIN
-            PYTHON_BIN=\$(which python3)
-            # Set PYTHON_INCLUDE_DIR with fallback
-            PYTHON_INCLUDE_DIR=\$(python3 -c 'import sysconfig; print(sysconfig.get_path(\"include\"))' 2>/dev/null || find / -name 'Python.h' 2>/dev/null | head -n1 | xargs dirname)
-            # Set PYTHON_LIBRARY with broader search
-            PYTHON_LIBRARY=\$(find / -name 'libpython3*.so' 2>/dev/null | head -n1 || python3 -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\") + \"/libpython3.11.so\")' 2>/dev/null)
-            echo PYTHON_BIN
-            echo \$PYTHON_BIN
-            echo PYTHON_INCLUDE_DIR
-            echo \$PYTHON_INCLUDE_DIR
-            echo PYTHON_LIBRARY
-            echo \$PYTHON_LIBRARY
-            # Additional debugging
-            # python3 -c 'import sys; print(sys.version_info)' || echo 'Python version info failed'
-            # ls -l /opt/views/view/bin/python* 2>/dev/null
-            # ls -l /usr/bin/python* 2>/dev/null
-            # ls -l /usr/local/bin/python* 2>/dev/null
-          "
-    - name: Find and Set Python Variables
-      if: false
-      run: |
-        docker run --rm \
-          -v /home/runner/work/bufr-query/bufr-query:/workspace \
-          -w /workspace \
-          jcsda/docker-gnu-openmpi-dev:latest \
-          /bin/bash -c "
-            # Install dependencies
-            apt-get update && apt-get install -y python3-dev python3-pip || true
-            pip3 install pybind11 pyyaml || true
-            # Update PATH and PYTHONPATH
-            export PATH=\$PATH:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
-            export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:\$PYTHONPATH
-            echo PATH
-            echo \$PATH
-            echo PYTHONPATH
-            echo \$PYTHONPATH
-            # Set Python variables
-            PYTHON_BIN=\$(which python3)
-            PYTHON_INCLUDE_DIR=\$(python3 -c 'import sysconfig; print(sysconfig.get_path(\"include\"))' 2>/dev/null || find / -name 'Python.h' 2>/dev/null | head -n1 | xargs dirname)
-            PYTHON_LIBRARY=\$(find /opt/views/view -name 'libpython3.11.so' 2>/dev/null | head -n1 || find / -name 'libpython3.11.so' 2>/dev/null | head -n1 || python3 -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\") + \"/libpython3.11.so\")' 2>/dev/null)
-            echo PYTHON_BIN
-            echo \$PYTHON_BIN
-            echo PYTHON_INCLUDE_DIR
-            echo \$PYTHON_INCLUDE_DIR
-            echo PYTHON_LIBRARY
-            echo \$PYTHON_LIBRARY
-            # Verify Python version
-            python3 --version || echo 'python3 version failed'
-            python3 -c 'import sys; print(sys.version_info)' || echo 'Python version info failed'
-            # Write to GITHUB_ENV
-            echo \"PYTHON_BIN=\$PYTHON_BIN\" >> \$GITHUB_ENV
-            echo \"PYTHON_INCLUDE_DIR=\$PYTHON_INCLUDE_DIR\" >> \$GITHUB_ENV
-            echo \"PYTHON_LIBRARY=\$PYTHON_LIBRARY\" >> \$GITHUB_ENV
-          "
-      shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
-      
-          
-    - name: new Build bufr-query in the container
-      if: false
-      run: |
-        docker run --rm \
-          -v /home/runner/work/bufr-query/bufr-query:/workspace \
-          -w /workspace \
-          -e PYTHON_BIN \
-          -e PYTHON_INCLUDE_DIR \
-          -e PYTHON_LIBRARY \
-          jcsda/docker-gnu-openmpi-dev:latest \
-          /bin/bash -c "
-            # Update PATH and PYTHONPATH
-            export PATH=\$PATH:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
-            export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:\$PYTHONPATH
-            # Verify environment variables
-            echo PYTHON_BIN
-            echo \$PYTHON_BIN
-            echo PYTHON_INCLUDE_DIR
-            echo \$PYTHON_INCLUDE_DIR
-            echo PYTHON_LIBRARY
-            echo \$PYTHON_LIBRARY
-            # Build bufr-query
-            mkdir -p build
-            cd build
-            rm -rf CMakeCache.txt CMakeFiles  # Clear cache
-            cmake .. \
-              -DPython3_ROOT_DIR=/opt/views/view \
-              -DPython3_EXECUTABLE=\$PYTHON_BIN \
-              -DPython3_INCLUDE_DIR=\$PYTHON_INCLUDE_DIR \
-              -DPython3_LIBRARY=\$PYTHON_LIBRARY \
-              -DPython3_FIND_STRATEGY=LOCATION \
-              -DPython3_FIND_FRAMEWORK=LAST
-            make -j$(nproc)
-          "
-      shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
-      
-    - name: Build with CMake
+    - name: Build bufr_query in the container
       if: true
       run: |
         docker run --rm \
@@ -216,6 +102,7 @@ jobs:
           "
 
     - name: install wxflow
+      if: false
       run: |
         docker run --rm \
           -v /home/runner/work/bufr-query/bufr-query:/workspace \
@@ -230,30 +117,6 @@ jobs:
           "
       shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
     
-    - name: Test environment
-      if: false
-      run: |
-        docker run --rm \
-          -v ${{ github.workspace }}:/workspace \
-          -w /workspace \
-          jcsda/docker-gnu-openmpi-dev:latest \
-          /bin/bash -c "
-            BUFR_QUERY_ROOT=`pwd`
-            export PYTHONPATH=$BUFR_QUERY_ROOT/build/lib/python3.9/site-packages/
-            export LD_LIBRARY_PATH=$BUFR_QUERY_ROOT/build/lib:$LD_LIBRARY_PATH
-            cd build
-            ls
-            echo '-----------------------lib--------------------'
-            ls -R lib
-            echo '====================================================='
-            ls lib/python3.9/site-packages/
-            echo 'testdata'
-            ls test/testdata
-            echo 'testinput'
-            ls test/testinput
-            bin/bufr2netcdf.x test/testdata/gdas.t18z.1bmhs.tm00.bufr_d test/testinput/bufrtest_filtering_mapping.yaml jjj.nc
-          "
-
     - name: Test in Docker
       run: |
         docker run --rm \
@@ -262,6 +125,8 @@ jobs:
           jcsda/docker-gnu-openmpi-dev:latest \
           /bin/bash -c "
             set -e -x
+            pip3 install wxflow
+            python3 -m site
             # set wxflow path
             export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:$PYTHONPATH
             ctest --output-on-failure
