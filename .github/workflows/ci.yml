@@ -131,10 +131,13 @@ jobs:
                 python3 -m site
                 # Set wxflow path
                 export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:$PYTHONPATH
+                export PATH=/usr/local/bin:/usr/bin:/bin:$PATH
+                export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/hdf5/serial:$LD_LIBRARY_PATH
                 # Create non-root user with a different UID if 1000 is taken
                 id -u testuser || useradd -m -u 1001 -s /bin/bash testuser
                 chown -R testuser:testuser /workspace
                 # Run tests as non-root user, explicitly preserve environment
+                su testuser -c "echo RUNNING TESTS as testuser"
                 su testuser -c 'export PATH=$PATH; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH; export PYTHONPATH=$PYTHONPATH; ctest --output-on-failure'
               "
             shell: /usr/bin/bash -e {0}
