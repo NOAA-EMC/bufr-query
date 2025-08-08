@@ -129,10 +129,9 @@ jobs:
               # Create non-root user with a different UID if 1000 is taken
               id -u testuser || useradd -m -u 1001 -s /bin/bash testuser
               chown -R testuser:testuser /workspace
-              # Verify environment as testuser
-              su testuser -c 'echo RUNNING TESTS as testuser; echo PATH=$PATH; echo PYTHONPATH=$PYTHONPATH; echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH'
-              # Run tests as non-root user, explicitly preserve environment
-              su testuser -c 'env PATH=\$PATH LD_LIBRARY_PATH=\$LD_LIBRARY_PATH PYTHONPATH=\$PYTHONPATH ctest --output-on-failure'
+              su testuser -c 'env PATH=\$PATH PYTHONPATH=\$PYTHONPATH LD_LIBRARY_PATH=\$LD_LIBRARY_PATH sh -c \"echo RUNNING TESTS as testuser; echo PATH=\\\$PATH; echo PYTHONPATH=\\\$PYTHONPATH; echo LD_LIBRARY_PATH=\\\$LD_LIBRARY_PATH\"'
+              # Run tests as non-root user, pass parent environment
+              su testuser -c 'env PATH=\$PATH PYTHONPATH=\$PYTHONPATH LD_LIBRARY_PATH=\$LD_LIBRARY_PATH ctest --output-on-failure'
             "
           shell: /usr/bin/bash -e {0}
 
