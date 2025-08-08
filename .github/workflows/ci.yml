@@ -129,6 +129,12 @@ jobs:
             python3 -m site
             # set wxflow path
             export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:$PYTHONPATH
-            ctest --output-on-failure
+            
+            # Run tests as non-root user, preserve environment
+            useradd -m -u 1000 -s /bin/bash testuser
+            chown -R testuser:testuser /workspace
+            su testuser -p -c 'ctest --output-on-failure'
+                
+            # ctest --output-on-failure
           "
 
