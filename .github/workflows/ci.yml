@@ -262,20 +262,8 @@ jobs:
           jcsda/docker-gnu-openmpi-dev:latest \
           /bin/bash -c "
             set -e -x
-            # Find wxflow installation
-            wxflow_path=$(pip3 show wxflow | grep Location | awk '{print $2}' | grep -E '/wxflow$' || echo '')
-            if [ -z '$wxflow_path' ]; then
-              # Fallback: search common site-packages directories
-              wxflow_path=$(find /usr/local/lib/python3.12 /root/.local/lib/python3.12 -name wxflow -type d 2>/dev/null | head -n 1)
-            fi
-            if [ -z '$wxflow_path' ]; then
-              echo 'Error: wxflow not found'
-              exit 1
-            fi
-            echo 'wxflow found at: $wxflow_path'
-            # export PYTHONPATH=$wxflow_path:$PYTHONPATH
+            # set wxflow path
             export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:$PYTHONPATH
-             
             ctest --output-on-failure
           "
 
