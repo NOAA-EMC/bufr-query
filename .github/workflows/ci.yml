@@ -117,9 +117,11 @@ jobs:
           "
       shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
 
-      -name: test in docker
-        run: |
-          docker run --rm \
+
+    - name: Test in Docker
+      if: true
+      run: |
+        docker run --rm \
               -v /home/runner/work/bufr-query/bufr-query:/workspace \
               -w /workspace/build \
               jcsda/docker-gnu-openmpi-dev:latest \
