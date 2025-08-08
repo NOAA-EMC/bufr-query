@@ -153,7 +153,7 @@ jobs:
           "
       shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
       
-    - name: old Build with CMake
+    - name: Build with CMake
       if: true
       run: |
         docker run --rm \
@@ -273,7 +273,8 @@ jobs:
               exit 1
             fi
             echo 'wxflow found at: $wxflow_path'
-            export PYTHONPATH=$wxflow_path:$PYTHONPATH
+            # export PYTHONPATH=$wxflow_path:$PYTHONPATH
+            export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:$PYTHONPATH
              
             ctest --output-on-failure
           "
