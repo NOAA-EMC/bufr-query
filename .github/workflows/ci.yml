@@ -79,6 +79,7 @@ jobs:
             # ls -l /usr/local/bin/python* 2>/dev/null
           "
     - name: Find and Set Python Variables
+      if: false
       run: |
         docker run --rm \
           -v /home/runner/work/bufr-query/bufr-query:/workspace \
