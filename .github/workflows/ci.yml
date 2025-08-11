@@ -103,7 +103,7 @@ jobs:
         
 
     - name: Test in Docker
-      if: true
+      if: false
       run: |
         docker run --rm \
             -v /home/runner/work/bufr-query/bufr-query:/workspace \
@@ -163,8 +163,8 @@ jobs:
 
 
     
-    - name: old Test in Docker
-      if: false
+    - name: Test in Docker
+      if: true
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
@@ -178,10 +178,10 @@ jobs:
             export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:$PYTHONPATH
             
             # Run tests as non-root user, preserve environment
-            useradd -m -u 1000 -s /bin/bash testuser
-            chown -R testuser:testuser /workspace
-            su testuser -p -c 'ctest --output-on-failure'
+            # useradd -m -u 1000 -s /bin/bash testuser
+            # chown -R testuser:testuser /workspace
+            # su testuser -p -c 'ctest --output-on-failure'
                 
-            # ctest --output-on-failure
+            ctest --output-on-failure
           "
 
