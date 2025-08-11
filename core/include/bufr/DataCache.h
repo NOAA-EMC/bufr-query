@@ -30,7 +30,7 @@ namespace bufr {
       {
         if (!cache_.empty())
         {
-//          log::info() << "DataCache destructor called with non-empty cache.";
+          // log::info() << "DataCache destructor called with non-empty cache.";
         }
       }
 
@@ -105,9 +105,9 @@ namespace bufr {
                         cache[key].cachedCategories.end(), category)
               == cache[key].cachedCategories.end())
           {
-//                log::info() << "DataCache::markFinished called with category that " \
-//                                     "is not cached.";
-                return;
+            // log::info() << "DataCache::markFinished called with category that "
+            //                "is not cached.";
+            return;
           }
 
           cache[key].finishedCategories.push_back(category);
