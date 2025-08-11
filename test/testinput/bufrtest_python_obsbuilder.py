@@ -32,7 +32,7 @@ def test_basic_obs_builder_interface():
     function_names = [func.__name__ for func in module_functions]
 
     assert 'create_obs_file' in function_names, "create_obs_file function not found"
-    # assert 'create_obs_group' in function_names, "create_obs_group function not found"
+    assert 'create_obs_group' in function_names, "create_obs_group function not found"
     assert 'default_main' in function_names, "default_main function not found"
 
 def test_run_obs_builder():
@@ -52,9 +52,6 @@ def test_run_obs_builder():
 
 
 def test_run_obs_file():
-    # Test the ObsBuilder file creation
-    obs_builder = TestObsBuilder()
-
     input_path = 'testdata/gdas.t18z.1bmhs.tm00.bufr_d'
     output_path = 'testrun/bufrtest_mhs_basic.nc'
     compare_path = 'testoutput/bufrtest_mhs_basic.nc'
@@ -64,7 +61,24 @@ def test_run_obs_file():
     # Compare the file to the expected output
     run_compare(compare_path, output_path)
 
+def test_run_obs_group():
+    input_path = 'testdata/gdas.t18z.1bmhs.tm00.bufr_d'
+
+    env = {'comm_name':'world'}
+    obs_group = create_obs_group(input_path, env)
+
+    assert(len(obs_group.list()) > 0, "Group is empty")
+
+
 if __name__ == '__main__':
     test_basic_obs_builder_interface()
     test_run_obs_builder()
     test_run_obs_file()
+
+    try:
+        import pyioda
+        test_run_obs_group()
+    except ImportError as e:
+        pass
+    except Exception as e:
+        raise e
