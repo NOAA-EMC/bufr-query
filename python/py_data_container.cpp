@@ -109,14 +109,14 @@ void setupDataContainer(py::module& m)
 
           const auto& data = self.get(fieldName, categoryId);
 
-          if (pyData.ndim() != data->getDims().size())
+          if (static_cast<size_t>(pyData.ndim()) != data->getDims().size())
           {
             throw eckit::BadParameter("ERROR: Dimension mismatch.");
           }
 
-          for (size_t idx = 0; idx < pyData.ndim(); idx++)
+          for (size_t idx = 0; idx < static_cast<size_t>(pyData.ndim()); idx++)
           {
-            if (pyData.shape(idx) != data->getDims()[idx])
+            if (pyData.shape(static_cast<pybind11::ssize_t>(idx)) != data->getDims()[idx])
             {
               throw eckit::BadParameter("ERROR: Dimension mismatch.");
             }

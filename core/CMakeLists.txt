@@ -145,6 +145,10 @@ target_link_libraries(bufr_query PUBLIC bufr::bufr_4)
 target_link_libraries(bufr_query PRIVATE  NetCDF::NetCDF_CXX)
 target_link_libraries(bufr_query PUBLIC eckit eckit_mpi)
 
+# Force eckit's public include dirs to be treated as SYSTEM to suppress warnings
+set_property(TARGET eckit PROPERTY
+				INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+				$<TARGET_PROPERTY:eckit,INTERFACE_INCLUDE_DIRECTORIES>)
 
 ## Public include files
 target_include_directories(bufr_query PUBLIC

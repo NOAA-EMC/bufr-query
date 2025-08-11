@@ -701,7 +701,7 @@ namespace bufr {
 
       void applyMask(const std::vector<int>& mask) final
       {
-        if (mask.size() != dims_[0])
+        if (mask.size() != static_cast<size_t>(dims_[0]))
         {
           std::ostringstream str;
           str << "Supplied mask does not match the number of rows in the data object.";
@@ -718,7 +718,7 @@ namespace bufr {
         newData.reserve(newNumRows * rowSize);
 
         int newIdx = 0;
-        for (size_t row = 0; row < dims_[0]; ++row)
+        for (int row = 0; row < dims_[0]; ++row)
         {
           if (mask[row])
           {
@@ -1297,7 +1297,7 @@ namespace bufr {
       /// \param mask The mask to apply.
       void applyMask(const std::vector<int>& mask) final
       {
-        if (mask.size() != dims_[0])
+        if (mask.size() != static_cast<size_t>(dims_[0]))
         {
           std::ostringstream str;
           str << "Supplied mask does not match the number of rows in the data object.";
@@ -1309,7 +1309,7 @@ namespace bufr {
         std::vector<std::string> newData(newNumRows);
 
         size_t newIdx = 0;
-        for (size_t row = 0; row < dims_[0]; ++row)
+        for (int row = 0; row < dims_[0]; ++row)
         {
           if (mask[row])
           {
