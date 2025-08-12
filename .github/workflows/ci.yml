@@ -181,7 +181,11 @@ jobs:
             # useradd -m -u 1000 -s /bin/bash testuser
             # chown -R testuser:testuser /workspace
             # su testuser -p -c 'ctest --output-on-failure'
-                
+
+            echo 'testing------------------------------'
+            pwd
+            ls
+            echo 'testing------------------------------'
             ctest --output-on-failure
           "
 
