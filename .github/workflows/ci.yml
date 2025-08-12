@@ -39,6 +39,11 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Show current commit info
+      run: |
+        git log -1
+        echo "GITHUB_SHA: $GITHUB_SHA"
+        echo "GITHUB_REF: $GITHUB_REF"
 
     - name: Build bufr_query in the container
       if: false
