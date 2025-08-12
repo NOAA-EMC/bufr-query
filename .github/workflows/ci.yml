@@ -138,7 +138,7 @@ jobs:
 
 
     - name: Test in Docker
-      if: true
+      if: false
       run: |
         docker run --rm \
               -v /home/runner/work/bufr-query/bufr-query:/workspace \
@@ -151,6 +151,7 @@ jobs:
                 # Set wxflow path
                 export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:$PYTHONPATH
                 export PATH=/usr/local/bin:/usr/bin:/bin:$PATH
+                # /opt/views/view/bin:/opt/spack/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
                 export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/hdf5/serial:$LD_LIBRARY_PATH
 
                 # Create non-root user with a different UID if 1000 is taken
@@ -162,10 +163,40 @@ jobs:
                 # su testuser -c 'export PATH=\$PATH; echo \$PATH'
                 # su testuser -c 'export PATH=$PATH; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH; export PYTHONPATH=$PYTHONPATH; ctest --output-on-failure'
               "
-            shell: /usr/bin/bash -e {0}
+      shell: /usr/bin/bash -e {0}
 
-
+    - name: Build and Test in Docker
+      run: |
+        docker run --rm \
+          -v "$PWD":/workspace \
+          -w /workspace/build \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c "
+            set -e -x
     
+            pip3 install wxflow
+    
+            # Create non-root user
+            id -u testuser || useradd -m -u 1001 -s /bin/bash testuser
+            chown -R testuser:testuser /workspace
+    
+            # Write test script
+            cat << 'EOSCRIPT' > /workspace/build/run_tests.sh
+            #!/bin/bash
+            set -e -x
+            export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:\$PYTHONPATH
+            export PATH=/usr/local/bin:/usr/bin:/bin:\$PATH
+            export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/hdf5/serial:\$LD_LIBRARY_PATH
+            echo RUNNING TESTS as \$(whoami)
+            ctest --output-on-failure
+            EOSCRIPT
+    
+            chmod +x /workspace/build/run_tests.sh
+            su - testuser -c /workspace/build/run_tests.sh
+          "
+      shell: /usr/bin/bash -e {0}
+      
+        
     - name: Test in Docker
       if: false
       run: |
