@@ -74,9 +74,12 @@ jobs:
             # Write test script
             echo '#!/bin/bash' > /workspace/build/run_tests.sh
             echo 'set -e -x' >> /workspace/build/run_tests.sh
-            echo 'export PATH=$PATH' >> /workspace/build/run_tests.sh
-            echo 'export PYTHONPATH=$PYTHONPATH' >> /workspace/build/run_tests.sh
-            echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH' >> /workspace/build/run_tests.sh
+            echo \"export PATH=$PATH\" >> /workspace/build/run_tests.sh
+            echo \"export PYTHONPATH=$PYTHONPATH\" >> /workspace/build/run_tests.sh
+            echo \"export LD_LIBRARY_PATH=$LD_LIBRARY_PATH\" >> /workspace/build/run_tests.sh
+            # echo 'export PATH=$PATH' >> /workspace/build/run_tests.sh
+            # echo 'export PYTHONPATH=$PYTHONPATH' >> /workspace/build/run_tests.sh
+            # echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH' >> /workspace/build/run_tests.sh
             echo 'echo \"RUNNING TESTS as \$(whoami)\"' >> /workspace/build/run_tests.sh
             echo 'cd /workspace/build && ctest --output-on-failure' >> /workspace/build/run_tests.sh
           "
