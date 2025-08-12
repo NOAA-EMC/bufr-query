@@ -181,9 +181,9 @@ jobs:
             chown -R testuser:testuser /workspace
 
             cat << "EOSCRIPT" > /workspace/build/junk_run_tests.sh
-set -e -x
-ctest --output-on-failure
-EOSCRIPT
+          set -e -x
+          ctest --output-on-failure
+          EOSCRIPT
 
     
             # Write test script
