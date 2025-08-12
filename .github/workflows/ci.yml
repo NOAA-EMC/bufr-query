@@ -171,7 +171,7 @@ jobs:
           -v "$PWD":/workspace \
           -w /workspace/build \
           jcsda/docker-gnu-openmpi-dev:latest \
-          /bin/bash -c "
+          /bin/bash -c '
             set -e -x
     
             pip3 install wxflow
@@ -181,19 +181,19 @@ jobs:
             chown -R testuser:testuser /workspace
     
             # Write test script
-            cat << 'EOSCRIPT' > /workspace/build/run_tests.sh
-            #!/bin/bash
-            set -e -x
-            export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:\$PYTHONPATH
-            export PATH=/usr/local/bin:/usr/bin:/bin:\$PATH
-            export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/hdf5/serial:\$LD_LIBRARY_PATH
-            echo RUNNING TESTS as \$(whoami)
-            ctest --output-on-failure
-            EOSCRIPT
+            cat << "EOSCRIPT" > /workspace/build/run_tests.sh
+#!/bin/bash
+set -e -x
+export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:\$PYTHONPATH
+export PATH=/usr/local/bin:/usr/bin:/bin:\$PATH
+export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/hdf5/serial:\$LD_LIBRARY_PATH
+echo RUNNING TESTS as \$(whoami)
+ctest --output-on-failure
+EOSCRIPT
     
             chmod +x /workspace/build/run_tests.sh
             su - testuser -c /workspace/build/run_tests.sh
-          "
+          '
       shell: /usr/bin/bash -e {0}
       
         
