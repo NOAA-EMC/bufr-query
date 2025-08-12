@@ -179,6 +179,12 @@ jobs:
             # Create non-root user
             id -u testuser || useradd -m -u 1001 -s /bin/bash testuser
             chown -R testuser:testuser /workspace
+
+            cat << "EOSCRIPT" > /workspace/build/junk_run_tests.sh
+set -e -x
+ctest --output-on-failure
+EOSCRIPT
+
     
             # Write test script
             cat << "EOSCRIPT" > /workspace/build/run_tests.sh
