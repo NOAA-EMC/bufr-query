@@ -39,6 +39,53 @@ jobs:
       with:
         submodules: recursive
 
+
+    - name: Build bufr_query in the container
+      if: false
+      run: |
+        docker run --rm \
+          -v /home/runner/work/bufr-query/bufr-query:/workspace \
+          -w /workspace \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c "
+            # Install python3-dev and dependencies
+            apt-get update && apt-get install -y python3-dev python3-pip || true
+            # Update PATH
+            export PATH=\$PATH:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
+            export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages
+
+            # Set Python variables
+            PYTHON_BIN=\$(which python3)
+            PYTHON_INCLUDE_DIR=\$(python3 -c 'import sysconfig; print(sysconfig.get_path(\"include\"))' 2>/dev/null || find / -name 'Python.h' 2>/dev/null | head -n1 | xargs dirname)
+            PYTHON_LIBRARY=\$(find / -name 'libpython3.11.so' 2>/dev/null | head -n1 || python3 -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\") + \"/libpython3.11.so\")' 2>/dev/null)
+
+            mkdir -p build
+            cd build
+            rm -rf CMakeCache.txt CMakeFiles  # Clear cache
+            cmake .. \
+              -DPython3_ROOT_DIR=/opt/views/view \
+              -DPython3_EXECUTABLE=\$PYTHON_BIN \
+              -DPython3_INCLUDE_DIR=\$PYTHON_INCLUDE_DIR \
+              -DPython3_LIBRARY=\$PYTHON_LIBRARY \
+              -DPython3_FIND_STRATEGY=LOCATION \
+              -DPython3_FIND_FRAMEWORK=LAST
+            make
+         
+            # Write test script
+            echo '#!/bin/bash' > /workspace/build/run_tests.sh
+            echo 'set -e -x' >> /workspace/build/run_tests.sh
+            echo \"export PATH=$PATH\" >> /workspace/build/run_tests.sh
+            echo \"export PYTHONPATH=$PYTHONPATH\" >> /workspace/build/run_tests.sh
+            echo \"export LD_LIBRARY_PATH=$LD_LIBRARY_PATH\" >> /workspace/build/run_tests.sh
+            # echo 'export PATH=$PATH' >> /workspace/build/run_tests.sh
+            # echo 'export PYTHONPATH=$PYTHONPATH' >> /workspace/build/run_tests.sh
+            # echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH' >> /workspace/build/run_tests.sh
+            echo 'echo \"RUNNING TESTS as \$(whoami)\"' >> /workspace/build/run_tests.sh
+            echo 'cd /workspace/build && ctest --output-on-failure' >> /workspace/build/run_tests.sh
+          "
+      shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+
+
     - name: Build bufr_query in the container
       if: true
       run: |
@@ -52,23 +99,27 @@ jobs:
             # Update PATH
             export PATH=\$PATH:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
             export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages
-            echo PATH
-            echo \$PATH
-            echo PYTHONPATH
-            echo \$PYTHONPATH
+            
+            # echo PATH
+            # echo \$PATH
+            # echo PYTHONPATH
+            # echo \$PYTHONPATH
+            
             # Set Python variables
             PYTHON_BIN=\$(which python3)
             PYTHON_INCLUDE_DIR=\$(python3 -c 'import sysconfig; print(sysconfig.get_path(\"include\"))' 2>/dev/null || find / -name 'Python.h' 2>/dev/null | head -n1 | xargs dirname)
             PYTHON_LIBRARY=\$(find / -name 'libpython3.11.so' 2>/dev/null | head -n1 || python3 -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\") + \"/libpython3.11.so\")' 2>/dev/null)
-            echo PYTHON_BIN
-            echo \$PYTHON_BIN
-            echo PYTHON_INCLUDE_DIR
-            echo \$PYTHON_INCLUDE_DIR
-            echo PYTHON_LIBRARY
-            echo \$PYTHON_LIBRARY
+            
+            # echo PYTHON_BIN
+            # echo \$PYTHON_BIN
+            # echo PYTHON_INCLUDE_DIR
+            # echo \$PYTHON_INCLUDE_DIR
+            # echo PYTHON_LIBRARY
+            # echo \$PYTHON_LIBRARY
             # Verify Python version
-            python3 --version || echo 'python3 version failed'
-            python3 -c 'import sys; print(sys.version_info)' || echo 'Python version info failed'
+            # python3 --version || echo 'python3 version failed'
+            # python3 -c 'import sys; print(sys.version_info)' || echo 'Python version info failed'
+            
             # Build with CMake
             mkdir -p build
             cd build
@@ -81,6 +132,15 @@ jobs:
               -DPython3_FIND_STRATEGY=LOCATION \
               -DPython3_FIND_FRAMEWORK=LAST
             make
+ 
+            # Write test script
+            # echo '#!/bin/bash' > /workspace/build/run_tests.sh
+            # echo 'set -e -x' >> /workspace/build/run_tests.sh
+            # echo 'export PATH=$PATH' >> /workspace/build/run_tests.sh
+            # echo 'export PYTHONPATH=$PYTHONPATH' >> /workspace/build/run_tests.sh
+            # echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH' >> /workspace/build/run_tests.sh
+            # echo 'echo \"RUNNING TESTS as \$(whoami)\"' >> /workspace/build/run_tests.sh
+            # echo 'cd /workspace/build && ctest --output-on-failure' >> /workspace/build/run_tests.sh
           "
       shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
 
@@ -100,71 +160,44 @@ jobs:
             make install
             nccmp --version
           "
-        
 
     - name: Test in Docker
-      if: false
       run: |
         docker run --rm \
-            -v /home/runner/work/bufr-query/bufr-query:/workspace \
-            -w /workspace/build \
-            jcsda/docker-gnu-openmpi-dev:latest \
-            /bin/bash -c "
-              set -e -x
-              pip3 install wxflow
-              python3 -m site
-  
-              # Update PATH
-              export PATH=\$PATH:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
-              export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages
-              echo PATH
-              echo \$PATH
-              echo PYTHONPATH
-              echo \$PYTHONPATH
-              # Set Python variables
-              PYTHON_BIN=\$(which python3)
-              PYTHON_INCLUDE_DIR=\$(python3 -c 'import sysconfig; print(sysconfig.get_path(\"include\"))' 2>/dev/null || find / -name 'Python.h' 2>/dev/null | head -n1 | xargs dirname)
-              PYTHON_LIBRARY=\$(find / -name 'libpython3.11.so' 2>/dev/null | head -n1 || python3 -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\") + \"/libpython3.11.so\")' 2>/dev/null)
-
-              # Create non-root user with a different UID if 1000 is taken
-              id -u testuser || useradd -m -u 1001 -s /bin/bash testuser
-              chown -R testuser:testuser /workspace
-              su testuser -c 'env PATH=\$PATH PYTHONPATH=\$PYTHONPATH LD_LIBRARY_PATH=\$LD_LIBRARY_PATH sh -c \"echo RUNNING TESTS as testuser; echo PATH=\\\$PATH; echo PYTHONPATH=\\\$PYTHONPATH; echo LD_LIBRARY_PATH=\\\$LD_LIBRARY_PATH\"'
-              # Run tests as non-root user, pass parent environment
-              su testuser -c 'env PATH=\$PATH PYTHONPATH=\$PYTHONPATH LD_LIBRARY_PATH=\$LD_LIBRARY_PATH ctest --output-on-failure'
-            "
-          shell: /usr/bin/bash -e {0}
-
-
-
-    - name: Test in Docker
-      if: false
-      run: |
-        docker run --rm \
-              -v /home/runner/work/bufr-query/bufr-query:/workspace \
-              -w /workspace/build \
-              jcsda/docker-gnu-openmpi-dev:latest \
-              /bin/bash -c "
-                set -e -x
-                pip3 install wxflow
-                python3 -m site
-                # Set wxflow path
-                export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:$PYTHONPATH
-                export PATH=/usr/local/bin:/usr/bin:/bin:$PATH
-                export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/hdf5/serial:$LD_LIBRARY_PATH
-                # Create non-root user with a different UID if 1000 is taken
-                id -u testuser || useradd -m -u 1001 -s /bin/bash testuser
-                chown -R testuser:testuser /workspace
-                # Run tests as non-root user, explicitly preserve environment
-                su testuser -c "echo RUNNING TESTS as testuser"
-                su testuser -c 'export PATH=$PATH; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH; export PYTHONPATH=$PYTHONPATH; ctest --output-on-failure'
-              "
-            shell: /usr/bin/bash -e {0}
-
-
+          -v "$PWD":/workspace \
+          -w /workspace/build \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c '
+            set -e -x
     
+            pip3 install wxflow
+    
+            # Create non-root user
+            id -u testuser || useradd -m -u 1001 -s /bin/bash testuser
+            chown -R testuser:testuser /workspace
+    
+            # Write test script
+            echo "#!/bin/bash" > /workspace/build/run_tests.sh
+            echo "set -e -x" >> /workspace/build/run_tests.sh
+            echo "export PATH=$PATH" >> /workspace/build/run_tests.sh
+            echo "export PYTHONPATH=$PYTHONPATH" >> /workspace/build/run_tests.sh
+            echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> /workspace/build/run_tests.sh
+            echo "echo \"RUNNING TESTS as \$(whoami)\"" >> /workspace/build/run_tests.sh
+            echo "cd /workspace/build && ctest --output-on-failure" >> /workspace/build/run_tests.sh
+            
+            # echo running test script
+            # echo --------------------------
+            # cat /workspace/build/run_tests.sh
+            # echo --------------------------
+            
+            chmod +x /workspace/build/run_tests.sh
+            su - testuser -c /workspace/build/run_tests.sh
+          '
+      shell: /usr/bin/bash -e {0}
+      
+        
     - name: Test in Docker
-      if: true
+      if: false
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
@@ -177,11 +210,10 @@ jobs:
             # set wxflow path
             export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:$PYTHONPATH
             
-            # Run tests as non-root user, preserve environment
-            # useradd -m -u 1000 -s /bin/bash testuser
-            # chown -R testuser:testuser /workspace
-            # su testuser -p -c 'ctest --output-on-failure'
-                
+            echo 'testing------------------------------'
+            pwd
+            ls
+            echo 'testing------------------------------'
             ctest --output-on-failure
           "
 
