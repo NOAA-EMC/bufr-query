@@ -573,7 +573,7 @@ if (${BUILD_PYTHON_BINDINGS})
                     TYPE    SCRIPT
                     COMMAND python3
                     ARGS    testinput/bufrtest_python_mpi_test.py
-                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
+                    ENVIRONMENT --oversubscribe PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
 
   ecbuild_add_test( TARGET  test_bufr_python_obsbuilder
                     TYPE    SCRIPT
