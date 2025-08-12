@@ -165,7 +165,7 @@ jobs:
               "
       shell: /usr/bin/bash -e {0}
 
-    - name: Build and Test in Docker
+    - name: Test in Docker
       run: |
         docker run --rm \
           -v "$PWD":/workspace \
@@ -183,15 +183,15 @@ jobs:
             # Write test script
             echo "#!/bin/bash" > /workspace/build/run_tests.sh
             echo "set -e -x" >> /workspace/build/run_tests.sh
-            echo "export PATH=\$PATH" >> /workspace/build/run_tests.sh
-            echo "export PYTHONPATH=\$PYTHONPATH" >> /workspace/build/run_tests.sh
-            echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH" >> /workspace/build/run_tests.sh
-            echo "RUNNING TESTS as \$(whoami)" >> /workspace/build/run_tests.sh
+            echo "export PATH=$PATH" >> /workspace/build/run_tests.sh
+            echo "export PYTHONPATH=$PYTHONPATH" >> /workspace/build/run_tests.sh
+            echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> /workspace/build/run_tests.sh
+            echo "echo \"RUNNING TESTS as \$(whoami)\"" >> /workspace/build/run_tests.sh
             echo "ctest --output-on-failure" >> /workspace/build/run_tests.sh
             
             echo running test script
             echo --------------------------
-            echo /workspace/build/run_tests.sh
+            cat /workspace/build/run_tests.sh
             echo --------------------------
             chmod +x /workspace/build/run_tests.sh
             su - testuser -c /workspace/build/run_tests.sh
