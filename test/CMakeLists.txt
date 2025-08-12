@@ -575,14 +575,25 @@ if (${BUILD_PYTHON_BINDINGS})
                     # ARGS    testinput/bufrtest_python_mpi_test.py
                     # ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
 
+# ecbuild_add_test(
+  # TARGET test_bufr_python_mpi_test
+  # MPI 4
+  # TYPE SCRIPT
+  # COMMAND mpirun
+  # ARGS --map-by :OVERSUBSCRIBE python3 testinput/bufrtest_python_mpi_test.py
+  # ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH}
+# )
 ecbuild_add_test(
   TARGET test_bufr_python_mpi_test
-  MPI 4
   TYPE SCRIPT
-  COMMAND mpirun
-  ARGS --map-by :OVERSUBSCRIBE python3 testinput/bufrtest_python_mpi_test.py
+  MPIEXEC_PREFLAGS "--oversubscribe"
+  MPI 4
+  COMMAND python3
+  ARGS testinput/bufrtest_python_mpi_test.py
   ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH}
 )
+
+
 
   ecbuild_add_test( TARGET  test_bufr_python_obsbuilder
                     TYPE    SCRIPT
