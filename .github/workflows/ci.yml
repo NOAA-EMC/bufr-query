@@ -181,16 +181,18 @@ jobs:
             chown -R testuser:testuser /workspace
     
             # Write test script
-            cat << "EOSCRIPT" > /workspace/build/run_tests.sh
-          #!/bin/bash
-          set -e -x
-          export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages:\$PYTHONPATH
-          export PATH=/usr/local/bin:/usr/bin:/bin:\$PATH
-          export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/hdf5/serial:\$LD_LIBRARY_PATH
-          echo RUNNING TESTS as \$(whoami)
-          ctest --output-on-failure
-          EOSCRIPT
-    
+            echo "#!/bin/bash" > /workspace/build/run_tests.sh
+            echo "set -e -x" >> /workspace/build/run_tests.sh
+            echo "export PATH=\$PATH" >> /workspace/build/run_tests.sh
+            echo "export PYTHONPATH=\$PYTHONPATH" >> /workspace/build/run_tests.sh
+            echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH" >> /workspace/build/run_tests.sh
+            echo "RUNNING TESTS as \$(whoami)" >> /workspace/build/run_tests.sh
+            echo "ctest --output-on-failure" >> /workspace/build/run_tests.sh
+            
+            echo running test script
+            echo --------------------------
+            echo /workspace/build/run_tests.sh
+            echo --------------------------
             chmod +x /workspace/build/run_tests.sh
             su - testuser -c /workspace/build/run_tests.sh
           '
