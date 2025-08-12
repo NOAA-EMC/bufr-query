@@ -39,8 +39,52 @@ jobs:
       with:
         submodules: recursive
 
+
     - name: Build bufr_query in the container
       if: true
+      run: |
+        docker run --rm \
+          -v /home/runner/work/bufr-query/bufr-query:/workspace \
+          -w /workspace \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c "
+            # Install python3-dev and dependencies
+            apt-get update && apt-get install -y python3-dev python3-pip || true
+            # Update PATH
+            export PATH=\$PATH:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
+            export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages
+
+            # Set Python variables
+            PYTHON_BIN=\$(which python3)
+            PYTHON_INCLUDE_DIR=\$(python3 -c 'import sysconfig; print(sysconfig.get_path(\"include\"))' 2>/dev/null || find / -name 'Python.h' 2>/dev/null | head -n1 | xargs dirname)
+            PYTHON_LIBRARY=\$(find / -name 'libpython3.11.so' 2>/dev/null | head -n1 || python3 -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\") + \"/libpython3.11.so\")' 2>/dev/null)
+
+            mkdir -p build
+            cd build
+            rm -rf CMakeCache.txt CMakeFiles  # Clear cache
+            cmake .. \
+              -DPython3_ROOT_DIR=/opt/views/view \
+              -DPython3_EXECUTABLE=\$PYTHON_BIN \
+              -DPython3_INCLUDE_DIR=\$PYTHON_INCLUDE_DIR \
+              -DPython3_LIBRARY=\$PYTHON_LIBRARY \
+              -DPython3_FIND_STRATEGY=LOCATION \
+              -DPython3_FIND_FRAMEWORK=LAST
+            make
+         
+            # Write test script
+            echo '#!/bin/bash' > /workspace/build/run_tests.sh
+            echo 'set -e -x' >> /workspace/build/run_tests.sh
+            echo 'export PATH=$PATH' >> /workspace/build/run_tests.sh
+            echo 'export PYTHONPATH=$PYTHONPATH' >> /workspace/build/run_tests.sh
+            echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH' >> /workspace/build/run_tests.sh
+            echo 'echo \"RUNNING TESTS as \$(whoami)\"' >> /workspace/build/run_tests.sh
+            echo 'cd /workspace/build && ctest --output-on-failure' >> /workspace/build/run_tests.sh
+          "
+      shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+
+
+    - name: Build bufr_query in the container
+      if: false
       run: |
         docker run --rm \
           -v /home/runner/work/bufr-query/bufr-query:/workspace \
@@ -83,7 +127,7 @@ jobs:
             make
  
             # Write test script
-            echo "#!/bin/bash' > /workspace/build/run_tests.sh
+            echo '#!/bin/bash' > /workspace/build/run_tests.sh
             echo 'set -e -x' >> /workspace/build/run_tests.sh
             echo 'export PATH=$PATH' >> /workspace/build/run_tests.sh
             echo 'export PYTHONPATH=$PYTHONPATH' >> /workspace/build/run_tests.sh
@@ -109,9 +153,6 @@ jobs:
             make install
             nccmp --version
           "
-        
-
-
 
     - name: Test in Docker
       run: |
@@ -129,13 +170,13 @@ jobs:
             chown -R testuser:testuser /workspace
     
             # Write test script
-            echo "#!/bin/bash" > /workspace/build/run_tests.sh
-            echo "set -e -x" >> /workspace/build/run_tests.sh
-            echo "export PATH=$PATH" >> /workspace/build/run_tests.sh
-            echo "export PYTHONPATH=$PYTHONPATH" >> /workspace/build/run_tests.sh
-            echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> /workspace/build/run_tests.sh
-            echo "echo \"RUNNING TESTS as \$(whoami)\"" >> /workspace/build/run_tests.sh
-            echo "cd /workspace/build && ctest --output-on-failure" >> /workspace/build/run_tests.sh
+            # echo "#!/bin/bash" > /workspace/build/run_tests.sh
+            # echo "set -e -x" >> /workspace/build/run_tests.sh
+            # echo "export PATH=$PATH" >> /workspace/build/run_tests.sh
+            # echo "export PYTHONPATH=$PYTHONPATH" >> /workspace/build/run_tests.sh
+            # echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> /workspace/build/run_tests.sh
+            # echo "echo \"RUNNING TESTS as \$(whoami)\"" >> /workspace/build/run_tests.sh
+            # echo "cd /workspace/build && ctest --output-on-failure" >> /workspace/build/run_tests.sh
             
             echo running test script
             echo --------------------------
