@@ -14,5 +14,5 @@ ecbuild_add_executable( TARGET  bufr2netcdf.x
                         SOURCES ${_srcs}
                         LIBS    ${_deps})
 
-AddApp(bufr2netcdf.x)
-set_target_properties(bufr2netcdf.x PROPERTIES BUILD_RPATH "${CMAKE_BINARY_DIR}/lib")
+addapp(bufr2netcdf.x)
+

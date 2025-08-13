@@ -18,5 +18,5 @@ ecbuild_add_executable( TARGET  show_queries.x
                         SOURCES ${_srcs}
                         LIBS ${_deps})
 
-AddApp(show_queries.x)
-set_target_properties(show_queries.x PROPERTIES BUILD_RPATH "${CMAKE_BINARY_DIR}/lib")
+addapp(show_queries.x)
+
