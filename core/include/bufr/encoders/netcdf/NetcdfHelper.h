@@ -33,6 +33,7 @@ namespace netcdf {
     inline nc::NcType getNcType()
     {
         static_assert(!std::is_same<T, T>::value, "Unsupported type for NetCDF.");
+        return nc::NcType::nc_INT;  // return something to make compiler happy
     }
 
     template<> inline nc::NcType getNcType<float>() { return nc::NcType::nc_FLOAT; }
