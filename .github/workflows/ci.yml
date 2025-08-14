@@ -73,6 +73,7 @@ jobs:
       shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
 
     - name: Install nccmp in docker from source with cmake
+      if: false
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
