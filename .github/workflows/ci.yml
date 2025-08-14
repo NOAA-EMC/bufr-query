@@ -72,24 +72,6 @@ jobs:
           "
       shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
 
-    - name: Install nccmp in docker from source with cmake
-      if: false
-      run: |
-        docker run --rm \
-          -v ${{ github.workspace }}:/workspace \
-          -w /workspace \
-          jcsda/docker-gnu-openmpi-dev:latest \
-          /bin/bash -c "
-            git clone https://gitlab.com/remikz/nccmp.git
-            cd nccmp
-            mkdir -p build &&
-            cd build &&
-            cmake .. &&
-            make -j$(nproc)
-            make install
-            nccmp --version
-          "
-
     - name: Test in Docker
       run: |
         docker run --rm \
