@@ -17,6 +17,7 @@ def add_encoder_type(name, encoder):
 class ObsBuilder:
     def __init__(self,
                  mapping_path:Union[str, dict],
+                 table_path:str="",
                  config:dict=None,
                  log_name:str='obs_builder'):
         """
@@ -38,9 +39,10 @@ class ObsBuilder:
         self.log = Logger(log_name)
         self.config = config
         self.description = self._make_description()
+        self.table_path = table_path
 
     # Virtual Methods
-    def make_obs(self, comm, input : Union[str, dict]) -> bufr.DataContainer:
+    def make_obs(self, comm, input: Union[str, dict]) -> bufr.DataContainer:
         """
         This method is the main method that can be overridden (optional). Its objective is to read
         the bufr file and to create an DataContainer object and return it. The data container is
@@ -56,13 +58,13 @@ class ObsBuilder:
             raise NotImplementedError('You must create a custom override for make_obs().')
 
         mapping_path = list(self.map_dict.values())[0]
-        container = bufr.Parser(input, mapping_path).parse(comm)
+        container = bufr.Parser(input, mapping_path, self.table_path).parse(comm)
 
         for idx, mapping_path in enumerate(self.map_dict.items()):
             if idx == 0:
                 continue
 
-            container.append(bufr.Parser(input, mapping_path).parse(comm))
+            container.append(bufr.Parser(input, mapping_path, self.table_path).parse(comm))
 
         return container
 
