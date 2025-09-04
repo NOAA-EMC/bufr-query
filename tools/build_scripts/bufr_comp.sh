@@ -22,7 +22,17 @@ rc="-1"
 
 case $file_type in
   netcdf)
+	echo "======================"
+	echo "executing..."
     $cmd && \
+	echo "======================"
+	echo "command: "
+	echo $cmd
+	echo testrun/file_name:
+	echo testrun/$file_name
+	echo testoutput/file_name
+	echo testoutput/$file_name
+	echo "======================"
     for i in "${!file_name[@]}"; do
         file_name=${file_name[$i]}
         nccmp testrun/$file_name testoutput/$file_name -d -m -g -f -s -S -B -T ${tol}

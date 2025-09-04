@@ -17,6 +17,7 @@ def add_encoder_type(name, encoder):
 class ObsBuilder:
     def __init__(self,
                  mapping_path:Union[str, dict],
+                 table_path:str="",
                  config:dict=None,
                  log_name:str='obs_builder'):
         """
@@ -38,9 +39,10 @@ class ObsBuilder:
         self.log = Logger(log_name)
         self.config = config
         self.description = self._make_description()
+        self.table_path = table_path
 
-    # Virtual Method
-    def make_obs(self, comm, input : Union[str, dict]) -> bufr.DataContainer:
+    # Virtual Methods
+    def make_obs(self, comm, input: Union[str, dict]) -> bufr.DataContainer:
         """
         This method is the main method that can be overridden (optional). Its objective is to read
         the bufr file and to create an DataContainer object and return it. The data container is
@@ -56,15 +58,24 @@ class ObsBuilder:
             raise NotImplementedError('You must create a custom override for make_obs().')
 
         mapping_path = list(self.map_dict.values())[0]
-        container = bufr.Parser(input, mapping_path).parse(comm)
+        container = bufr.Parser(input, mapping_path, self.table_path).parse(comm)
 
         for idx, mapping_path in enumerate(self.map_dict.items()):
             if idx == 0:
                 continue
 
-            container.append(bufr.Parser(input, mapping_path).parse(comm))
+            container.append(bufr.Parser(input, mapping_path, self.table_path).parse(comm))
 
         return container
+
+    def finalize_container(self, container:bufr.DataContainer) -> None:
+        """
+        Virtual method which can be overridden if you need to update the assembled
+        DataContainer object (data from all the MPI tasks).
+
+        :param container: The DataContainer to Mutate
+        """
+        pass
 
     def _make_description(self) -> bufr.encoders.Description:
         """
@@ -136,38 +147,45 @@ class ObsBuilder:
 
         :param input: Input path to the BUFR file.
         :param env: The IODA environment. Dictionary with keys: start_time, end_time, comm_name
-        :param category: The category to encode. (optional)
-        :param cache_categories: The list of categories to cache. (optional)
+        :param category: The category to encode (comma-separated subcategories). This string is
+                         parsed into a tuple of subcategories. (optional)
+        :param cache_categories: The list of categories to cache. Each category is a string that
+                                 is parsed into a tuple of subcategories. (optional)
         :return: IODA ObsGroup object.
         """
 
         # Guard Block
         if (cache_categories is not None) and (category is None):
-            raise ValueError('Category must be provided if cache_categories are specified')
+            raise ValueError('Category must be provided if cache_categories are specified.')
 
         if category:
-            if not isinstance(category, list) or \
-               not len(category) > 0 or \
-               not isinstance(category[0], str):
-                raise ValueError('Category must be a list of subcategories ex: [\'npp\']')
+            if not isinstance(category, str):
+                raise ValueError('Category must be a comma separated string of sub-categories '
+                                 'ex: \'npp\'.')
 
         if cache_categories:
             if not isinstance(cache_categories, list) or \
                not len(cache_categories) > 0 or \
-               not isinstance(cache_categories[0], list) or \
-               not len(cache_categories[0]) > 0 or \
-               not isinstance(cache_categories[0][0], str):
-                raise ValueError('Cache categories must be a list of subcategories ex: [[\'npp\']]')
+               not isinstance(cache_categories[0], str):
+                raise ValueError('Cache categories must be a list of categories ex: [\'goes-17\''
+                                 ', \'goes-18\'].')
 
             if category not in cache_categories:
-                raise ValueError('Category must be found inside the cache categories')
+                raise ValueError(f'Category {category} not found in cache categories.')
+
+        # Parse category and cache_categories strings
+        if category:
+            category = tuple(category.replace(' ', '').split(','))
+
+        if cache_categories:
+            cache_categories = [tuple(cat.replace(' ', '').split(',')) for cat in cache_categories]
 
         if cache_categories:
             return self._create_obs_group_w_cache(input, env, category, cache_categories)
         else:
             return self._create_obs_group_no_cache(input, env, category)
 
-    def _create_obs_group_w_cache(self, input, env, category:list, cache_categories:list):
+    def _create_obs_group_w_cache(self, input, env, category:tuple, cache_categories:list):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
 
         comm = bufr.mpi.Comm(env["comm_name"])
@@ -194,6 +212,8 @@ class ObsBuilder:
         self.log.info(f'Gather data from all tasks into all tasks')
         container.all_gather(comm)
 
+        self.finalize_container(container)
+
         self.log.info(f'Add container to cache')
         # Add the container to the cache
         bufr.DataCache.add(cache_input_path,
@@ -212,7 +232,7 @@ class ObsBuilder:
         self.log.info(f'Return the encoded data for {category}')
         return data
 
-    def _create_obs_group_no_cache(self, input, env, category:list = None):
+    def _create_obs_group_no_cache(self, input, env, category:tuple = None):
         from pyioda.ioda.Engines.Bufr import Encoder as iodaEncoder
 
         comm = bufr.mpi.Comm(env["comm_name"])
@@ -220,6 +240,8 @@ class ObsBuilder:
 
         container = self.make_obs(comm, input)
         container.all_gather(comm)
+
+        self.finalize_container(container)
 
         # Encode the data
         if not category:

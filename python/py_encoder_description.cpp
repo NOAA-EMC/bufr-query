@@ -106,7 +106,7 @@ void setupEncoderDescription(py::module& m)
                               units,
                               longName,
                               coordinates,
-			      range,
+                              range,
                               chunks,
                               compressionLevel);
         }
