@@ -87,12 +87,28 @@ namespace bufr {
         }
     }
 
-    size_t DataProvider::numMessages(const QuerySet& querySet)
+    size_t DataProvider::size(const QuerySet& querySet)
+    {
+      if (msgsInFile_ == 0)
+      {
+        msgsInFile_ = countMsgs(querySet);
+        msgsLeftInFile_ = msgsInFile_;
+      }
+
+      return msgsInFile_;
+    }
+
+    size_t DataProvider::sizeRemaining(const QuerySet& querySet)
+    {
+      return msgsLeftInFile_;
+    }
+
+    size_t DataProvider::countMsgs(const QuerySet& querySet)
     {
       if (!isOpen_)
       {
         std::ostringstream errStr;
-        errStr << "Tried to call DataProvider::numMessages, but the file is not open!";
+        errStr << "Tried to call DataProvider::countMsgs, but the file is not open!";
         throw eckit::BadParameter(errStr.str());
       }
 

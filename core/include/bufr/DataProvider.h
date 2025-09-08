@@ -154,7 +154,11 @@ namespace bufr {
             open();
         }
 
-        size_t numMessages(const QuerySet& querySet);
+        /// \brief Total size of the BUFR file in messages
+        size_t size(const QuerySet& querySet);
+
+        /// \brief Number of messages left in the BUFR file
+        size_t sizeRemaining(const QuerySet& querySet);
 
         /// \brief Is the BUFR file open
         bool isFileOpen() { return isOpen_; }
@@ -272,5 +276,16 @@ namespace bufr {
      private:
         /// \brief Get the currently valid subset table data
         virtual std::shared_ptr<TableData> getTableData() const = 0;
+
+        /// \brief Count the total number of messages in the BUFR file
+        /// \param querySet The queryset to use
+        /// \warning Will rewind the file
+        size_t countMsgs(const QuerySet& querySet);
+
+        /// \brief Total number of messages in the file
+        size_t msgsInFile_ = 0;
+
+        /// \brief Messages left in the file
+        size_t msgsLeftInFile_ = 0;
     };
 }  // namespace bufr

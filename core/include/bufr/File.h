@@ -29,7 +29,7 @@ namespace bufr {
                           size_t numMessages = 0);
 
         /// \brief Number of messages in the currently open file..
-        size_t size(const QuerySet& querySet = QuerySet());
+        size_t sizeRemaining(const QuerySet& querySet = QuerySet());
 
         /// \brief Close the currently opened BUFR file.
         void close();

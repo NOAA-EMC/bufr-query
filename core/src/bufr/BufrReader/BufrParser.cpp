@@ -94,7 +94,7 @@ namespace bufr {
         return exportedData;
     }
 
-    std::shared_ptr<DataContainer> BufrParser::parse(const eckit::mpi::Comm& comm)
+    std::shared_ptr<DataContainer> BufrParser::parse(const eckit::mpi::Comm& comm, const size_t maxMsgsToParse)
     {
       // Make the QuerySet
       auto querySet = QuerySet(description_.getExport().getSubsets());
@@ -106,18 +106,24 @@ namespace bufr {
         }
       }
 
-      auto msgsInFile = file_.size(querySet);
+      auto msgsLeftInFile = file_.sizeRemaining(querySet);
 
       // Distribute the messages to the tasks
-      auto msgsToParse = std::floor(msgsInFile / comm.size());
-      size_t startOffset = comm.rank() * msgsToParse;
+      auto msgsToParse = msgsLeftInFile;
+      if (maxMsgsToParse != 0)
+      {
+         msgsToParse = min(msgsToParse, maxMsgsToParse);
+      }
+
+      auto msgsToParseThisRank = std::floor(msgsToParse / comm.size());
+      size_t startOffset = comm.rank() * msgsToParseThisRank;
 
       // Messages may not split evenly among tasks, so distribute the remaining messages
-      if (auto remainder = msgsInFile - comm.size() * msgsToParse)
+      if (auto remainder = msgsToParse - comm.size() * msgsToParseThisRank)
       {
         if (comm.rank() < remainder)
         {
-          msgsToParse++;
+          msgsToParseThisRank++;
           startOffset += comm.rank();
         }
         else
@@ -129,9 +135,9 @@ namespace bufr {
       auto startTime = std::chrono::steady_clock::now();
 
       log::info() << "MPI task: " << comm.rank() << " Executing Queries for message ";
-      log::info() << startOffset << " to " << startOffset + msgsToParse - 1 << std::endl;
+      log::info() << startOffset << " to " << startOffset + msgsToParseThisRank - 1 << std::endl;
 
-      const auto resultSet = file_.execute(querySet, startOffset, msgsToParse);
+      const auto resultSet = file_.execute(querySet, startOffset, msgsToParseThisRank);
 
       log::info() << "MPI task: " << comm.rank() << " Building Bufr Data" << std::endl;
       auto srcData = BufrDataMap();

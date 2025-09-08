@@ -260,7 +260,15 @@ namespace netcdf {
             auto fileName = makeStrWithSubstitions(path, substitutions);
 
             auto file = std::make_shared<nc::NcFile>();
-            if (backend.isMemoryFile)
+            if (append && eckit::PathName(fileName).exists())
+            {
+              file->open(fileName, NC_WRITE);
+            }
+            else if (append && backend.isMemoryFile)
+            {
+              throw eckit::BadParameter("Can not append to a memory file.");
+            }
+            else if (backend.isMemoryFile)
             {
               file->create(fileName, NC_NETCDF4 | NC_CLOBBER | NC_DISKLESS);
             }
