@@ -100,6 +100,12 @@ namespace bufr {
 
     size_t DataProvider::sizeRemaining(const QuerySet& querySet)
     {
+      if (msgsInFile_ == 0)
+      {
+        msgsInFile_ = countMsgs(querySet);
+        msgsLeftInFile_ = msgsInFile_;
+      }
+
       return msgsLeftInFile_;
     }
 
