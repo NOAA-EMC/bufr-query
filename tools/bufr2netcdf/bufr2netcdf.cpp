@@ -69,40 +69,11 @@ namespace mpi {
     return filename;
   }
 
-  void parse(const std::string& obsFile,
-             const std::string& mappingFile,
-             const std::string& outputFile,
-             const std::string& tablePath = "",
-             std::size_t numMsgs = 0)
-  {
-    auto startTime = std::chrono::steady_clock::now();
-
-    std::unique_ptr<eckit::YAMLConfiguration>
-        yaml(new eckit::YAMLConfiguration(eckit::PathName(mappingFile)));
-
-    if (yaml->has("encoder"))
-    {
-      auto data = BufrParser(obsFile,
-                             yaml->getSubConfiguration("bufr"), tablePath).parse(numMsgs);
-
-      auto backend = encoders::netcdf::Encoder::Backend(false, outputFile);
-
-      auto encoderConf = yaml->getSubConfiguration("encoder");
-      auto e = encoders::netcdf::Encoder(encoderConf);
-      e.encode(data, backend);
-    }
-    else
-    {
-        eckit::BadParameter("No section named \"encoder\"");
-    }
-
-    logElapsedTime("Total Time", startTime);
-  }
-
   void parse(const eckit::mpi::Comm& comm,
                        const std::string& obsFile,
                        const std::string& mappingFile,
                        const std::string& outputFile,
+                       const std::size_t numMsgs = 0,
                        const std::string& tablePath = "",
                        bool separateFiles = false)
   {
@@ -117,7 +88,7 @@ namespace mpi {
     }
 
     auto parser = BufrParser(obsFile, yaml->getSubConfiguration("bufr"), tablePath);
-    auto data = parser.parse(comm);
+    auto data = parser.parse(comm, numMsgs);
 
     if (separateFiles)
     {
@@ -246,19 +217,13 @@ int main(int argc, char **argv)
     }
 
     auto app = bufr::mpi::App(argc, argv);
-    if (eckit::mpi::comm("world").size() > 1)
-    {
-      bufr::parse(eckit::mpi::comm("world"),
-                     obsFile,
-                     mappingFile,
-                     outputFile,
-                     tablePath,
-                     separateFiles);
-    }
-    else
-    {
-      bufr::parse(obsFile, mappingFile, outputFile, tablePath, numMsgs);
-    }
+    bufr::parse(eckit::mpi::comm("world"),
+                obsFile,
+                mappingFile,
+                outputFile,
+                numMsgs,
+                tablePath,
+                separateFiles);
 
     return 0;
 }  // namespace bufr

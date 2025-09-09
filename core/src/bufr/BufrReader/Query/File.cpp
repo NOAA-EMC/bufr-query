@@ -26,7 +26,7 @@ namespace bufr {
         dataProvider_->open();
     }
 
-    size_t File::sizeRemaining(const QuerySet &querySet);
+    size_t File::sizeRemaining(const QuerySet &querySet)
     {
       return dataProvider_->sizeRemaining(querySet);
     }

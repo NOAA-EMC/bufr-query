@@ -5,6 +5,7 @@
 #include <chrono>  // NOLINT
 #include <iostream>
 #include <ostream>
+#include <algorithm>
 
 #include <unistd.h>
 
@@ -53,47 +54,6 @@ namespace bufr {
         file_.close();
     }
 
-    std::shared_ptr<DataContainer> BufrParser::parse(const size_t maxMsgsToParse)
-    {
-        auto startTime = std::chrono::steady_clock::now();
-
-        auto querySet = QuerySet(description_.getExport().getSubsets());
-
-        for (const auto &var : description_.getExport().getVariables())
-        {
-            for (const auto &queryPair : var->getQueryList())
-            {
-                querySet.add(queryPair.name, queryPair.query);
-            }
-        }
-
-        log::info() << "Executing Queries" << std::endl;
-        const auto resultSet = file_.execute(querySet, maxMsgsToParse);
-
-        log::info() << "Building Bufr Data" << std::endl;
-        auto srcData = BufrDataMap();
-        for (const auto& var : description_.getExport().getVariables())
-        {
-            for (const auto& queryInfo : var->getQueryList())
-            {
-                srcData[queryInfo.name] = resultSet.get(
-                    queryInfo.name, queryInfo.groupByField, queryInfo.type);
-            }
-        }
-
-        log::info()  << "Exporting Data" << std::endl;
-        auto exportedData = exportData(srcData);
-
-        auto timeElapsed = std::chrono::steady_clock::now() - startTime;
-        auto timeElapsedDuration = std::chrono::duration_cast<std::chrono::milliseconds>
-                (timeElapsed);
-        log::info()  << "Parser Finished "
-                           << "[" << timeElapsedDuration.count() / 1000.0 << "s]"
-                           << std::endl;
-
-        return exportedData;
-    }
-
     std::shared_ptr<DataContainer> BufrParser::parse(const eckit::mpi::Comm& comm, const size_t maxMsgsToParse)
     {
       // Make the QuerySet
@@ -112,7 +72,7 @@ namespace bufr {
       auto msgsToParse = msgsLeftInFile;
       if (maxMsgsToParse != 0)
       {
-         msgsToParse = min(msgsToParse, maxMsgsToParse);
+         msgsToParse = std::min(msgsToParse, maxMsgsToParse);
       }
 
       auto msgsToParseThisRank = std::floor(msgsToParse / comm.size());
