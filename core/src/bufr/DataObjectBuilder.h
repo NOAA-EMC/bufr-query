@@ -144,6 +144,8 @@ namespace bufr {
         object = std::make_shared<DataObject<uint64_t>>();
       } else if (overrideType == "uint32" || overrideType == "uint") {
         object = std::make_shared<DataObject<uint32_t>>();
+      } else if (overrideType == "unknown") {
+        object = std::make_shared<DataObject<int32_t>>();
       } else {
         std::ostringstream errMsg;
         errMsg << "Unknown or unsupported type " << overrideType << ".";
