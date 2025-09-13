@@ -22,7 +22,7 @@ namespace bufr {
         {
             if (!dataProvider_->setParam(param.first, param.second))
             {
-               log::warning << "Failed to set BUFR param " << param.first << " to " << param.second;
+               log::warning() << "Failed to set BUFR param " << param.first << " to " << param.second;
             }
         }
 
@@ -39,7 +39,7 @@ namespace bufr {
         {
             if (!dataProvider_->setParam(param.first, param.second))
             {
-                log::warning << "Failed to set BUFR param " << param.first << " to " << param.second;
+                log::warning() << "Failed to set BUFR param " << param.first << " to " << param.second;
             }
         }
 
