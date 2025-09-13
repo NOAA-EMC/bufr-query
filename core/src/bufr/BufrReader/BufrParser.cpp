@@ -20,27 +20,27 @@
 namespace bufr {
 
    // NCEP BUFR File Parsers
-     BufrParser(const std::string& obsfile,
-                const BufrDescription& description,
-                const std::map<std::string, int>& bufrParams) :
+     BufrParser::BufrParser(const std::string& obsfile,
+                            const BufrDescription& description,
+                            const std::map<std::string, int>& bufrParams) :
       description_(description),
       file_(File(obsfile, bufrParams))
     {
       log::info() << "BufrParser: Parsing file " << obsfile << std::endl;
     }
 
-     BufrParser(const std::string& obsfile,
-                const eckit::LocalConfiguration& conf,
-                const std::map<std::string, int>& bufrParams) :
+     BufrParser::BufrParser(const std::string& obsfile,
+                            const eckit::LocalConfiguration& conf,
+                            const std::map<std::string, int>& bufrParams) :
       description_(BufrDescription(conf)),
       file_(File(obsfile, bufrParams))
     {
       log::info() << "BufrParser: Parsing file " << obsfile << std::endl;
     }
 
-     BufrParser(const std::string& obsfile,
-                const std::string& mappingPath,
-                const std::map<std::string, int>& bufrParams) :
+     BufrParser::BufrParser(const std::string& obsfile,
+                            const std::string& mappingPath,
+                            const std::map<std::string, int>& bufrParams) :
       description_(BufrDescription(mappingPath)),
       file_(File(obsfile, bufrParams))
     {
@@ -48,30 +48,30 @@ namespace bufr {
     }
 
     // WMO BUFR File Parsers
-    BufrParser(const std::string& obsfile,
-               const BufrDescription& description,
-               const std::string& tablepath,
-               const std::map<std::string, int>& bufrParams)
+    BufrParser::BufrParser(const std::string& obsfile,
+                           const BufrDescription& description,
+                           const std::string& tablepath,
+                           const std::map<std::string, int>& bufrParams)
       description_(description),
       file_(File(obsfile, tablepath, bufrParams))
     {
       log::info() << "BufrParser: Parsing file " << obsfile << std::endl;
     }
 
-    BufrParser(const std::string& obsfile,
-               const eckit::LocalConfiguration& conf,
-               const std::string& tablepath,
-               const std::map<std::string, int>& bufrParams) :
+    BufrParser::BufrParser(const std::string& obsfile,
+                           const eckit::LocalConfiguration& conf,
+                           const std::string& tablepath,
+                           const std::map<std::string, int>& bufrParams) :
       description_(BufrDescription(conf)),
       file_(File(obsfile, tablepath, bufrParams))
     {
       log::info() << "BufrParser: Parsing file " << obsfile << std::endl;
     }
 
-    BufrParser(const std::string& obsfile,
-               const std::string& mappingPath,
-               const std::string& tablepath,
-               const std::map<std::string, int>& bufrParams) :
+    BufrParser::BufrParser(const std::string& obsfile,
+                           const std::string& mappingPath,
+                           const std::string& tablepath,
+                           const std::map<std::string, int>& bufrParams) :
       description_(BufrDescription(mappingPath)),
       file_(File(obsfile, tablepath, bufrParams))
     {

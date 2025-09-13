@@ -13,8 +13,8 @@
 
 
 namespace bufr {
-    File(const std::string& filename,
-         const std::map<std::string, int>& bufrParams)
+    File::File(const std::string& filename,
+               const std::map<std::string, int>& bufrParams)
     {
         dataProvider_ = std::make_shared<NcepDataProvider>(filename);
 
