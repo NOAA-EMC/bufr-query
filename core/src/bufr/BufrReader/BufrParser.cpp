@@ -51,7 +51,7 @@ namespace bufr {
     BufrParser::BufrParser(const std::string& obsfile,
                            const BufrDescription& description,
                            const std::string& tablepath,
-                           const std::map<std::string, int>& bufrParams)
+                           const std::map<std::string, int>& bufrParams) :
       description_(description),
       file_(File(obsfile, tablepath, bufrParams))
     {
