@@ -26,7 +26,7 @@ void setupFile(py::module& m)
         py::arg("bufrParam") = std::map<std::string, int>())
    .def(py::init<const std::string&, const std::string&, const std::map<std::string, int>&>(),
         py::arg("filename"),
-        py::arg('wmoTablePath'),
+        py::arg("wmoTablePath"),
         py::arg("bufrParam") = std::map<std::string, int>())
    .def("execute", &File::execute,
         py::arg("query_set"),
