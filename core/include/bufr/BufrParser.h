@@ -18,23 +18,40 @@
 #include "BufrDescription.h"
 #include "DataContainer.h"
 
-
+const std::string& tablepath = ""
 namespace bufr {
     /// \brief Uses a BufrDescription and helper classes to parse the contents of a BUFR file.
     class BufrParser
     {
      public:
+       // NCEP BUFR File Parsers
        BufrParser(const std::string& obsfile,
                   const BufrDescription& description,
-                  const std::string& tablepath = "");
+                  const std::map<std::string, int>& bufrParams = std::map<std::string, int>());
 
        BufrParser(const std::string& obsfile,
                   const eckit::LocalConfiguration& conf,
-                  const std::string& tablepath = "");
+                  const std::map<std::string, int>& bufrParams = std::map<std::string, int>());
 
        BufrParser(const std::string& obsfile,
                   const std::string& mappingPath,
-                  const std::string& tablepath = "");
+                  const std::map<std::string, int>& bufrParams = std::map<std::string, int>());
+
+      // WMO BUFR File Parsers
+      BufrParser(const std::string& obsfile,
+                 const BufrDescription& description,
+                 const std::string& tablepath,
+                 const std::map<std::string, int>& bufrParams = std::map<std::string, int>());
+
+      BufrParser(const std::string& obsfile,
+                 const eckit::LocalConfiguration& conf,
+                 const std::string& tablepath,
+                 const std::map<std::string, int>& bufrParams = std::map<std::string, int>());
+
+      BufrParser(const std::string& obsfile,
+                 const std::string& mappingPath,
+                 const std::string& tablepath,
+                 const std::map<std::string, int>& bufrParams = std::map<std::string, int>());
 
         ~BufrParser();
 

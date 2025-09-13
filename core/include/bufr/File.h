@@ -17,7 +17,12 @@ namespace bufr {
         File() = delete;
 
         File(const std::string& filename,
-             const std::string& wmoTablePath = "");
+             const std::map<std::string, int>& bufrParams = std::map<std::string, int>());
+
+        File(const std::string& filename,
+             const std::string& wmoTablePath,
+             const std::map<std::string, int>& bufrParams = std::map<std::string, int>());
+
 
         /// \brief Execute the queries given in the query set over the BUFR file and accumulate the
         /// resulting data in the ResultSet.

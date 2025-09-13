@@ -6,10 +6,12 @@
 */
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <memory>
 #include <vector>
 #include <string>
+#include <map>
 #include <mpi.h>
 
 #include "bufr/BufrParser.h"
@@ -25,10 +27,15 @@ void setupParser(py::module& m)
   m.doc() = "Provides the ability to process data from BUFR files.";
 
   py::class_<BufrParser>(m, "Parser")
-    .def(py::init<const std::string&, const std::string&, const std::string&>(),
+    .def(py::init<const std::string&, const std::string&, const std::map<std::string, int>&>(),
          py::arg("obsfile"),
          py::arg("mapping_path"),
-         py::arg("table_path") = "")
+         py::arg("bufr_parame") = std::map<std::string, int>())
+    .def(py::init<const std::string&, const std::string&, const std::string&, const std::map<std::string, int>&>(),
+         py::arg("obsfile"),
+         py::arg("mapping_path"),
+         py::arg("table_path"),
+         py::arg("bufr_parame") = std::map<std::string, int>())
     .def("parse", [](BufrParser& self, size_t numMsgs = 0)
          {
            return self.parse(numMsgs);

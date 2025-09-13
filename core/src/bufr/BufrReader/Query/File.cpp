@@ -9,18 +9,38 @@
 #include "bufr/DataProvider.h"
 #include "bufr/NcepDataProvider.h"
 #include "bufr/WmoDataProvider.h"
+#include "Log.h"
 
 
 namespace bufr {
-    File::File(const std::string &filename, const std::string &wmoTablePath)
+    File(const std::string& filename,
+         const std::map<std::string, int>& bufrParams)
     {
-        if (wmoTablePath.empty())
+        dataProvider_ = std::make_shared<NcepDataProvider>(filename);
+
+        for (const auto& param : bufrParams)
         {
-            dataProvider_ = std::make_shared<NcepDataProvider>(filename);
+            if (!dataProvider_->setParam(param.first, param.second))
+            {
+               log::warning << "Failed to set BUFR param " << param.first << " to " << param.second;
+            }
         }
-        else
+
+        dataProvider_->open();
+    }
+
+    File::File(const std::string &filename,
+               const std::string &wmoTablePath,
+               const std::map<std::string, int>& bufrParams)
+    {
+        dataProvider_ = std::make_shared<WmoDataProvider>(filename, wmoTablePath);
+
+        for (const auto& param : bufrParams)
         {
-            dataProvider_ = std::make_shared<WmoDataProvider>(filename, wmoTablePath);
+            if (!dataProvider_->setParam(param.first, param.second))
+            {
+                log::warning << "Failed to set BUFR param " << param.first << " to " << param.second;
+            }
         }
 
         dataProvider_->open();

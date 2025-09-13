@@ -6,9 +6,11 @@
 */
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <memory>
 #include <string>
+#include <map>
 
 #include "bufr/File.h"
 
@@ -19,9 +21,13 @@ using bufr::File;
 void setupFile(py::module& m)
 {
   py::class_<File>(m, "File")
-   .def(py::init<const std::string&, const std::string&>(),
+   .def(py::init<const std::string&, const std::map<std::string, int>&>(),
         py::arg("filename"),
-        py::arg("wmoTablePath") = std::string(""))
+        py::arg("bufrParam") = std::map<std::string, int>())
+   .def(py::init<const std::string&, const std::string&, const std::map<std::string, int>&>(),
+        py::arg("filename"),
+        py::arg('wmoTablePath'),
+        py::arg("bufrParam") = std::map<std::string, int>())
    .def("execute", &File::execute,
         py::arg("query_set"),
         py::arg("offset") = static_cast<int>(0),

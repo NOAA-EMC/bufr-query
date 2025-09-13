@@ -154,6 +154,12 @@ namespace bufr {
             open();
         }
 
+        /// \brief Get bufr parameter
+        int getParam(const std::string& name);
+
+        /// \brief Set bufr parameter
+        bool setParam(const std::string& name, int value);
+
         size_t numMessages(const QuerySet& querySet);
 
         /// \brief Is the BUFR file open
