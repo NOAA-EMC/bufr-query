@@ -18,7 +18,6 @@
 #include "BufrDescription.h"
 #include "DataContainer.h"
 
-const std::string& tablepath = ""
 namespace bufr {
     /// \brief Uses a BufrDescription and helper classes to parse the contents of a BUFR file.
     class BufrParser
