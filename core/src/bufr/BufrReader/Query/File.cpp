@@ -9,7 +9,7 @@
 #include "bufr/DataProvider.h"
 #include "bufr/NcepDataProvider.h"
 #include "bufr/WmoDataProvider.h"
-#include "./Log.h"
+#include "../../Log.h"
 
 
 namespace bufr {
