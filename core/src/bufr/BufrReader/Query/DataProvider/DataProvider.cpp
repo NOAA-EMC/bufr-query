@@ -89,12 +89,12 @@ namespace bufr {
 
     int DataProvider::getParam(const std::string& name)
     {
-        return igetprm_f(name.c_str());
+        return igetprm_f(const_cast<char*>(name.c_str()));
     }
 
     bool DataProvider::setParam(const std::string& name, int value)
     {
-        return isetprm_f(name.c_str(), value) == 0;
+        return isetprm_f(const_cast<char*>(name.c_str()), value) == 0;
     }
 
     size_t DataProvider::numMessages(const QuerySet& querySet)
