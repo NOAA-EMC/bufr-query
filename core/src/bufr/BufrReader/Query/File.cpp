@@ -33,7 +33,14 @@ namespace bufr {
                const std::string &wmoTablePath,
                const std::map<std::string, int>& bufrParams)
     {
-        dataProvider_ = std::make_shared<WmoDataProvider>(filename, wmoTablePath);
+        if (!wmoTablePath.empty())
+        {
+            dataProvider_ = std::make_shared<WmoDataProvider>(filename, wmoTablePath);
+        }
+        else
+        {
+            dataProvider_ = std::make_shared<NcepDataProvider>(filename);
+        }
 
         for (const auto& param : bufrParams)
         {
