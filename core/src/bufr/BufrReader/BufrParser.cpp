@@ -112,9 +112,10 @@ namespace bufr {
       {
         msgsInFile = file_.size(querySet);
       }
-      // Broadcast message count from rank 0 to all ranks using allReduce with MAX
-      // (rank 0 has the count, others have 0, so MAX gives us the count on all ranks)
-      comm.allReduce(msgsInFile, msgsInFile, eckit::mpi::Operation::MAX);
+      // Broadcast message count from rank 0 to all ranks using allReduce MAX
+      // (rank 0 has the count, others have 0, so MAX broadcasts to all)
+      comm.allReduce(msgsInFile, msgsInFile,
+                     eckit::mpi::Operation::MAX);
 
       // Distribute the messages to the tasks
       auto msgsToParse = std::floor(msgsInFile / comm.size());
