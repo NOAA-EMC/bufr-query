@@ -737,6 +737,11 @@ namespace bufr {
       /// \param data The data object to append.
       void append(const std::shared_ptr<DataObjectBase>& data) final
       {
+        if (data->size() == 0)
+        {
+          return;
+        }
+        
         auto other = std::dynamic_pointer_cast<DataObject<T>>(data);
         if (!other)
         {
@@ -1326,6 +1331,11 @@ namespace bufr {
       /// \param data The data object to append.
       void append(const std::shared_ptr<DataObjectBase>& data) final
       {
+        if (data->size() == 0)
+        {
+          return;
+        }
+
         auto other = std::dynamic_pointer_cast<DataObject<std::string>>(data);
         if (!other)
         {
