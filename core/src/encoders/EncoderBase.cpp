@@ -238,9 +238,10 @@ namespace encoders {
         labels.resize(dataObject->getDims().back());
         if (const auto obj = std::dynamic_pointer_cast<DataObject<int>>(dataObject))
         {
+          auto rawData = obj->getRawData();
           for (size_t idx = 0; idx < labels.size(); idx++)
           {
-            labels[idx] = obj->getRawData()[idx];
+            labels[idx] = rawData[idx];
           }
         }
         else
