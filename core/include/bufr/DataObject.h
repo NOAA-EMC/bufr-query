@@ -737,6 +737,11 @@ namespace bufr {
       /// \param data The data object to append.
       void append(const std::shared_ptr<DataObjectBase>& data) final
       {
+        if (data->size() == 0)
+        {
+          return;
+        }
+        
         auto other = std::dynamic_pointer_cast<DataObject<T>>(data);
         if (!other)
         {
@@ -795,7 +800,7 @@ namespace bufr {
 
       /// \brief Get the raw data associated with this data object.
       /// \return The raw data.
-      std::vector<T> getRawData() const { return data_; }
+      const std::vector<T>& getRawData() const { return data_; }
 
       /// \brief Get the size of the data object.
       /// \return The size of the data object.
@@ -1326,6 +1331,11 @@ namespace bufr {
       /// \param data The data object to append.
       void append(const std::shared_ptr<DataObjectBase>& data) final
       {
+        if (data->size() == 0)
+        {
+          return;
+        }
+
         auto other = std::dynamic_pointer_cast<DataObject<std::string>>(data);
         if (!other)
         {
@@ -1416,7 +1426,7 @@ namespace bufr {
 
       /// \brief Get the raw data associated with this data object.
       /// \return The raw data.
-      std::vector<std::string> getRawData() const { return data_; }
+      const std::vector<std::string>& getRawData() const { return data_; }
 
       /// \brief Get the size of the data object.
       /// \return The size of the data object.

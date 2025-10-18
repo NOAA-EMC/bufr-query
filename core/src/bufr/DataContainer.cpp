@@ -150,13 +150,19 @@ namespace bufr {
     return subCategory;
   }
 
-  size_t DataContainer::size(const SubCategory& categoryId) const {
+  size_t DataContainer::size(const SubCategory& categoryId) const
+  {
     if (dataSets_.find(categoryId) == dataSets_.end()) {
       std::ostringstream errStr;
       errStr << "ERROR: Category called " << makeSubCategoryStr(categoryId);
       errStr << " does not exist.";
 
       throw eckit::BadParameter(errStr.str());
+    }
+
+    if (dataSets_.at(categoryId).empty())
+    {
+      return 0;
     }
 
     return dataSets_.at(categoryId).begin()->second->getDims().at(0);
@@ -243,6 +249,12 @@ namespace bufr {
 
     for (const auto &subCat: other.allSubCategories())
     {
+      // The other DataContainer is empty, nothing to do.
+      if (other.size(subCat) == 0)
+      {
+        continue;
+      }
+
       if (isEmpty)
       {
         categoryMap_ = other.categoryMap_;

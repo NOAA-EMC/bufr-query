@@ -66,7 +66,16 @@ namespace bufr {
         }
       }
 
-      auto msgsLeftInFile = file_.sizeRemaining(querySet);
+      // Only rank 0 counts messages to avoid redundant file scans on all ranks
+      size_t msgsInFile = 0;
+      if (comm.rank() == 0)
+      {
+        msgsInFile = file_.size(querySet);
+      }
+      // Broadcast message count from rank 0 to all ranks using allReduce MAX
+      // (rank 0 has the count, others have 0, so MAX broadcasts to all)
+      comm.allReduce(msgsInFile, msgsInFile,
+                     eckit::mpi::Operation::MAX);
 
       // Distribute the messages to the tasks
       auto msgsToParse = msgsLeftInFile;

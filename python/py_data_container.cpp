@@ -147,6 +147,9 @@ void setupDataContainer(py::module& m)
         py::arg("category"),
         "Get the data container for the sub category.")
    .def("list", &DataContainer::getFieldNames, "Get the field names.")
+   .def("size", &DataContainer::size,
+        py::arg("category") = std::vector<std::string>(),
+        "Get the size of the data container dataset")
    .def("append", &DataContainer::append,
         py::arg("other"),
         "Append contents of another container. Must have the same category map and fields.")
