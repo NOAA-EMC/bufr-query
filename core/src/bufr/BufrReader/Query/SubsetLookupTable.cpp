@@ -18,11 +18,29 @@ namespace bufr {
     SubsetLookupTable::makeLookupTable(const std::shared_ptr<DataProvider>& dataProvider,
                                        const Targets& targets) const
     {
-        auto lookupTable = LookupTable(dataProvider->getInode(),
-                                       dataProvider->getIsc(dataProvider->getInode()));
+        auto lookupTable = LookupTable();
+        auto lookupMetaTable = LookupMetaTable();
 
-        auto lookupMetaTable = LookupMetaTable(dataProvider->getInode(),
-                                               dataProvider->getIsc(dataProvider->getInode()));
+        // Initialize the table elements we are going to use.
+        for (const auto& target : targets)
+        {
+            if (target->nodeIdx < dataProvider->getInode()) { continue; }
+
+            lookupTable[target->nodeIdx] = SubsetLookupTable::NodeData();
+            lookupMetaTable[target->nodeIdx] = SubsetLookupTable::NodeMetaData();
+
+            for (const auto& path : target->path)
+            {
+                if (path.isContainer())
+                {
+                    lookupMetaTable[path.nodeId] = SubsetLookupTable::NodeMetaData();
+                    lookupTable[path.nodeId] = SubsetLookupTable::NodeData();
+                }
+            }
+        }
+
+        // std::cout << "**** " << lookupTable.size() << " ";
+        // std::cout << dataProvider->getInode() - dataProvider->getIsc(dataProvider->getInode())  << std::endl;
 
         // Populate the lookup table with the counts and data corresponding to each BUFR node
         // we care about.

@@ -61,8 +61,8 @@ namespace bufr {
             CountsVector counts;
         };
 
-        typedef __details::OffsetArray<NodeData> LookupTable;
-        typedef __details::OffsetArray<NodeMetaData> LookupMetaTable;
+        typedef std::unordered_map<size_t, NodeData> LookupTable;
+        typedef std::unordered_map<size_t, NodeMetaData> LookupMetaTable;
 
         SubsetLookupTable(const std::shared_ptr<DataProvider>& dataProvider,
                           const std::shared_ptr<Targets>& targets);
@@ -70,7 +70,7 @@ namespace bufr {
         /// \brief Returns the NodeData for a given bufr node.
         /// \param[in] nodeId The id of the node to get the data for.
         /// \return The NodeData for the given node.
-        const NodeData& operator[](size_t nodeId) const { return lookupTable_[nodeId]; }
+        const NodeData& operator[](size_t nodeId) const { return lookupTable_.at(nodeId); }
 
         /// \brief Gets the idx for the target with the given name.
         /// \param[in] name The name of the target to get the idx for.
@@ -94,7 +94,7 @@ namespace bufr {
 
      private:
         const std::shared_ptr<Targets> targets_;
-        LookupTable lookupTable_;
+        const LookupTable lookupTable_;
 
         /// \brief Creates a lookup table that maps node ids to NodeData objects.
         /// \param[in] targets The targets to create the lookup table for.
