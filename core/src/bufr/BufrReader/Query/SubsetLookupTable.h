@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <memory>
 #include <vector>
 #include <unordered_map>
@@ -25,17 +26,34 @@ namespace bufr {
         {
          public:
             OffsetArray(size_t startIdx, size_t endIdx)
-                : offset_(startIdx)
+                : startIdx_(startIdx),
+                  endIdx_(endIdx)
             {
-                data_.resize(endIdx - startIdx + 1);
             }
 
-            T& operator[](size_t idx) { return data_[idx - offset_]; }
-            const T& operator[](size_t idx) const { return data_[idx - offset_]; }
+            T& operator[](size_t idx)
+            {
+                assert(idx >= startIdx_ && idx <= endIdx_);
+                return data_[idx];
+            }
+
+            const T& operator[](size_t idx) const
+            {
+                assert(idx >= startIdx_ && idx <= endIdx_);
+                auto it = data_.find(idx);
+                if (it != data_.end())
+                {
+                    return it->second;
+                }
+
+                return empty_;
+            }
 
          private:
-            std::vector<T> data_;
-            size_t offset_;
+            size_t startIdx_;
+            size_t endIdx_;
+            mutable T empty_{};
+            std::unordered_map<size_t, T> data_;
         };
     }  // namespace __details
 
