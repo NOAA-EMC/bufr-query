@@ -2,11 +2,11 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <memory>
 #include <vector>
-#include <unordered_map>
-#include <unordered_set>
 
 #include "bufr/DataProvider.h"
 #include "bufr/Data.h"
@@ -34,16 +34,27 @@ namespace bufr {
             T& operator[](size_t idx)
             {
                 assert(idx >= startIdx_ && idx <= endIdx_);
-                return data_[idx];
+
+                auto it = std::lower_bound(indices_.begin(), indices_.end(), idx);
+                if (it != indices_.end() && *it == idx)
+                {
+                    return values_[static_cast<size_t>(std::distance(indices_.begin(), it))];
+                }
+
+                const auto insertPos = static_cast<size_t>(std::distance(indices_.begin(), it));
+                indices_.insert(it, idx);
+                values_.insert(values_.begin() + static_cast<std::ptrdiff_t>(insertPos), T{});
+                return values_[insertPos];
             }
 
             const T& operator[](size_t idx) const
             {
                 assert(idx >= startIdx_ && idx <= endIdx_);
-                auto it = data_.find(idx);
-                if (it != data_.end())
+
+                auto it = std::lower_bound(indices_.begin(), indices_.end(), idx);
+                if (it != indices_.end() && *it == idx)
                 {
-                    return it->second;
+                    return values_[static_cast<size_t>(std::distance(indices_.begin(), it))];
                 }
 
                 return empty_;
@@ -53,7 +64,8 @@ namespace bufr {
             size_t startIdx_;
             size_t endIdx_;
             mutable T empty_{};
-            std::unordered_map<size_t, T> data_;
+            std::vector<size_t> indices_;
+            std::vector<T> values_;
         };
     }  // namespace __details
 
