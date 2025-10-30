@@ -25,6 +25,7 @@ namespace bufr {
             std::vector<int32_t> offsets;
 
             size_t index(size_t nodeId) const;
+            bool contains(size_t nodeId) const;
         };
 
         template <typename T>
@@ -60,6 +61,11 @@ namespace bufr {
             const T& operator[](size_t nodeId) const
             {
                 return data_.at(layout_->index(nodeId));
+            }
+
+            bool contains(size_t nodeId) const
+            {
+                return layout_ && layout_->contains(nodeId);
             }
 
          private:

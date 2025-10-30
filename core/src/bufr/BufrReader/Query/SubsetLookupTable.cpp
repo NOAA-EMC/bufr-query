@@ -35,6 +35,16 @@ size_t SubsetLookupTable::Layout::index(size_t nodeId) const
     return static_cast<size_t>(mapped);
 }
 
+bool SubsetLookupTable::Layout::contains(size_t nodeId) const
+{
+    if (size == 0 || nodeId < minNodeId || nodeId > maxNodeId)
+    {
+        return false;
+    }
+
+    return offsets[nodeId - minNodeId] != InvalidIndex;
+}
+
 SubsetLookupTable::SubsetLookupTable(const std::shared_ptr<DataProvider>& dataProvider,
                                      const std::shared_ptr<Targets>& targets,
                                      const std::shared_ptr<const Layout>& layout) :
@@ -122,8 +132,11 @@ void SubsetLookupTable::addCounts(const std::shared_ptr<DataProvider>& dataProvi
         {
             if (path.isContainer())
             {
-                lookupMeta[path.nodeId].component = path;
-                lookupMeta[path.nodeId].collectedCounts = true;
+                if (lookupMeta.contains(path.nodeId))
+                {
+                    lookupMeta[path.nodeId].component = path;
+                    lookupMeta[path.nodeId].collectedCounts = true;
+                }
             }
         }
     }
@@ -132,9 +145,15 @@ void SubsetLookupTable::addCounts(const std::shared_ptr<DataProvider>& dataProvi
     for (size_t cursor = 1; cursor <= dataProvider->getNVal(); ++cursor)
     {
         const auto& nodeId = dataProvider->getInv(cursor);
-        if (lookupMeta[nodeId].collectedCounts)
+        if (!lookupMeta.contains(nodeId))
         {
-            const auto &component = lookupMeta[nodeId].component;
+            continue;
+        }
+
+        auto& meta = lookupMeta[nodeId];
+        if (meta.collectedCounts)
+        {
+            const auto &component = meta.component;
 
             if (component.type == TargetComponent::Type::Subset)
             {
@@ -171,8 +190,16 @@ void SubsetLookupTable::addData(const std::shared_ptr<DataProvider>& dataProvide
         if (target->nodeIdx == 0) { continue; }
         const auto &path = target->path.back();
 
+        if (!lookup.contains(target->nodeIdx))
+        {
+            continue;
+        }
+
         lookup[target->nodeIdx].data.isLongStr(target->typeInfo.isLongString());
-        lookup[target->nodeIdx].data.reserve(sum(lookup[path.parentDimensionNodeId].counts));
+        if (lookup.contains(path.parentDimensionNodeId))
+        {
+            lookup[target->nodeIdx].data.reserve(sum(lookup[path.parentDimensionNodeId].counts));
+        }
         lookupMeta[target->nodeIdx].collectedData = true;
         lookupMeta[target->nodeIdx].longStrId = target->longStrId;
     }
@@ -180,11 +207,17 @@ void SubsetLookupTable::addData(const std::shared_ptr<DataProvider>& dataProvide
     for (size_t cursor = 1; cursor <= dataProvider->getNVal(); ++cursor)
     {
         const auto& nodeId = dataProvider->getInv(cursor);
-        if (lookupMeta[nodeId].collectedData)
+        if (!lookupMeta.contains(nodeId))
+        {
+            continue;
+        }
+
+        auto& meta = lookupMeta[nodeId];
+        if (meta.collectedData)
         {
             if (lookup[nodeId].data.isLongStr())
             {
-                auto longStr = dataProvider->getLongStr(lookupMeta[nodeId].longStrId);
+                auto longStr = dataProvider->getLongStr(meta.longStrId);
                 lookup[nodeId].data.push_back(longStr);
             }
             else
