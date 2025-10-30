@@ -85,65 +85,48 @@ namespace details
         friend class QueryRunner;
 
      private:
-        Frames frames_;
+        struct TargetSeries
+        {
+            TargetPtr target;
+            TypeInfo typeInfo;
+            Data data;
+            std::vector<size_t> dataOffsets;
+            std::vector<std::vector<int>> counts;
+            std::vector<std::vector<size_t>> countOffsets;
+            std::vector<char> missingFrames;
+            std::vector<int> dims;
+            std::vector<int> rawDims;
+            std::vector<int> filteredDims;
+            std::vector<Query> dimPaths;
 
-        /// \brief Computes and returns metadata associated with a target.
-        /// \param name The name of the target to get the metadata for.
-        /// \return A TargetMetaData object containing the metadata.
+            TargetSeries() = default;
+            explicit TargetSeries(const TargetPtr& targetPtr);
+        };
+
+        std::vector<TargetSeries> series_;
+        std::unordered_map<std::string, size_t> seriesIndex_;
+        size_t frameCount_ = 0;
+
         details::TargetMetaDataPtr analyzeTarget(const std::string& name) const;
-
-        /// \brief Assembles the data fragments for a target into a single ResultData object.
-        /// \param targetMetaData The metadata for the target to assemble the data for.
-        /// \return A ResultData object containing the data.
         details::ResultData assembleData(const details::TargetMetaDataPtr& targetMetaData) const;
 
-        /// \brief Copies the data from a frame into a ResultData object.
-        /// \param data The ResultData object to copy the data into.
-        /// \param frame The frame to copy the data from.
-        /// \param target The target to copy the data for.
-        /// \param outputOffset The offset into the ResultData object to copy the data to.
         void copyData(details::ResultData& data,
-                      const Frame& frame,
-                      const TargetPtr& target,
+                      const TargetSeries& series,
+                      size_t frameIdx,
                       size_t outputOffset) const;
 
-        /// \brief Copies the data from a frame into a ResultData object.
-        /// \param data The ResultData object to copy the data into.
-        /// \param frame The frame to copy the data from.
-        /// \param target The target to copy the data for.
-        /// \param outputOffset The offset into the ResultData object to copy the data to.
-        /// \param inputOffset The offset into the frame to copy the data from.
-        /// \param dimIdx The index of the dimension to copy the data for.
-        /// \param countNumber The current count
-        /// \param countOffset The offset into the count array.
         void _copyData(details::ResultData& data,
-                       const Frame& frame,
-                       const TargetPtr& target,
+                       const TargetSeries& series,
+                       std::vector<size_t>& levelCursors,
+                       std::vector<size_t>& levelEnds,
                        size_t& outputOffset,
-                       size_t& inputOffset,
+                       size_t& dataCursor,
                        const size_t dimIdx,
-                       const size_t countNumber,
-                       const size_t countOffset) const;
+                       const size_t countNumber) const;
 
-        /// \brief Validates that the group_by field is valid for the target. Throws an exception if
-        ///        it is not.
-        /// \param targetMetaData The metadata for the target.
-        /// \param groupByMetaData The metadata for the group_by field.
         void validateGroupByField(const details::TargetMetaDataPtr& targetMetaData,
                                   const details::TargetMetaDataPtr& groupByMetaData) const;
 
-
-        /// \brief Copies filtered data from a source ResultData object into a destination
-        ///        ResultData object.
-        /// \param resData The ResultData object to copy the data into.
-        /// \param srcData The ResultData object to copy the data from.
-        /// \param target The target to copy the data for.
-        /// \param inputOffset The offset into the source ResultData object to copy the data from.
-        /// \param outputOffset The offset into the destination ResultData object to copy the data
-        ///        to.
-        /// \param depth The depth of the dimension to copy the data for.
-        /// \param filterDataList The list of filter data to apply.
-        /// \param skipResult Whether to skip copying the result data.
         void copyFilteredData(details::ResultData& resData,
                               const details::ResultData& srcData,
                               const TargetPtr& target,
@@ -194,6 +177,10 @@ namespace details
         /// \param overrideType The meta data for the element.
         /// \return A Result DataObject containing the data.
         std::shared_ptr<DataObjectBase> objectByType(const std::string& overrideType) const;
+
+        void ensureSeries(const std::shared_ptr<Targets>& targets);
+        size_t indexFor(const std::string& name) const;
+        void appendFrame(const SubsetLookupTable& frame, const std::shared_ptr<Targets>& targets);
 
         /// \brief Utility function that can be used to split a query string into its components.
         /// \param query The query string.

@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include <algorithm>
-#include <cassert>
-#include <cstddef>
+#include <cstdint>
+#include <limits>
 #include <memory>
+#include <unordered_set>
 #include <vector>
 
 #include "bufr/DataProvider.h"
@@ -17,55 +17,54 @@ namespace bufr {
 
     namespace __details
     {
-        /// \brief BUFR messages are indexed according to start and stop values that are dependant
-        /// on the message itself (the indexing is a property of the message). This object allows
-        /// lets you make an array where the indexing is offset with respect to the actual position
-        /// of the object in the array.
+        struct SubsetLayout
+        {
+            size_t minNodeId = 0;
+            size_t maxNodeId = 0;
+            size_t size = 0;
+            std::vector<int32_t> offsets;
+
+            size_t index(size_t nodeId) const;
+        };
+
         template <typename T>
-        class OffsetArray
+        class NodeArray
         {
          public:
-            OffsetArray(size_t startIdx, size_t endIdx)
-                : startIdx_(startIdx),
-                  endIdx_(endIdx)
+            NodeArray() = default;
+
+            explicit NodeArray(const std::shared_ptr<const SubsetLayout>& layout)
+                : layout_(layout)
             {
+                if (layout_)
+                {
+                    data_.resize(layout_->size);
+                }
             }
 
-            T& operator[](size_t idx)
+            void reset(const std::shared_ptr<const SubsetLayout>& layout)
             {
-                assert(idx >= startIdx_ && idx <= endIdx_);
-
-                auto it = std::lower_bound(indices_.begin(), indices_.end(), idx);
-                if (it != indices_.end() && *it == idx)
+                layout_ = layout;
+                data_.clear();
+                if (layout_)
                 {
-                    return values_[static_cast<size_t>(std::distance(indices_.begin(), it))];
+                    data_.resize(layout_->size);
                 }
-
-                const auto insertPos = static_cast<size_t>(std::distance(indices_.begin(), it));
-                indices_.insert(it, idx);
-                values_.insert(values_.begin() + static_cast<std::ptrdiff_t>(insertPos), T{});
-                return values_[insertPos];
             }
 
-            const T& operator[](size_t idx) const
+            T& operator[](size_t nodeId)
             {
-                assert(idx >= startIdx_ && idx <= endIdx_);
+                return data_.at(layout_->index(nodeId));
+            }
 
-                auto it = std::lower_bound(indices_.begin(), indices_.end(), idx);
-                if (it != indices_.end() && *it == idx)
-                {
-                    return values_[static_cast<size_t>(std::distance(indices_.begin(), it))];
-                }
-
-                return empty_;
+            const T& operator[](size_t nodeId) const
+            {
+                return data_.at(layout_->index(nodeId));
             }
 
          private:
-            size_t startIdx_;
-            size_t endIdx_;
-            mutable T empty_{};
-            std::vector<size_t> indices_;
-            std::vector<T> values_;
+            std::shared_ptr<const SubsetLayout> layout_;
+            std::vector<T> data_;
         };
     }  // namespace __details
 
@@ -91,11 +90,15 @@ namespace bufr {
             CountsVector counts;
         };
 
-        typedef __details::OffsetArray<NodeData> LookupTable;
-        typedef __details::OffsetArray<NodeMetaData> LookupMetaTable;
+        typedef __details::NodeArray<NodeData> LookupTable;
+        typedef __details::NodeArray<NodeMetaData> LookupMetaTable;
+        using Layout = __details::SubsetLayout;
 
         SubsetLookupTable(const std::shared_ptr<DataProvider>& dataProvider,
-                          const std::shared_ptr<Targets>& targets);
+                          const std::shared_ptr<Targets>& targets,
+                          const std::shared_ptr<const Layout>& layout);
+
+        static std::shared_ptr<const Layout> buildLayout(const Targets& targets);
 
         /// \brief Returns the NodeData for a given bufr node.
         /// \param[in] nodeId The id of the node to get the data for.
@@ -124,6 +127,7 @@ namespace bufr {
 
      private:
         const std::shared_ptr<Targets> targets_;
+        std::shared_ptr<const Layout> layout_;
         LookupTable lookupTable_;
 
         /// \brief Creates a lookup table that maps node ids to NodeData objects.

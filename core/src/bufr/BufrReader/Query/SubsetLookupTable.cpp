@@ -2,114 +2,197 @@
 
 #include "SubsetLookupTable.h"
 
+#include <algorithm>
+#include <stdexcept>
+#include <unordered_set>
+
 #include "VectorMath.h"
 #include "bufr/SubsetTable.h"
 
-
 namespace bufr {
-    SubsetLookupTable::SubsetLookupTable(const std::shared_ptr<DataProvider>& dataProvider,
-                                         const std::shared_ptr<Targets>& targets) :
-        targets_(targets),
-        lookupTable_(makeLookupTable(dataProvider, *targets))
+namespace {
+    constexpr int32_t InvalidIndex = -1;
+}
+
+size_t SubsetLookupTable::Layout::index(size_t nodeId) const
+{
+    if (size == 0)
     {
+        throw std::out_of_range("SubsetLookupTable layout is empty");
     }
 
-    SubsetLookupTable::LookupTable
-    SubsetLookupTable::makeLookupTable(const std::shared_ptr<DataProvider>& dataProvider,
-                                       const Targets& targets) const
+    if (nodeId < minNodeId || nodeId > maxNodeId)
     {
-        auto lookupTable = LookupTable(dataProvider->getInode(),
-                                       dataProvider->getIsc(dataProvider->getInode()));
-
-        auto lookupMetaTable = LookupMetaTable(dataProvider->getInode(),
-                                               dataProvider->getIsc(dataProvider->getInode()));
-
-        // Populate the lookup table with the counts and data corresponding to each BUFR node
-        // we care about.
-        addCounts(dataProvider, targets, lookupTable, lookupMetaTable);
-        addData(dataProvider, targets, lookupTable, lookupMetaTable);
-
-        return lookupTable;
+        throw std::out_of_range("Node id outside of layout range");
     }
 
-    void SubsetLookupTable::addCounts(const std::shared_ptr<DataProvider>& dataProvider,
-                                      const Targets &targets,
-                                      LookupTable& lookup,
-                                      LookupMetaTable& lookupMeta) const
+    const auto mapped = offsets[nodeId - minNodeId];
+    if (mapped == InvalidIndex)
     {
-        // Add entries for all the path nodes in the targets that are containers (can contain)
-        // children. Uses merged data from the Subset metadata and Query strings.
-        for (const auto& target : targets)
+        throw std::out_of_range("Requested node id was not registered in layout");
+    }
+
+    return static_cast<size_t>(mapped);
+}
+
+SubsetLookupTable::SubsetLookupTable(const std::shared_ptr<DataProvider>& dataProvider,
+                                     const std::shared_ptr<Targets>& targets,
+                                     const std::shared_ptr<const Layout>& layout) :
+    targets_(targets),
+    layout_(layout),
+    lookupTable_(layout)
+{
+    lookupTable_ = makeLookupTable(dataProvider, *targets);
+}
+
+std::shared_ptr<const SubsetLookupTable::Layout>
+SubsetLookupTable::buildLayout(const Targets& targets)
+{
+    auto nodeIds = std::unordered_set<size_t>();
+
+    for (const auto& target : targets)
+    {
+        if (!target)
         {
-            for (const auto& path : target->path)
+            continue;
+        }
+
+        if (target->nodeIdx != 0)
+        {
+            nodeIds.insert(target->nodeIdx);
+        }
+
+        for (const auto& component : target->path)
+        {
+            nodeIds.insert(component.nodeId);
+        }
+    }
+
+    auto layout = std::make_shared<Layout>();
+    if (nodeIds.empty())
+    {
+        return layout;
+    }
+
+    layout->minNodeId = *std::min_element(nodeIds.begin(), nodeIds.end());
+    layout->maxNodeId = *std::max_element(nodeIds.begin(), nodeIds.end());
+    layout->offsets.assign(layout->maxNodeId - layout->minNodeId + 1, InvalidIndex);
+
+    size_t offset = 0;
+    for (const auto nodeId : nodeIds)
+    {
+        layout->offsets[nodeId - layout->minNodeId] = static_cast<int32_t>(offset++);
+    }
+
+    layout->size = offset;
+
+    return layout;
+}
+
+SubsetLookupTable::LookupTable
+SubsetLookupTable::makeLookupTable(const std::shared_ptr<DataProvider>& dataProvider,
+                                   const Targets& targets) const
+{
+    auto lookupTable = LookupTable(layout_);
+    auto lookupMetaTable = LookupMetaTable(layout_);
+
+    // Populate the lookup table with the counts and data corresponding to each BUFR node
+    // we care about.
+    addCounts(dataProvider, targets, lookupTable, lookupMetaTable);
+    addData(dataProvider, targets, lookupTable, lookupMetaTable);
+
+    return lookupTable;
+}
+
+void SubsetLookupTable::addCounts(const std::shared_ptr<DataProvider>& dataProvider,
+                                  const Targets &targets,
+                                  LookupTable& lookup,
+                                  LookupMetaTable& lookupMeta) const
+{
+    if (!layout_ || layout_->size == 0)
+    {
+        return;
+    }
+
+    // Add entries for all the path nodes in the targets that are containers (can contain)
+    // children. Uses merged data from the Subset metadata and Query strings.
+    for (const auto& target : targets)
+    {
+        for (const auto& path : target->path)
+        {
+            if (path.isContainer())
             {
-                if (path.isContainer())
-                {
-                    lookupMeta[path.nodeId].component = path;
-                    lookupMeta[path.nodeId].collectedCounts = true;
-                }
+                lookupMeta[path.nodeId].component = path;
+                lookupMeta[path.nodeId].collectedCounts = true;
             }
         }
-
-        // Collect all the counts for the nodes that were flagged from the BUFR subset data section.
-        for (size_t cursor = 1; cursor <= dataProvider->getNVal(); ++cursor)
-        {
-            const auto& nodeId = dataProvider->getInv(cursor);
-            if (lookupMeta[nodeId].collectedCounts)
-            {
-                const auto &component = lookupMeta[nodeId].component;
-
-                if (component.type == TargetComponent::Type::Subset)
-                {
-                    // Subsets always have a count of 1.
-                    lookup[nodeId].counts.push_back(1);
-                }
-                else if (component.fixedRepeatCount > 1)
-                {
-                    // Fixed repeat counts are stored in the component.
-                    lookup[nodeId].counts.push_back(component.fixedRepeatCount);
-                }
-                else
-                {
-                    // Otherwise, the count is stored in the val array.
-                    lookup[nodeId].counts.push_back(dataProvider->getVal(cursor));
-                }
-            }
-        }
     }
 
-    void SubsetLookupTable::addData(const std::shared_ptr<DataProvider>& dataProvider,
-                                    const Targets &targets,
-                                    LookupTable& lookup,
-                                    LookupMetaTable& lookupMeta) const
+    // Collect all the counts for the nodes that were flagged from the BUFR subset data section.
+    for (size_t cursor = 1; cursor <= dataProvider->getNVal(); ++cursor)
     {
-        // Reserve space for the data in the lookup table by summing the counts for each node.
-        for (const auto& target : targets)
+        const auto& nodeId = dataProvider->getInv(cursor);
+        if (lookupMeta[nodeId].collectedCounts)
         {
-            if (target->nodeIdx == 0) { continue; }
-            const auto &path = target->path.back();
+            const auto &component = lookupMeta[nodeId].component;
 
-            lookup[target->nodeIdx].data.isLongStr(target->typeInfo.isLongString());
-            lookup[target->nodeIdx].data.reserve(sum(lookup[path.parentDimensionNodeId].counts));
-            lookupMeta[target->nodeIdx].collectedData = true;
-            lookupMeta[target->nodeIdx].longStrId = target->longStrId;
-        }
-
-        for (size_t cursor = 1; cursor <= dataProvider->getNVal(); ++cursor)
-        {
-            const auto& nodeId = dataProvider->getInv(cursor);
-            if (lookupMeta[nodeId].collectedData)
+            if (component.type == TargetComponent::Type::Subset)
             {
-                if (lookup[nodeId].data.isLongStr())
-                {
-                    auto longStr = dataProvider->getLongStr(lookupMeta[nodeId].longStrId);
-                    lookup[nodeId].data.push_back(longStr);
-                }
-                else
-                {
-                    lookup[nodeId].data.push_back(dataProvider->getVal(cursor));
-                }
+                // Subsets always have a count of 1.
+                lookup[nodeId].counts.push_back(1);
+            }
+            else if (component.fixedRepeatCount > 1)
+            {
+                // Fixed repeat counts are stored in the component.
+                lookup[nodeId].counts.push_back(component.fixedRepeatCount);
+            }
+            else
+            {
+                // Otherwise, the count is stored in the val array.
+                lookup[nodeId].counts.push_back(dataProvider->getVal(cursor));
             }
         }
     }
+}
+
+void SubsetLookupTable::addData(const std::shared_ptr<DataProvider>& dataProvider,
+                                const Targets &targets,
+                                LookupTable& lookup,
+                                LookupMetaTable& lookupMeta) const
+{
+    if (!layout_ || layout_->size == 0)
+    {
+        return;
+    }
+
+    // Reserve space for the data in the lookup table by summing the counts for each node.
+    for (const auto& target : targets)
+    {
+        if (target->nodeIdx == 0) { continue; }
+        const auto &path = target->path.back();
+
+        lookup[target->nodeIdx].data.isLongStr(target->typeInfo.isLongString());
+        lookup[target->nodeIdx].data.reserve(sum(lookup[path.parentDimensionNodeId].counts));
+        lookupMeta[target->nodeIdx].collectedData = true;
+        lookupMeta[target->nodeIdx].longStrId = target->longStrId;
+    }
+
+    for (size_t cursor = 1; cursor <= dataProvider->getNVal(); ++cursor)
+    {
+        const auto& nodeId = dataProvider->getInv(cursor);
+        if (lookupMeta[nodeId].collectedData)
+        {
+            if (lookup[nodeId].data.isLongStr())
+            {
+                auto longStr = dataProvider->getLongStr(lookupMeta[nodeId].longStrId);
+                lookup[nodeId].data.push_back(longStr);
+            }
+            else
+            {
+                lookup[nodeId].data.push_back(dataProvider->getVal(cursor));
+            }
+        }
+    }
+}
+
 }  // namespace bufr

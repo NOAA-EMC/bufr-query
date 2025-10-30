@@ -12,6 +12,7 @@
 #include "bufr/QuerySet.h"
 #include "bufr/ResultSet.h"
 #include "Target.h"
+#include "SubsetLookupTable.h"
 
 namespace bufr {
     /// \brief Manages the execution of queries against on a BUFR file.
@@ -34,11 +35,17 @@ namespace bufr {
         ResultSet& resultSet_;
         const DataProviderType& dataProvider_;
 
-        std::unordered_map<SubsetVariant, std::shared_ptr<Targets>> targetsCache_;
+        struct TargetCacheEntry
+        {
+            std::shared_ptr<Targets> targets;
+            std::shared_ptr<const SubsetLookupTable::Layout> layout;
+        };
+
+        std::unordered_map<SubsetVariant, TargetCacheEntry> targetsCache_;
 
         /// \brief Look for the list of targets for the currently active BUFR message subset that
         /// apply to the QuerySet and cache them.
         /// \param[in, out] targets The list of targets to populate.
-        std::shared_ptr<Targets> getTargets();
+        TargetCacheEntry getTargets();
     };
 }  // namespace bufr

@@ -23,15 +23,19 @@ namespace bufr {
 
     void QueryRunner::accumulate()
     {
-      resultSet_.impl_->frames_.push_back(SubsetLookupTable(dataProvider_, getTargets()));
+        auto cacheEntry = getTargets();
+        auto frame = SubsetLookupTable(dataProvider_, cacheEntry.targets, cacheEntry.layout);
+        resultSet_.impl_->appendFrame(frame, cacheEntry.targets);
     }
 
-    std::shared_ptr<Targets> QueryRunner::getTargets()
+    QueryRunner::TargetCacheEntry QueryRunner::getTargets()
     {
         // Attempt to get targets from the cache
-        if (targetsCache_.find(dataProvider_->getSubsetVariant()) != targetsCache_.end())
+        const auto variant = dataProvider_->getSubsetVariant();
+        const auto cacheIt = targetsCache_.find(variant);
+        if (cacheIt != targetsCache_.end())
         {
-            return targetsCache_.at(dataProvider_->getSubsetVariant());
+            return cacheIt->second;
         }
 
         auto table = SubsetTable(dataProvider_);
@@ -117,9 +121,12 @@ namespace bufr {
             targets->push_back(target);
         }
 
-        // Cache the targets and masks we just found
-        targetsCache_.insert({dataProvider_->getSubsetVariant(), targets});
+        TargetCacheEntry entry;
+        entry.targets = targets;
+        entry.layout = SubsetLookupTable::buildLayout(*targets);
 
-        return targets;
+        targetsCache_.insert({variant, entry});
+
+        return entry;
     }
 }  // namespace bufr
