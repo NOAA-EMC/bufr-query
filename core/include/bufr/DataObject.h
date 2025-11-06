@@ -516,22 +516,29 @@ namespace bufr {
           // Map the local data into the sendBuffer using the dimensions
           for (size_t i = 0; i < data_.size(); ++i)
           {
-            Location loc;
-
             // Compute the location coordinate in the old data
+            Location oldLoc(dims_.size());
             size_t idx = i;
             for (size_t dimIdx = 0; dimIdx < dims_.size(); ++dimIdx)
             {
-              loc.push_back(idx % dims_[dimIdx]);
+              oldLoc[dimIdx] = idx % dims_[dimIdx];
               idx /= dims_[dimIdx];
             }
 
-            // Map that location into the new data (compute the new index)
-            idx = 0;
-            for (size_t dimIdx = 0; dimIdx < rcvDims.size(); ++dimIdx)
+            for (size_t i = 0; i < oldLoc.size(); ++i)
             {
-              idx += loc[dimIdx] * rcvDims[dimIdx];
+              size_t rcvProd = 1;
+              for (size_t j = rcvDims.size() - 1; j > i; --j)
+              {
+                rcvProd *= rcvDims[j];
+              }
+
+              idx += oldLoc[i] * rcvProd;
             }
+
+            // // Map that location into the new data (compute the new index)
+            // idx = oldLoc[0] * rcvDims[1];
+            // idx += oldLoc[1];
 
             sendBuffer[idx] = data_[i];
           }
@@ -543,7 +550,6 @@ namespace bufr {
         comm.allGather(static_cast<int>(size()), sizeArray.begin(), sizeArray.end());
 
         std::vector<T> rcvBuffer(rcvSize, missingValue());
-        auto rcvCounts = std::vector<int>(comm.size());
 
         std::vector<int> displacement(comm.size(), 0);
         for (size_t i = 1; i < comm.size(); i++)
@@ -756,7 +762,26 @@ namespace bufr {
           if (dims_[i] != other->dims_[i])
           {
             std::ostringstream str;
-            str << "Cannot append data with different dimensions.";
+            str << "Cannot append data with different dimensions. " << fieldName_ << " has dims ";
+            str << "(";
+            for (size_t d = 0; d < dims_.size(); ++d)
+            {
+              str << dims_[d];
+              if (d < dims_.size() - 1)
+              {
+                str << ", ";
+              }
+            }
+            str << ") but attempted to append data with dims (";
+            for (size_t d = 0; d < other->dims_.size(); ++d)
+            {
+              str << other->dims_[d];
+              if (d < other->dims_.size() - 1)
+              {
+                str << ", ";
+              }
+            }
+            str << ").";
             throw eckit::BadParameter(str.str());
           }
         }
