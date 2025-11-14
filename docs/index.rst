@@ -20,6 +20,7 @@ Contents
 .. toctree::
   :maxdepth: 2
 
+  quick_start
   query_path
   yaml
   python_api
