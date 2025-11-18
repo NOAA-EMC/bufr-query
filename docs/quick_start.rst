@@ -101,28 +101,28 @@ Examples:
 ObsBuilder
 ++++++++++
 
-:ref:`Obsbuilder <obs-builder>` modules can be executed from the command line directly by running them via python.
+:ref:`Obsbuilder <obs-builder>` modules can be executed from the command line directly by running them via python,
+by using IODA, or by importing the modules and using them directly (we do this in project Ocelot)
 
 .. code-block:: bash
 
     python my_obsbuilder.py  --input gdas.1bmhs.bufr_d  --output mhs.nc
 
-The arguments will mirror those defined in the ObsBuilder method create_obs_file which you can
-optionaly override.
+The command line arguments will mirror those defined in the ObsBuilder method create_obs_file which you can
+optionaly override (please see the ObsBuilder docs).
 
-You can also import your obsbuilder in a custom python script and call it directly.
 
 IODA
 ^^^^
 
 You can configure to load data directly from a BUFR file if the YAML file description is all you need.
 
-`BUFR (yaml) interface <https://jointcenterforsatellitedataassimilation-jedi-docs.readthedocs-hosted.com/en/latest/inside/jedi-components/ioda/format-bufr.html>`_
+    * `BUFR (yaml) interface <https://jointcenterforsatellitedataassimilation-jedi-docs.readthedocs-hosted.com/en/latest/inside/jedi-components/ioda/format-bufr.html>`_
 
 If you have implemented an ObsBuilder module (or a custom python script that implement *make_obs_group*) you
 can use the IODA Script interface.
 
-`SCRIPTS <https://jointcenterforsatellitedataassimilation-jedi-docs.readthedocs-hosted.com/en/latest/inside/jedi-components/ioda/format-script.html>`_
+    * `SCRIPTS <https://jointcenterforsatellitedataassimilation-jedi-docs.readthedocs-hosted.com/en/latest/inside/jedi-components/ioda/format-script.html>`_
 
 Examples
 --------
