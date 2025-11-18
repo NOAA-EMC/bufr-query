@@ -109,7 +109,7 @@ by using IODA, or by importing the modules and using them directly (we do this i
     python my_obsbuilder.py  --input gdas.1bmhs.bufr_d  --output mhs.nc
 
 The command line arguments will mirror those defined in the ObsBuilder method create_obs_file which you can
-optionaly override (please see the ObsBuilder docs).
+optionally override (please see the ObsBuilder docs).
 
 
 IODA
