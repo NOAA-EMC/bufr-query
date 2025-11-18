@@ -45,7 +45,7 @@ Option 1 (Manual Install)
 
 .. note::
 
-    You may also need to include other cmake arguments such as CMAKE_INSTALL_PREFIX if you installed
+    You may also need to include other cmake arguments, such as -DCMAKE_PREFIX_PATH, if you installed
     any of the requirements manually.
 
 Option 2 (via ObsForge)
