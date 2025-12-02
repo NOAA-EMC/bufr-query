@@ -32,7 +32,8 @@ def compute_solar_angles(latitudes, longitudes, unix_times):
     solpos = get_solarposition(times, latitudes, longitudes)
     zenith_angles = solpos['apparent_zenith'].values
     azimuth_angles = solpos['azimuth'].values
-idef zensun(day: int, time: float, lat: float, lon: float) -> Tuple[float, float]:
+
+def zensun(ilatitudes, longitudes, unix_times) -> Tuple[float, float]:
     """
     Compute the solar zenith and azimuth angles at a given location, date, and time.
 
@@ -59,6 +60,13 @@ idef zensun(day: int, time: float, lat: float, lon: float) -> Tuple[float, float
     deg2rad = math.pi / 180.0
     rad2deg = 180.0 / math.pi
     r60inv = 1.0 / 60.0
+
+    # Convert unix time to hours after midnight
+    time = (unix_timestamp % 86400)/3600.0 
+
+    # Convert unix time to day of year
+    datetime_object = datetime.datetime.fromtimestamp(unix_timestamp, tz=datetime.timezone.utc)
+    day = datetime_object.timetuple().tm_yday
 
     # Analemma data (74 points) from the original Fortran code
     nday = [
