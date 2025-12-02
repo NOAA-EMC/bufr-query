@@ -3,11 +3,14 @@ import math
 import numpy as np 
 import pandas as pd
 from datetime import datetime
-from typing import Tuple
 
 def compute_solar_angles(latitudes, longitudes, unix_times):
     """
     Compute solar zenith and azimuth angles in parallel using multiprocessing.
+
+    This is a Python port of the Fortran subroutine `zensun` from NOAA-EMC/GSI
+    (src/gsi/read_amsre.f90). It reproduces the original least-squares fit over
+    day-of-year used to interpolate equation-of-time and declination.
 
     :param latitudes: Array of latitudes in degrees.
     :type latitudes: numpy.ndarray
@@ -27,35 +30,6 @@ def compute_solar_angles(latitudes, longitudes, unix_times):
             f"longitudes.shape={longitudes.shape}, "
             f"unix_times.shape={unix_times.shape}."
         )
-
-    times = pd.to_datetime(unix_times, unit='s', utc=True)
-    solpos = get_solarposition(times, latitudes, longitudes)
-    zenith_angles = solpos['apparent_zenith'].values
-    azimuth_angles = solpos['azimuth'].values
-
-def zensun(ilatitudes, longitudes, unix_times) -> Tuple[float, float]:
-    """
-    Compute the solar zenith and azimuth angles at a given location, date, and time.
-
-    This is a Python port of the Fortran subroutine `zensun` from NOAA-EMC/GSI
-    (src/gsi/read_amsre.f90). It reproduces the original least-squares fit over
-    day-of-year used to interpolate equation-of-time and declination.
-
-    Parameters:
-    - day: Julian day (1..366). Approximation used by the original routine:
-           spring equinox ~ 80, summer solstice ~ 171, fall equinox ~ 266, winter ~ 356.
-    - time: Universal Time in hours (0..24), fractional hours allowed.
-    - lat: Geographic latitude in degrees.
-    - lon: Geographic longitude in degrees.
-
-    Returns:
-    - (sun_zenith, sun_azimuth) in degrees.
-      sun_azimuth is returned in [0, 360).
-
-    Notes:
-    - This implementation mirrors the original algorithm, including the
-      5-point least squares fit on doy**3 with year-end wrap handling.
-    """
 
     deg2rad = math.pi / 180.0
     rad2deg = 180.0 / math.pi
