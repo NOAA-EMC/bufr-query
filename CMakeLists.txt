@@ -53,15 +53,17 @@ if (BUILD_PYTHON_BINDINGS)
 endif()
 
 add_subdirectory( tools )
-add_subdirectory( test )
 
 ## Tests
-ecbuild_add_test( TARGET ${PROJECT_NAME}_coding_norms
-                  TYPE SCRIPT
-                  COMMAND ${PROJECT_NAME}_cpp_lint.py
-                  ARGS --quiet --recursive ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/test
-                  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin )
-set_tests_properties( ${PROJECT_NAME}_coding_norms PROPERTIES TIMEOUT 90 )
+if( BUILD_TESTING )
+  add_subdirectory( test )
+  ecbuild_add_test( TARGET ${PROJECT_NAME}_coding_norms
+                    TYPE SCRIPT
+                    COMMAND ${PROJECT_NAME}_cpp_lint.py
+                    ARGS --quiet --recursive ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/test
+                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin )
+  set_tests_properties( ${PROJECT_NAME}_coding_norms PROPERTIES TIMEOUT 90 )
+endif()
 
 ## Package Config
 ecbuild_install_project( NAME ${PROJECT_NAME} )

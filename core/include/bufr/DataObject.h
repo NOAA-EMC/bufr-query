@@ -122,6 +122,9 @@ namespace bufr {
       /// \brief Print the data object to a output stream.
       virtual void print(std::ostream& out) const = 0;
 
+      /// \brief Get the typename string for the data object.
+      virtual std::string getTypeName() const = 0;
+
       /// \brief Get the data at the location as an integer.
       /// \return Integer data.
       virtual int getAsInt(const Location& loc) const = 0;
@@ -288,6 +291,11 @@ namespace bufr {
             out << std::endl;
           }
         }
+      }
+
+      std::string getTypeName() const final
+      {
+        return typeid(T).name();
       }
 
       /// \brief Get the data at the location as an integer.
@@ -550,6 +558,7 @@ namespace bufr {
         comm.allGather(static_cast<int>(size()), sizeArray.begin(), sizeArray.end());
 
         std::vector<T> rcvBuffer(rcvSize, missingValue());
+        auto rcvCounts = std::vector<int>(comm.size());
 
         std::vector<int> displacement(comm.size(), 0);
         for (size_t i = 1; i < comm.size(); i++)
@@ -752,7 +761,9 @@ namespace bufr {
         if (!other)
         {
           std::ostringstream str;
-          str << "Cannot append data of type " << typeid(data).name();
+          str << "Cannot append data with different types for " << fieldName_ << ". ";
+          str << "This data object is of type " << getTypeName() << " while the other is of ";
+          str << data->getTypeName() << ".";
           throw eckit::BadParameter(str.str());
         }
 
@@ -762,17 +773,9 @@ namespace bufr {
           if (dims_[i] != other->dims_[i])
           {
             std::ostringstream str;
-            str << "Cannot append data with different dimensions. " << fieldName_ << " has dims ";
-            str << "(";
-            for (size_t d = 0; d < dims_.size(); ++d)
-            {
-              str << dims_[d];
-              if (d < dims_.size() - 1)
-              {
-                str << ", ";
-              }
-            }
-            str << ") but attempted to append data with dims (";
+            str << "Cannot append data with different dimensions for " << fieldName_ << ". ";
+            str << "Appending (";
+
             for (size_t d = 0; d < other->dims_.size(); ++d)
             {
               str << other->dims_[d];
@@ -781,7 +784,19 @@ namespace bufr {
                 str << ", ";
               }
             }
+
+            str << ") to (";
+
+            for (size_t d = 0; d < dims_.size(); ++d)
+            {
+              str << dims_[d];
+              if (d < other->dims_.size() - 1)
+              {
+                str << ", ";
+              }
+            }
             str << ").";
+
             throw eckit::BadParameter(str.str());
           }
         }
@@ -906,6 +921,11 @@ namespace bufr {
       void print(std::ostream& out) const final
       {
         out << "DataObjectImpl";
+      }
+
+      std::string getTypeName() const final
+      {
+        return "std::string";
       }
 
       /// \brief Get the data at the location as an integer.
@@ -1365,7 +1385,9 @@ namespace bufr {
         if (!other)
         {
           std::ostringstream str;
-          str << "Cannot append data of type " << typeid(data).name();
+          str << "Cannot append data with different types for " << fieldName_ << ". ";
+          str << "This data object is of type std::string while the other is of ";
+          str << data->getTypeName() << ".";
           throw eckit::BadParameter(str.str());
         }
 
@@ -1375,7 +1397,30 @@ namespace bufr {
           if (dims_[i] != other->dims_[i])
           {
             std::ostringstream str;
-            str << "Cannot append data with different dimensions.";
+            str << "Cannot append data with different dimensions for " << fieldName_ << ". ";
+            str << "Appending (";
+
+            for (size_t d = 0; d < other->dims_.size(); ++d)
+            {
+              str << other->dims_[d];
+              if (d < other->dims_.size() - 1)
+              {
+                str << ", ";
+              }
+            }
+
+            str << ") to (";
+
+            for (size_t d = 0; d < dims_.size(); ++d)
+            {
+              str << dims_[d];
+              if (d < other->dims_.size() - 1)
+              {
+                str << ", ";
+              }
+            }
+            str << ").";
+
             throw eckit::BadParameter(str.str());
           }
         }
