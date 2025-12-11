@@ -401,7 +401,7 @@ namespace bufr {
                                    size_t maxDepth, const FilterDataList& filterDataList,
                                    bool skipResult) const {
     // Skip if there is no target path (query didn't match to anything)
-    if (target.path.size() == 0) {
+    if (target->path.size() == 0) {
       return;
     }
 
