@@ -524,29 +524,22 @@ namespace bufr {
           // Map the local data into the sendBuffer using the dimensions
           for (size_t i = 0; i < data_.size(); ++i)
           {
+            Location loc;
+
             // Compute the location coordinate in the old data
-            Location oldLoc(dims_.size());
             size_t idx = i;
             for (size_t dimIdx = 0; dimIdx < dims_.size(); ++dimIdx)
             {
-              oldLoc[dimIdx] = idx % dims_[dimIdx];
+              loc.push_back(idx % dims_[dimIdx]);
               idx /= dims_[dimIdx];
             }
 
-            for (size_t i = 0; i < oldLoc.size(); ++i)
+            // Map that location into the new data (compute the new index)
+            idx = 0;
+            for (size_t dimIdx = 0; dimIdx < rcvDims.size(); ++dimIdx)
             {
-              size_t rcvProd = 1;
-              for (size_t j = rcvDims.size() - 1; j > i; --j)
-              {
-                rcvProd *= rcvDims[j];
-              }
-
-              idx += oldLoc[i] * rcvProd;
+              idx += loc[dimIdx] * rcvDims[dimIdx];
             }
-
-            // // Map that location into the new data (compute the new index)
-            // idx = oldLoc[0] * rcvDims[1];
-            // idx += oldLoc[1];
 
             sendBuffer[idx] = data_[i];
           }
