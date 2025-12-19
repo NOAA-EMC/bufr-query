@@ -97,6 +97,7 @@ namespace bufr {
         LookupTable lookupTable_;
 
         /// \brief Creates a lookup table that maps node ids to NodeData objects.
+        /// \param[in] dataProvider The data provider to get the data from.
         /// \return The lookup table.
         LookupTable makeLookupTable(const std::shared_ptr<DataProvider>& dataProvider) const;
 
