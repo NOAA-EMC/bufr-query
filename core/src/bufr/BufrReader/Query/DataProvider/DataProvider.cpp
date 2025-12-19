@@ -60,6 +60,11 @@ namespace bufr {
                 status_f(FileUnit, &bufrLoc, &il, &im);
                 updateData(bufrLoc);
 
+                if (getIsc(getInode()) <= getInode())
+                {
+                    continue;  // Invalid Subset
+                }
+
                 processSubset();
                 if (!continueProcessing()) break;
             }
