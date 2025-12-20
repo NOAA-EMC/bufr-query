@@ -104,7 +104,7 @@ namespace bufr {
         /// \brief Adds the counts data for the targets to the lookup table.
         /// \param[in] dataProvider The data provider to get the data from.
         /// \param[in, out] lookup The lookup table to add the counts data to.
-        /// \param[in, out] lookupMeta The lookup meta table that tracks the node to collect
+        /// \param[in, out] lookupMeta The lookup meta table that tracks the nodes to collect
         ///                            and other meta data.
         void addCounts(const std::shared_ptr<DataProvider>& dataProvider,
                        LookupTable& lookup,
