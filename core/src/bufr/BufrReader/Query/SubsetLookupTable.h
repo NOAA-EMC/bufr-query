@@ -112,7 +112,7 @@ namespace bufr {
 
         /// \brief Adds the data for the targets to the lookup table.
         /// \param[in] dataProvider The data provider to get the data from.
-        /// \param[in, out] lookup The lookup table to add the data to
+        /// \param[in, out] lookup The lookup table to add the data to.
         /// \param[in, out] lookupMeta The lookup meta table that tracks the nodes to collect
         ///                            and other meta data.
         void addData(const std::shared_ptr<DataProvider>& dataProvider,
