@@ -255,6 +255,12 @@ namespace bufr {
 
     for (const auto &subCat: other.allSubCategories())
     {
+      // The other DataContainer is empty, nothing to do.
+      if (other.size(subCat) == 0)
+      {
+        continue;
+      }
+
       if (isEmpty)
       {
         categoryMap_ = other.categoryMap_;

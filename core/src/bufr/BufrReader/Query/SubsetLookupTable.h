@@ -97,24 +97,25 @@ namespace bufr {
         LookupTable lookupTable_;
 
         /// \brief Creates a lookup table that maps node ids to NodeData objects.
-        /// \param[in] targets The targets to create the lookup table for.
+        /// \param[in] dataProvider The data provider to get the data from.
         /// \return The lookup table.
-        LookupTable makeLookupTable(const std::shared_ptr<DataProvider>& dataProvider,
-                                    const Targets& targets) const;
+        LookupTable makeLookupTable(const std::shared_ptr<DataProvider>& dataProvider) const;
 
-        /// \brief Adds the counts data for the given targets to the lookup table.
-        /// \param[in] targets The targets to add the counts data for.
+        /// \brief Adds the counts data for the targets to the lookup table.
+        /// \param[in] dataProvider The data provider to get the data from.
         /// \param[in, out] lookup The lookup table to add the counts data to.
+        /// \param[in, out] lookupMeta The lookup meta table that tracks the nodes to collect
+        ///                            and other meta data.
         void addCounts(const std::shared_ptr<DataProvider>& dataProvider,
-                       const Targets& targets,
                        LookupTable& lookup,
                        LookupMetaTable& lookupMeta) const;
 
-        /// \brief Adds the data for the given targets to the lookup table.
-        /// \param[in] targets The targets to add the data for.
+        /// \brief Adds the data for the targets to the lookup table.
+        /// \param[in] dataProvider The data provider to get the data from.
         /// \param[in, out] lookup The lookup table to add the data to.
+        /// \param[in, out] lookupMeta The lookup meta table that tracks the nodes to collect
+        ///                            and other meta data.
         void addData(const std::shared_ptr<DataProvider>& dataProvider,
-                     const Targets& targets,
                      LookupTable& lookup,
                      LookupMetaTable& lookupMeta) const;
     };
