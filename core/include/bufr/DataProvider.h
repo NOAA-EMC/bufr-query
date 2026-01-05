@@ -125,6 +125,11 @@ namespace bufr {
         explicit DataProvider(const std::string filePath) :
             filePath_(filePath)
         {
+            char MAXSS[] = "MAXSS";
+            char MXMSGL[] = "MXMSGL";
+
+            isetprm_f(MXMSGL, 600000);
+            isetprm_f(MAXSS, 600000);
         }
 
         virtual ~DataProvider() = default;
