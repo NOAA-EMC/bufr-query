@@ -126,9 +126,6 @@ namespace bufr {
             filePath_(filePath)
         {
             char MAXSS[] = "MAXSS";
-            char MXMSGL[] = "MXMSGL";
-
-            isetprm_f(MXMSGL, 600000);
             isetprm_f(MAXSS, 600000);
         }
 
