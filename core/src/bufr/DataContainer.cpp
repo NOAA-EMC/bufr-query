@@ -245,6 +245,12 @@ namespace bufr {
 
   void DataContainer::append(const DataContainer& other)
   {
+    // The other DataContainer is empty, nothing to do.
+    if (other.size() == 0)
+    {
+      return;
+    }
+
     bool isEmpty = getFieldNames().empty();
 
     for (const auto &subCat: other.allSubCategories())
