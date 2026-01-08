@@ -125,6 +125,8 @@ namespace bufr {
         explicit DataProvider(const std::string filePath) :
             filePath_(filePath)
         {
+            char MAXSS[] = "MAXSS";
+            isetprm_f(MAXSS, 600000);
         }
 
         virtual ~DataProvider() = default;
