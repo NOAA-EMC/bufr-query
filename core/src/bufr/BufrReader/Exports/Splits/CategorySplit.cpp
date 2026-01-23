@@ -3,6 +3,7 @@
 #include "CategorySplit.h"
 
 #include <ostream>
+#include <sstream>
 
 #include "eckit/exception/Exceptions.h"
 
@@ -50,15 +51,7 @@ namespace bufr {
 
         std::unordered_map<std::string, BufrDataMap> dataMaps;
 
-        // Check if the category variable exists in the data map
-        if (dataMap.find(variable_) == dataMap.end())
-        {
-            std::stringstream errStr;
-            errStr << "Category split variable '" << variable_ << "' not found in the data. ";
-            errStr << "Please ensure the variable is defined in the 'bufr::variables' section ";
-            errStr << "of your YAML configuration file.";
-            throw eckit::BadParameter(errStr.str());
-        }
+        validateVariableExists(dataMap);
 
         const auto& dataObject = dataMap.at(variable_);
 
@@ -95,15 +88,7 @@ namespace bufr {
     {
         if (nameMap_.empty())
         {
-            // Check if the category variable exists in the data map
-            if (dataMap.find(variable_) == dataMap.end())
-            {
-                std::stringstream errStr;
-                errStr << "Category split variable '" << variable_ << "' not found in the data. ";
-                errStr << "Please ensure the variable is defined in the 'bufr::variables' section ";
-                errStr << "of your YAML configuration file.";
-                throw eckit::BadParameter(errStr.str());
-            }
+            validateVariableExists(dataMap);
 
             const auto& dataObject = dataMap.at(variable_);
             for (auto rowIdx = 0; rowIdx < dataObject->getDims()[0]; rowIdx++)
@@ -130,6 +115,18 @@ namespace bufr {
         {
             std::stringstream errStr;
             errStr << "No categories could be identified for " << variable_ << ".";
+            throw eckit::BadParameter(errStr.str());
+        }
+    }
+
+    void CategorySplit::validateVariableExists(const BufrDataMap& dataMap) const
+    {
+        if (dataMap.find(variable_) == dataMap.end())
+        {
+            std::stringstream errStr;
+            errStr << "Category split variable '" << variable_ << "' not found in the data. ";
+            errStr << "Please ensure the variable is defined in the 'bufr::variables' section ";
+            errStr << "of your YAML configuration file.";
             throw eckit::BadParameter(errStr.str());
         }
     }
