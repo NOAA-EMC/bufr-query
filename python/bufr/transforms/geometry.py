@@ -39,6 +39,7 @@ DEC = np.array([
     -23.33, -23.44, -23.35, -23.06
 ])
 
+
 def compute_solar_angles(latitudes: np.ndarray, longitudes: np.ndarray, unix_times: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """
     Compute solar zenith and azimuth angles.
