@@ -41,13 +41,28 @@ DEC = np.array([
 
 def compute_solar_angles(latitudes: np.ndarray, longitudes: np.ndarray, unix_times: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Compute solar zenith and azimuth angles.
+    Compute solar zenith and azimuth angles following the GSI solar position algorithm.
 
-    :param latitudes: Array of latitudes in degrees.
-    :param longitudes: Array of longitudes in degrees.
-    :param unix_times: Array of Unix timestamps (seconds since 1970-01-01T00:00:00Z).
+    This function implements the solar position calculation from NOAA-EMC/GSI, which uses
+    analemma data (equation of time and solar declination) interpolated over day-of-year
+    to compute accurate solar angles.
 
-    :return: Two arrays (zenith angles, azimuth angles).
+    :param latitudes: Array of latitudes in degrees. Must be a NumPy array.
+    :param longitudes: Array of longitudes in degrees. Must be a NumPy array.
+    :param unix_times: Array of Unix timestamps (seconds since 1970-01-01T00:00:00Z). Must be a NumPy array.
+
+    :return: Two arrays (zenith_angles, azimuth_angles), both in degrees.
+        - zenith_angles: Solar zenith angle in degrees (0° = sun directly overhead, 90° = sun at horizon).
+        - azimuth_angles: Solar azimuth angle in degrees, measured clockwise from North
+          (0° = North, 90° = East, 180° = South, 270° = West), normalized to [0, 360].
+
+    :raises ValueError: If input arrays do not have the same shape.
+
+    .. note::
+       All inputs must be NumPy arrays with the same shape. Scalar inputs are not supported.
+
+    .. seealso::
+       GSI (Gridpoint Statistical Interpolation) repository: https://github.com/NOAA-EMC/GSI
     """
     if not (latitudes.shape == longitudes.shape == unix_times.shape):
         raise ValueError("All input arrays must have the same shape.")
