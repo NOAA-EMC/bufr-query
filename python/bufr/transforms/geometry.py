@@ -70,12 +70,14 @@ def compute_solar_angles(latitudes: np.ndarray, longitudes: np.ndarray, unix_tim
 
     # Compute solar position angles
     hour_angle = -15.0 * (hours_since_midnight - 12 + eqtime)
-    zenith_angles = np.degrees(np.arccos(
-            np.sin(latitudes * DEG_TO_RAD) * np.sin(declination * DEG_TO_RAD)
-            + np.cos(latitudes * DEG_TO_RAD) *
-            np.cos(declination * DEG_TO_RAD) * np.cos((hour_angle - longitudes) * DEG_TO_RAD)
-        )
+    cos_zenith = (
+        np.sin(latitudes * DEG_TO_RAD) * np.sin(declination * DEG_TO_RAD)
+        + np.cos(latitudes * DEG_TO_RAD)
+        * np.cos(declination * DEG_TO_RAD)
+        * np.cos((hour_angle - longitudes) * DEG_TO_RAD)
     )
+    cos_zenith = np.clip(cos_zenith, -1.0, 1.0)
+    zenith_angles = np.degrees(np.arccos(cos_zenith))
     azimuth_angles = np.degrees(
         np.arctan2(
             np.cos(declination * DEG_TO_RAD) * np.sin((hour_angle - longitudes) * DEG_TO_RAD),
