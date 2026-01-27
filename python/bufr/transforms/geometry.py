@@ -56,7 +56,7 @@ def compute_solar_angles(latitudes: np.ndarray, longitudes: np.ndarray, unix_tim
     if not (latitudes.shape == longitudes.shape == unix_times.shape):
         raise ValueError("All input arrays must have the same shape.")
     
-    if latitudes.ndim != 1:
+    if latitudes.ndim != 1 or longitudes.ndim != 1 or unix_times.ndim != 1:
         raise ValueError("Input arrays must be 1-dimensional.")
 
     # Convert Unix times to NumPy datetime64 and compute fractional days
