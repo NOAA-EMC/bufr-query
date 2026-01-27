@@ -6,8 +6,7 @@
 /CMakeSettings.json
 *~
 build
-__pycache__/
-
+__pycache__
 .bufr
 .bufr_d
 .nc
