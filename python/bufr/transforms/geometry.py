@@ -53,10 +53,14 @@ def compute_solar_angles(latitudes: np.ndarray, longitudes: np.ndarray, unix_tim
     if not (latitudes.shape == longitudes.shape == unix_times.shape):
         raise ValueError("All input arrays must have the same shape.")
 
-    # Convert Unix times to datetimes and fractional days
-    datetimes = [datetime.fromtimestamp(ut, tz=timezone.utc) for ut in unix_times]
-    day_of_year = np.array([dt.timetuple().tm_yday for dt in datetimes])
-    hours_since_midnight = np.array([(dt.hour + dt.minute / 60 + dt.second / 3600) for dt in datetimes])
+    # Convert Unix times to NumPy datetime64 and compute fractional days
+    unix_times_int = unix_times.astype("int64")
+    dt64 = unix_times_int.astype("datetime64[s]")
+    dates = dt64.astype("datetime64[D]")
+    years = dt64.astype("datetime64[Y]")
+    day_of_year = (dates - years).astype("timedelta64[D]").astype(int) + 1
+    seconds_since_midnight = (dt64 - dates).astype("timedelta64[s]").astype(int)
+    hours_since_midnight = seconds_since_midnight / 3600.0
 
     # Compute fractional day number with 1 January as day 1
     fractional_day = day_of_year + hours_since_midnight / 24.0
