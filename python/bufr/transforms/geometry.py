@@ -64,8 +64,15 @@ def compute_solar_angles(latitudes: np.ndarray, longitudes: np.ndarray, unix_tim
     .. seealso::
        GSI (Gridpoint Statistical Interpolation) repository: https://github.com/NOAA-EMC/GSI
     """
+    # Validate input arrays
+    if latitudes.size == 0 or longitudes.size == 0 or unix_times.size == 0:
+        raise ValueError("Input arrays must not be empty.")
+    
     if not (latitudes.shape == longitudes.shape == unix_times.shape):
         raise ValueError("All input arrays must have the same shape.")
+    
+    if latitudes.ndim != 1 or longitudes.ndim != 1 or unix_times.ndim != 1:
+        raise ValueError("Input arrays must be 1-dimensional.")
 
     # Convert Unix times to NumPy datetime64 and compute fractional days
     unix_times_int = unix_times.astype("int64")
