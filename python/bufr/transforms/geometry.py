@@ -4,7 +4,6 @@ from typing import Tuple
 
 # Constants
 DEG_TO_RAD = np.pi / 180.0
-RAD_TO_DEG = 180.0 / np.pi
 R60INV = 1.0 / 60.0
 
 # Analemma data
