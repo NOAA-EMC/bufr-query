@@ -44,7 +44,7 @@ def compute_solar_angles(latitudes: np.ndarray, longitudes: np.ndarray, unix_tim
     Compute solar zenith and azimuth angles following the GSI solar position algorithm.
 
     This function implements the solar position calculation from NOAA-EMC/GSI, which uses
-    analemma data (equation of time and solar declination) interpolated over day-of-year
+    analemma data (equation of time and solar declination) interpolated over day of year
     to compute accurate solar angles.
 
     :param latitudes: Array of latitudes in degrees. Must be a NumPy array.
