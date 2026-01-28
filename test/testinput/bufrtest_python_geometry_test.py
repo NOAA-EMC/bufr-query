@@ -1,4 +1,4 @@
-# (C) Copyright 2023 NOAA/NWS/NCEP/EMC
+# (C) Copyright 2026 NOAA/NWS/NCEP/EMC
 import sys
 import numpy as np
 from datetime import datetime, timezone
@@ -96,7 +96,7 @@ def test_solar_angles_input_validation():
         longitudes = np.array([])
         unix_times = np.array([])
         geometry.compute_solar_angles(latitudes, longitudes, unix_times)
-        assert False, "Should raise ValueError for empty arrays"
+        raise AssertionError("Should raise ValueError for empty arrays")
     except ValueError as e:
         assert "empty" in str(e).lower()
     
@@ -106,7 +106,7 @@ def test_solar_angles_input_validation():
         longitudes = np.array([0.0])
         unix_times = np.array([1584709200.0])
         geometry.compute_solar_angles(latitudes, longitudes, unix_times)
-        assert False, "Should raise ValueError for mismatched shapes"
+        raise AssertionError("Should raise ValueError for mismatched shapes")
     except ValueError as e:
         assert "shape" in str(e).lower()
     
@@ -116,14 +116,14 @@ def test_solar_angles_input_validation():
         longitudes = np.array([[0.0, 1.0]])
         unix_times = np.array([[1584709200.0, 1584709200.0]])
         geometry.compute_solar_angles(latitudes, longitudes, unix_times)
-        assert False, "Should raise ValueError for non-1D arrays"
+        raise AssertionError("Should raise ValueError for non-1D arrays")
     except ValueError as e:
         assert "1-dimensional" in str(e).lower()
 
 
 def test_solar_angles_extreme_latitudes():
     """Test solar angles at extreme latitudes (polar regions)."""
-    # North Pole
+    # North Pole and South Pole
     latitudes = np.array([90.0, -90.0])
     longitudes = np.array([0.0, 0.0])
     # Summer time in northern hemisphere
