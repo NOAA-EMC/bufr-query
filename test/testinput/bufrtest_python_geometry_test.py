@@ -159,6 +159,37 @@ def test_solar_angles_numerical_stability():
     assert np.all((azimuth >= 0) & (azimuth < 360))
 
 
+def test_solar_angles_real_data():
+    """Test solar angle computation with real data and expected outputs."""
+    # Real data test case with known expected outputs
+    unix_times = np.array([1759266000, 1759268941, 1759271789, 1759274749, 
+                           1759277598, 1759280544, 1759283392, 1759286322], dtype=np.float64)
+    latitudes = np.array([-23.01, 32.31, -41.06, 49.89, 
+                          -57.13, 68.21, -70.53, 87.38], dtype=np.float64)
+    longitudes = np.array([-61.68, 89.76, -79.64, 67.49, 
+                           -92.6, 45.78, -87.24, 39.57], dtype=np.float64)
+    
+    # Expected outputs
+    expected_azimuth = np.array([272.9348, 75.13908, 273.0936, 69.24776, 
+                                 265.7022, 66.54362, 237.929, 81.90402], dtype=np.float32)
+    expected_zenith = np.array([75.83108, 117.0699, 82.05892, 110.2595, 
+                                89.30215, 102.1589, 97.56282, 93.32903], dtype=np.float32)
+    
+    # Compute solar angles
+    zenith, azimuth = geometry.compute_solar_angles(latitudes, longitudes, unix_times)
+    
+    # Check output shapes
+    assert zenith.shape == (8,)
+    assert azimuth.shape == (8,)
+    
+    # Compare with expected outputs using a reasonable tolerance
+    # Allow for small numerical differences
+    assert np.allclose(zenith, expected_zenith, rtol=1e-4, atol=1e-3), \
+        f"Zenith angles do not match expected values.\nGot: {zenith}\nExpected: {expected_zenith}\nDiff: {zenith - expected_zenith}"
+    assert np.allclose(azimuth, expected_azimuth, rtol=1e-4, atol=1e-3), \
+        f"Azimuth angles do not match expected values.\nGot: {azimuth}\nExpected: {expected_azimuth}\nDiff: {azimuth - expected_azimuth}"
+
+
 if __name__ == '__main__':
     test_solar_angles_basic()
     test_solar_angles_multiple_locations()
@@ -167,5 +198,6 @@ if __name__ == '__main__':
     test_solar_angles_input_validation()
     test_solar_angles_extreme_latitudes()
     test_solar_angles_numerical_stability()
+    test_solar_angles_real_data()
     
     print("All geometry tests passed!")
