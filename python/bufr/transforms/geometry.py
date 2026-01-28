@@ -41,7 +41,7 @@ DEC = np.array([
 
 def compute_solar_angles(latitudes: np.ndarray, longitudes: np.ndarray, unix_times: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Compute solar zenith and azimuth angles following the GSI solar position algorithm.
+    Compute solar zenith and azimuth angles following the GSI solar position algorithm (zensun).
 
     This function implements the solar position calculation from NOAA-EMC/GSI, which uses
     analemma data (equation of time and solar declination) interpolated over day of year
@@ -62,7 +62,8 @@ def compute_solar_angles(latitudes: np.ndarray, longitudes: np.ndarray, unix_tim
        All inputs must be NumPy arrays with the same shape. Scalar inputs are not supported.
 
     .. seealso::
-       GSI (Gridpoint Statistical Interpolation) repository: https://github.com/NOAA-EMC/GSI
+       GSI (Gridpoint Statistical Interpolation) repository: 
+       https://github.com/NOAA-EMC/GSI/blob/develop/src/gsi/read_amsre.f90#L695
     """
     # Validate input arrays
     if latitudes.size == 0 or longitudes.size == 0 or unix_times.size == 0:
