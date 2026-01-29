@@ -61,6 +61,40 @@ def test_run_obs_file():
     # Compare the file to the expected output
     run_compare(compare_path, output_path)
 
+
+def test_mpi_encoder():
+    DATA_PATH = 'testdata/gdas.t18z.1bmhs.tm00.bufr_d'
+    COMP_PATH = 'testoutput/bufrtest_mhs_encoder_parallel.nc'
+    OUTPUT_PATH = 'testrun/bufrtest_mhs_{splits/satId}.nc'
+
+    bufr.mpi.App(sys.argv)
+    comm = bufr.mpi.Comm("world")
+    rank = comm.rank()
+    size = comm.size()
+
+    obs_builder = TestObsBuilder()
+    obs_builder.log.comm = comm
+
+    container = obs_builder.make_obs(comm, DATA_PATH)
+
+    subcategories = container.all_sub_categories()
+    obs_builder.log.info(f"subcategories: {subcategories}")
+
+    obs_builder.log.info("Container with categories defined - encoding subcategories in parallel.")
+    OUTPUT_PATH = 'testrun/bufrtest_mhs_{splits/satId}.nc'
+    container.all_gather(comm)
+    obs_builder._encode_by_rank(container, subcategories, OUTPUT_PATH, 'netcdf', False, rank, size)
+
+    # Only rank 0 needs to do the comparison
+    if rank == 0:
+        for subcat in subcategories:
+            cat_str = '_'.join(str(x) for x in subcat)  # e.g., "metop-a"
+            output_path = OUTPUT_PATH.replace('{splits/satId}', cat_str)
+            comp_path = COMP_PATH.replace('mhs', f'mhs_{cat_str}')  # reference file must follow same naming
+            obs_builder.log.info(f"Comparing {output_path} with {comp_path}")
+            run_compare(output_path, comp_path)
+
+
 def test_run_obs_group():
     input_path = 'testdata/gdas.t18z.1bmhs.tm00.bufr_d'
 
@@ -74,6 +108,7 @@ if __name__ == '__main__':
     test_basic_obs_builder_interface()
     test_run_obs_builder()
     test_run_obs_file()
+    test_mpi_encoder()
 
     try:
         import pyioda

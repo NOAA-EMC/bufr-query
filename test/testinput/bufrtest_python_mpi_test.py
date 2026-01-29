@@ -2,36 +2,14 @@
 import sys
 import os
 import subprocess
-import netCDF4
 
 import bufr
 from bufr.encoders import netcdf
 import numpy as np
-from bufr.obs_builder import ObsBuilder, add_main_functions, map_path
-
-def is_empty_nc(file_path):
-    with netCDF4.Dataset(file_path, 'r') as ds:
-        loc_dim = ds.dimensions.get('Location')
-        return loc_dim is None or len(loc_dim) == 0
 
 def run_compare(input_path, comp_path):
-    if is_empty_nc(input_path) and is_empty_nc(comp_path):
-        print(f"[INFO] Skipping compare: both {input_path} and {comp_path} are empty.")
-        return
     result = subprocess.Popen(f'nccmp -d -m -g -f -S {input_path} {comp_path}', shell=True).wait()
     assert result == 0, f"Comparison failed for {input_path} and {comp_path}."
-
-MAPPING_PATH = map_path('testinput/bufrtest_mhs_mapping.yaml')
-
-class TestObsBuilder(ObsBuilder):
-    def __init__(self):
-        super().__init__(MAPPING_PATH)
-
-    def make_obs(self, comm, input):
-        # Custom implementation for testing
-        return super().make_obs(comm, input)
-
-add_main_functions(TestObsBuilder, execute_main=False)
 
 
 def test_mpi_basic():
@@ -102,43 +80,9 @@ def test_mpi_all_gather():
         netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)
         run_compare(OUTPUT_PATH, COMP_PATH)
 
-def test_mpi_encoder():
-
-    DATA_PATH = 'testdata/gdas.t18z.1bmhs.tm00.bufr_d'
-    OUTPUT_PATH = 'testrun/bufrtest_mhs.nc'
-    COMP_PATH = 'testoutput/bufrtest_mhs_encoder_parallel.nc'
-
-    bufr.mpi.App(sys.argv)
-    comm = bufr.mpi.Comm("world")
-    rank = comm.rank()
-    size = comm.size()
-
-    obs_builder = TestObsBuilder()
-    obs_builder.log.comm = comm
-
-    container = obs_builder.make_obs(comm, DATA_PATH)
-
-    subcategories = container.all_sub_categories()
-    obs_builder.log.info(f"subcategories: {subcategories}")
-
-    obs_builder.log.info("Container with categories defined - encoding subcategories in parallel.")
-    OUTPUT_PATH = 'testrun/bufrtest_mhs_{splits/satId}.nc'
-    container.all_gather(comm)
-    obs_builder._encode_by_rank(container, subcategories, OUTPUT_PATH, 'netcdf', False, rank, size)
-
-    # Only rank 0 needs to do the comparison
-    if rank == 0:
-        for subcat in subcategories:
-            cat_str = '_'.join(str(x) for x in subcat)  # e.g., "metop-a"
-            output_path = OUTPUT_PATH.replace('{splits/satId}', cat_str)
-            comp_path = COMP_PATH.replace('mhs', f'mhs_{cat_str}')  # reference file must follow same naming
-            obs_builder.log.info(f"Comparing {output_path} with {comp_path}")
-            run_compare(output_path, comp_path)
-
 
 if __name__ == '__main__':
     test_mpi_basic()
     test_mpi_categories()
     test_mpi_sub_container()
     test_mpi_all_gather()
-    test_mpi_encoder()
