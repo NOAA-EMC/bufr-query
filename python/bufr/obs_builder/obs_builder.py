@@ -56,6 +56,8 @@ class ObsBuilder:
         """
         if not isinstance(input, str) or len(self.map_dict) != 1:
             raise NotImplementedError('You must create a custom override for make_obs().')
+        
+        self.log.comm = comm
 
         mapping_path = list(self.map_dict.values())[0]
         container = bufr.Parser(input, mapping_path, self.table_path).parse(comm)

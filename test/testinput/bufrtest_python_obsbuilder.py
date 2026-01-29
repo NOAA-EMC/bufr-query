@@ -62,6 +62,15 @@ def test_run_obs_file():
     run_compare(compare_path, output_path)
 
 
+class TestCatObsBuilder(ObsBuilder):
+    def __init__(self):
+        super().__init__(map_path('bufrtest_mhs_mapping.yaml'))
+
+    def make_obs(self, comm, input):
+        # Custom implementation for testing
+        return super().make_obs(comm, input)
+
+
 def test_mpi_encoder():
     DATA_PATH = 'testdata/gdas.t18z.1bmhs.tm00.bufr_d'
     COMP_PATH = 'testoutput/bufrtest_mhs_encoder_parallel.nc'
@@ -72,16 +81,13 @@ def test_mpi_encoder():
     rank = comm.rank()
     size = comm.size()
 
-    obs_builder = TestObsBuilder()
-    obs_builder.log.comm = comm
-
+    obs_builder = TestCatObsBuilder()
     container = obs_builder.make_obs(comm, DATA_PATH)
 
     subcategories = container.all_sub_categories()
     obs_builder.log.info(f"subcategories: {subcategories}")
-
     obs_builder.log.info("Container with categories defined - encoding subcategories in parallel.")
-    OUTPUT_PATH = 'testrun/bufrtest_mhs_{splits/satId}.nc'
+
     container.all_gather(comm)
     obs_builder._encode_by_rank(container, subcategories, OUTPUT_PATH, 'netcdf', False, rank, size)
 
