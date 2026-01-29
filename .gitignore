@@ -12,3 +12,4 @@ build
 .nc
 .nc4
 bufrtab.
+_codeql_detected_source_root
