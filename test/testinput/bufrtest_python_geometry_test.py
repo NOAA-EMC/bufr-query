@@ -191,13 +191,36 @@ def test_solar_angles_real_data():
 
 
 if __name__ == '__main__':
+    print("Running test_solar_angles_basic...")
     test_solar_angles_basic()
-    test_solar_angles_multiple_locations()
-    test_solar_angles_summer_winter()
-    test_solar_angles_midnight()
-    test_solar_angles_input_validation()
-    test_solar_angles_extreme_latitudes()
-    test_solar_angles_numerical_stability()
-    test_solar_angles_real_data()
+    print("  PASSED: test_solar_angles_basic")
     
-    print("All geometry tests passed!")
+    print("Running test_solar_angles_multiple_locations...")
+    test_solar_angles_multiple_locations()
+    print("  PASSED: test_solar_angles_multiple_locations")
+    
+    print("Running test_solar_angles_summer_winter...")
+    test_solar_angles_summer_winter()
+    print("  PASSED: test_solar_angles_summer_winter")
+    
+    print("Running test_solar_angles_midnight...")
+    test_solar_angles_midnight()
+    print("  PASSED: test_solar_angles_midnight")
+    
+    print("Running test_solar_angles_input_validation...")
+    test_solar_angles_input_validation()
+    print("  PASSED: test_solar_angles_input_validation")
+    
+    print("Running test_solar_angles_extreme_latitudes...")
+    test_solar_angles_extreme_latitudes()
+    print("  PASSED: test_solar_angles_extreme_latitudes")
+    
+    print("Running test_solar_angles_numerical_stability...")
+    test_solar_angles_numerical_stability()
+    print("  PASSED: test_solar_angles_numerical_stability")
+    
+    print("Running test_solar_angles_real_data...")
+    test_solar_angles_real_data()
+    print("  PASSED: test_solar_angles_real_data")
+    
+    print("\nAll geometry tests passed!")
