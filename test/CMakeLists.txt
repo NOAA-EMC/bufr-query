@@ -95,6 +95,7 @@ list( APPEND test_input
   testinput/bufrtest_python_mpi_test.py
   testinput/bufrtest_python_obsbuilder.py
   testinput/bufrtest_python_obsbuilder_mod_sig.py
+  testinput/bufrtest_python_obsbuilder_parallel.py
   testinput/bufrtest_missing_subset_mapping.yaml
 )
 
@@ -592,6 +593,13 @@ if (${BUILD_PYTHON_BINDINGS})
                     TYPE    SCRIPT
                     COMMAND python3
                     ARGS    testinput/bufrtest_python_obsbuilder_mod_sig.py
+                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
+
+  ecbuild_add_test( TARGET  test_bufr_python_obsbuilder_parallel
+                    MPI 2
+                    TYPE    SCRIPT
+                    COMMAND python3
+                    ARGS    testinput/bufrtest_python_obsbuilder_parallel.py
                     ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
 
 endif()

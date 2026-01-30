@@ -56,6 +56,8 @@ class ObsBuilder:
         """
         if not isinstance(input, str) or len(self.map_dict) != 1:
             raise NotImplementedError('You must create a custom override for make_obs().')
+        
+        self.log.comm = comm
 
         mapping_path = list(self.map_dict.values())[0]
         container = bufr.Parser(input, mapping_path, self.table_path).parse(comm)
@@ -99,21 +101,47 @@ class ObsBuilder:
         :param type: Data type to encode into (optional)
         :param append: Add to the file if it exists or create a new file. (optional)
         """
-
         comm = bufr.mpi.Comm("world")
         self.log.comm = comm
 
+        # Create observation container
         container = self.make_obs(comm, input)
-        container.gather(comm)
 
-        # Encode the data
-        if comm.rank() == 0:
-            self.finalize_container(container)
-            FILE_ENCODER_DICT[type](self.description).encode(container, output, append)
+        # Gather and encode data 
+        rank = comm.rank()
+        size = comm.size()
+        subcategories = container.all_sub_categories()
+
+        # Container has no category (subcategories=[[]]; This is list with one empty list inside)
+        # Empty list is falsy  
+        if not subcategories[0] or all(len(sub) == 0 for sub in subcategories):
+            self.log.info("Container with no cagegories defined - encoding the container at rank 0.")
+            container.gather(comm)
+            if rank == 0:
+                FILE_ENCODER_DICT[type](self.description).encode(container, output, append)
+        # Container has categories 
+        else:
+            self.log.info("Container with categories defined - encoding subcategories in parallel.")
+            container.all_gather(comm)
+            self._encode_by_rank(container, subcategories, output, type, append, rank, size)
 
         self.log.info(f'Return the encoded data')
 
-    def create_obs_group(self, input, env, category:str=None, cache_categories:list=None):
+    def _encode_by_rank(self, container, subcategories, output, type, append, rank, size):
+        """
+        Helper function: Encode subcategories in parallel using MPI ranks.
+        """
+        encoder = FILE_ENCODER_DICT[type](self.description)
+
+        for i, subcat in enumerate(subcategories):
+            if i % size != rank:
+                continue  # Skip subcategories not assigned to this rank
+
+            self.log.info_all(f"Encoding subcategory: {subcat}")
+            sub_container = container.get_sub_container(subcat)
+            encoder.encode(sub_container, output, append)
+
+    def create_obs_group(self, input, env, category:list=None, cache_categories:list=None):
         """
         Create an observation file from the input data. Override this method if you want to
         customize the file creation process or if you need a different function signature (ex: you
