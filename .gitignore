@@ -2,12 +2,14 @@
 .idea
 .vs
 .vscode
+.venv
 /CMakeSettings.json
 *~
 build
-
+__pycache__
 .bufr
 .bufr_d
 .nc
 .nc4
 bufrtab.
+_codeql_detected_source_root

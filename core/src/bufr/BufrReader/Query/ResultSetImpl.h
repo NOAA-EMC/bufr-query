@@ -75,6 +75,13 @@ namespace details
             const std::string& groupByFieldName = "",
             const std::string& overrideType = "") const;
 
+        /// \brief Discover the type of a field in the result set.
+        /// \param comm The MPI communicator to use for resolving the type.
+        /// \param fieldName The name of the field to resolve the type for.
+        /// \return The type of the field as a string.
+        std::string  resolveType(const eckit::mpi::Comm& comm,
+                                 const std::string& fieldName) const;
+
         friend class QueryRunner;
 
      private:

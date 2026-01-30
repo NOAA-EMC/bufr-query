@@ -29,6 +29,7 @@ list(APPEND BUFR_PUBLIC
 
 list (APPEND ENCODERS_PUBLIC
 	include/bufr/encoders/Description.h
+	include/bufr/encoders/EncoderBase.h
 	include/bufr/encoders/netcdf/Encoder.h
 )
 
@@ -68,6 +69,8 @@ list(APPEND BUFR_PRIVATE
 	src/bufr/BufrReader/Exports/Variables/Transforms/OffsetTransform.cpp
 	src/bufr/BufrReader/Exports/Variables/Transforms/ScalingTransform.h
 	src/bufr/BufrReader/Exports/Variables/Transforms/ScalingTransform.cpp
+	src/bufr/BufrReader/Exports/Variables/Transforms/WrapTransform.h
+	src/bufr/BufrReader/Exports/Variables/Transforms/WrapTransform.cpp
 	src/bufr/BufrReader/Exports/Variables/Transforms/TransformBuilder.h
 	src/bufr/BufrReader/Exports/Variables/Transforms/TransformBuilder.cpp
 	src/bufr/BufrReader/Query/DataProvider/DataProvider.cpp
@@ -95,10 +98,18 @@ list(APPEND BUFR_PRIVATE
 	src/bufr/BufrReader/Exports/Variables/Transforms/atms/atms_spatial_average_mod.f90
 	src/bufr/BufrReader/Exports/Variables/Transforms/atms/atms_spatial_average_interface.h
 	src/bufr/BufrReader/Exports/Variables/Transforms/atms/atms_spatial_average_interface.f90
+
+        # spatial averaging 
+        src/bufr/BufrReader/Exports/Variables/Transforms/spatial_averaging/kinds.F90
+        src/bufr/BufrReader/Exports/Variables/Transforms/spatial_averaging/m_distance.f90
+        src/bufr/BufrReader/Exports/Variables/Transforms/spatial_averaging/spatial_average_mod.f90
+        src/bufr/BufrReader/Exports/Variables/Transforms/spatial_averaging/spatial_average_interface.h
+        src/bufr/BufrReader/Exports/Variables/Transforms/spatial_averaging/spatial_average_interface.f90
 )
 
 list (APPEND ENCODERS_PRIVATE
 	src/encoders/Description.cpp
+	src/encoders/EncoderBase.cpp
 	src/encoders/netcdf/Encoder.cpp
 )
 
@@ -131,9 +142,13 @@ target_link_libraries(bufr_query PUBLIC gsl::gsl-lite)
 target_link_libraries(bufr_query PUBLIC Eigen3::Eigen)
 target_link_libraries(bufr_query PUBLIC MPI::MPI_CXX)
 target_link_libraries(bufr_query PUBLIC bufr::bufr_4)
-target_link_libraries(bufr_query PUBLIC NetCDF::NetCDF_CXX)
+target_link_libraries(bufr_query PRIVATE  NetCDF::NetCDF_CXX)
 target_link_libraries(bufr_query PUBLIC eckit eckit_mpi)
 
+# Force eckit's public include dirs to be treated as SYSTEM to suppress warnings
+set_property(TARGET eckit PROPERTY
+				INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+				$<TARGET_PROPERTY:eckit,INTERFACE_INCLUDE_DIRECTORIES>)
 
 ## Public include files
 target_include_directories(bufr_query PUBLIC

@@ -66,7 +66,7 @@ namespace bufr {
         {
             auto channel = sensorChanObj->getAsInt(idx);
             size_t iloc = static_cast<size_t>(floor(idx / nchns));
-            size_t bandOffset;
+            size_t bandOffset = 0;
 
             for (size_t ibnd = 0; ibnd < nbands; ibnd++)
             {

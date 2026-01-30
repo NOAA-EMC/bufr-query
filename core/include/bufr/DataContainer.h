@@ -46,20 +46,27 @@ namespace bufr {
     void add(const std::string& fieldName, std::shared_ptr<DataObjectBase> data,
              const SubCategory& categoryId = {});
 
+    /// \brief Replace a DataObject in the collection
+    /// \param data The DataObject to store
+    /// \param fieldName The name of the data object to replace
+    /// \param categoryId The vector<string> for the subcategory
     void set(std::shared_ptr<DataObjectBase> data, const std::string& fieldName,
              const SubCategory& categoryId = {});
 
     /// \brief Get a DataObject from the collection
-    /// \param fieldName The name of the data object ot get
+    /// \param fieldName The name of the data object to get
     /// \param categoryId The vector<string> for the subcategory
     std::shared_ptr<DataObjectBase> get(const std::string& fieldName,
                                         const SubCategory& categoryId = {}) const;
 
+    /// \brief Get list of dimensioning paths for the field
+    /// \param fieldName The name of the data object to get
+    /// \param categoryId The vector<string> for the subcategory
     std::vector<std::string> getPaths(const std::string& fieldName,
                                       const SubCategory& categoryId = {}) const;
 
     /// \brief Get a DataObject for the group by field
-    /// \param fieldName The name of the data object ot get
+    /// \param fieldName The name of the data object to get
     /// \param categoryId The vector<string> for the subcategory
     std::shared_ptr<DataObjectBase> getGroupByObject(const std::string& fieldName,
                                                      const SubCategory& categoryId = {}) const;
@@ -69,7 +76,13 @@ namespace bufr {
     /// \param categoryId The vector<string> for the subcategory
     bool hasKey(const std::string& fieldName, const SubCategory& categoryId = {}) const;
 
+    /// \brief Check if a category is available
+    /// \param categoryId The vector<string> for the subcategory
     bool hasCategory(const SubCategory& categoryId) const;
+
+    /// \brief Get a new data-container for the specified sub-category
+    /// \param categoryId The vector<string> for the subcategory
+    std::shared_ptr<DataContainer> getSubContainer(const SubCategory& categoryId) const;
 
     /// \brief Get the number of rows of the specified sub category
     /// \param categoryId The vector<string> for the subcategory
@@ -92,9 +105,21 @@ namespace bufr {
     /// \param other DataContainer to append.
     void append(const DataContainer& other);
 
+    /// \brief Remove a field from the container in all subcategories.
+    /// \param fieldName The name of the field to remove.
+    void remove(const std::string& fieldName);
+
     /// \brief Gather data from all ranks into rank 0.
     /// \param comm MPI communicator to use.
     void gather(const eckit::mpi::Comm& comm);
+
+    /// \brief Gather data to all the ranks soo they all have the same data.
+    /// \param comm MPI communicator to use.
+    void allGather(const eckit::mpi::Comm& comm);
+
+    /// \brief Apply a mask to the container (mutate it)
+    /// \param mask vector of bools (mask) to apply to the container
+    void applyMask(const std::vector<int>& mask, const SubCategory& categoryId = {});
 
   private:
     /// Category map given (see constructor).
@@ -105,6 +130,11 @@ namespace bufr {
 
     /// \brief Uses category map to generate listings of all possible subcategories.
     void makeDataSets();
+
+    /// \brief Remove the path info from the a field name string
+    /// \param fieldName The field name to remove the path from
+    /// \return The field name without the path
+    static std::string dropPath(const std::string& fieldName);
   };
 }  // namespace bufr
 

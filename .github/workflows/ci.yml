@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  #push:
+  #  branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Cache Docker Image
+      uses: actions/cache@v3
+      with:
+        path: /tmp/.docker-cache
+        key: docker-${{ runner.os }}-jcsda/docker-gnu-openmpi-dev
+        restore-keys: |
+          docker-${{ runner.os }}-
+
+    - name: Load Cached Docker Image
+      run: |
+        mkdir -p /tmp/.docker-cache
+        if [ -f /tmp/.docker-cache/jcsda/docker-gnu-openmpi-dev.tar ]; then
+          docker load -i /tmp/.docker-cache/jcsda/docker-gnu-openmpi-dev.tar || true
+        fi
+
+    - name: Pull or Use Cached Image
+      run: |
+        docker pull jcsda/docker-gnu-openmpi-dev:latest || true
+        mkdir -p /tmp/.docker-cache/jcsda/
+        docker save -o /tmp/.docker-cache/jcsda/docker-gnu-openmpi-dev.tar jcsda/docker-gnu-openmpi-dev:latest
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Build bufr_query in the container
+      run: |
+        docker run --rm \
+          -v /home/runner/work/bufr-query/bufr-query:/workspace \
+          -w /workspace \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c "
+            # Install python3-dev and dependencies
+            apt-get update && apt-get install -y python3-dev python3-pip || true
+            # Update PATH
+            export PATH=\$PATH:/opt/views/view/bin:/usr/local/bin:/usr/bin:/bin
+            export PYTHONPATH=/opt/views/view/lib/python3.11/site-packages
+ 
+            # Set Python variables
+            PYTHON_BIN=\$(which python3)
+            PYTHON_INCLUDE_DIR=\$(python3 -c 'import sysconfig; print(sysconfig.get_path(\"include\"))' 2>/dev/null || find / -name 'Python.h' 2>/dev/null | head -n1 | xargs dirname)
+            PYTHON_LIBRARY=\$(find / -name 'libpython3.11.so' 2>/dev/null | head -n1 || python3 -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\") + \"/libpython3.11.so\")' 2>/dev/null)
+            
+            # Build with CMake
+            mkdir -p build
+            cd build
+            rm -rf CMakeCache.txt CMakeFiles  # Clear cache
+            cmake .. \
+              -DPython3_ROOT_DIR=/opt/views/view \
+              -DPython3_EXECUTABLE=\$PYTHON_BIN \
+              -DPython3_INCLUDE_DIR=\$PYTHON_INCLUDE_DIR \
+              -DPython3_LIBRARY=\$PYTHON_LIBRARY \
+              -DPython3_FIND_STRATEGY=LOCATION \
+              -DPython3_FIND_FRAMEWORK=LAST
+            make
+          "
+      shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+
+    - name: Test in Docker
+      run: |
+        docker run --rm \
+          -v "$PWD":/workspace \
+          -w /workspace/build \
+          jcsda/docker-gnu-openmpi-dev:latest \
+          /bin/bash -c '
+            set -e -x
+    
+            pip3 install wxflow
+    
+            # Create non-root user
+            id -u testuser || useradd -m -u 1001 -s /bin/bash testuser
+            chown -R testuser:testuser /workspace
+    
+            # Write test script
+            echo "#!/bin/bash" > /workspace/build/run_tests.sh
+            echo "set -e -x" >> /workspace/build/run_tests.sh
+            echo "export PATH=$PATH" >> /workspace/build/run_tests.sh
+            echo "export PYTHONPATH=$PYTHONPATH" >> /workspace/build/run_tests.sh
+            echo "export LD_LIBRARY_PATH=/workspace/build/lib:$LD_LIBRARY_PATH" >> /workspace/build/run_tests.sh
+            echo "echo \"RUNNING TESTS as \$(whoami)\"" >> /workspace/build/run_tests.sh
+            echo "cd /workspace/build && ctest --output-on-failure" >> /workspace/build/run_tests.sh
+            
+            chmod +x /workspace/build/run_tests.sh
+            su - testuser -c /workspace/build/run_tests.sh
+          '
+      shell: /usr/bin/bash -e {0}
+      

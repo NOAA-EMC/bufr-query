@@ -23,6 +23,7 @@ namespace
             const char* Path = "path";
             const char* Paths = "paths";
             const char* Source = "source";
+            const char* Labels = "labels";
         }  // Dimension
 
         namespace Variable
@@ -31,8 +32,8 @@ namespace
             const char* Source = "source";
             const char* LongName = "longName";
             const char* Units = "units";
-            const char* Range = "range";
             const char* Coords = "coordinates";
+            const char* Range = "range";
             const char* Chunks = "chunks";
             const char* CompressionLevel = "compressionLevel";
         }  // namespace Variable
@@ -99,12 +100,17 @@ namespace encoders {
                 } else
                 {
                     throw eckit::BadParameter(
-                        R"(netcdf dimensions section must have either "path" or "paths".)");
+                        R"(dimensions section must have either "path" or "paths".)");
                 }
 
                 if (dimConf.has(ConfKeys::Dimension::Source))
                 {
                     dim.source = {dimConf.getString(ConfKeys::Dimension::Source)};
+                }
+
+                if (dimConf.has(ConfKeys::Dimension::Labels))
+                {
+                    dim.labels = dimConf.getString(ConfKeys::Dimension::Labels);
                 }
 
                 addDimension(dim);
@@ -228,6 +234,13 @@ namespace encoders {
 
     void Description::addDimension(const DimensionDescription &dim)
     {
+        if (!dim.source.empty() && !dim.labels.empty())
+        {
+            std::stringstream errStr;
+            errStr << "Dimension " << dim.name << " can not have both source and labels.";
+            throw eckit::BadParameter(errStr.str());
+        }
+
         dimensions_.push_back(dim);
     }
 
@@ -236,18 +249,122 @@ namespace encoders {
         variables_.push_back(variable);
     }
 
-    void Description::py_addVariable(const std::string &name,
-                                     const std::string &source,
-                                     const std::string &unit,
-                                     const std::string &longName)
+    void Description::removeVariable(const std::string& name)
+    {
+        auto it = std::find_if(variables_.begin(), variables_.end(),
+                               [&name](const VariableDescription &var) {
+                                   return var.name == name;
+                               });
+
+        if (it == variables_.end())
+        {
+            std::stringstream errStr;
+            errStr << "Variable " << name << " not found.";
+            throw eckit::BadParameter(errStr.str());
+        }
+
+        variables_.erase(it);
+    }
+
+    void Description::addDimension(const std::string& name,
+                                   const std::vector<std::string>& paths,
+                                   const std::string& source,
+                                   const std::string& labels)
+    {
+        DimensionDescription dim;
+        dim.name = name;
+
+        std::vector<Query> pathQueries(paths.size());
+        for (size_t path_idx=0; path_idx < paths.size(); path_idx++)
+        {
+          pathQueries[path_idx] = QueryParser::parse(paths[path_idx])[0];
+        }
+
+        dim.paths = pathQueries;
+        dim.source = source;
+        dim.labels = labels;
+
+        addDimension(dim);
+    }
+
+    void Description::removeDimension(const std::string& name)
+    {
+        auto it = std::find_if(dimensions_.begin(), dimensions_.end(),
+                               [&name](const DimensionDescription &dim) {
+                                   return dim.name == name;
+                               });
+
+        if (it == dimensions_.end())
+        {
+            std::stringstream errStr;
+            errStr << "Dimension " << name << " not found.";
+            throw eckit::BadParameter(errStr.str());
+        }
+
+        dimensions_.erase(it);
+    }
+
+    void Description::removeGlobal(const std::string& name)
+    {
+        auto it = std::find_if(globals_.begin(), globals_.end(),
+                               [&name](const std::shared_ptr<GlobalDescriptionBase> &global) {
+                                   return global->name == name;
+                               });
+
+        if (it == globals_.end())
+        {
+            std::stringstream errStr;
+            errStr << "Global " << name << " not found.";
+            throw eckit::BadParameter(errStr.str());
+        }
+
+        globals_.erase(it);
+    }
+
+    void Description::py_addVariable(const std::string& name,
+                                     const std::string& source,
+                                     const std::string& units,
+                                     const std::string& longName,
+                                     const std::string& coordinates,
+				     const std::vector<size_t>& range,
+                                     const std::vector<size_t>& chunks,
+                                     const int compressionLevel)
     {
         VariableDescription variable;
         variable.name = name;
         variable.source = source;
-        variable.units = unit;
-        variable.longName = longName;
-        variable.compressionLevel = 6;
-        variable.chunks = {};
+        variable.units = units;
+
+        if (!longName.empty())
+        {
+          variable.longName = longName;
+        }
+
+        if (!coordinates.empty())
+        {
+            variable.coordinates = std::make_shared<std::string>(coordinates);
+        }
+
+        if (!range.empty())
+        {
+            if (range.size() != 2)
+            {
+                throw eckit::BadParameter("Range is the wrong size.");
+            }
+
+            auto newRange = std::make_shared<Range>();
+            newRange->start = range[0];
+            newRange->end = range[1];
+            variable.range = newRange;
+        }
+
+        variable.compressionLevel = compressionLevel;
+
+        if (!chunks.empty())
+        {
+            variable.chunks = chunks;
+        }
+
         addVariable(variable);
     }
 

@@ -1,0 +1,59 @@
+@startuml
+'skinparam dpi 300
+'scale 1024 width
+
+class Logger
+{
+  + info(message)
+  + debug(message)
+  + error(message)
+  + info_all(message)
+  + debug_all(message)
+  + error_all(message)
+  - _log(message, level)
+  - _log_all(message, level)
+}
+
+class ObsBuilder
+{
+  - mapping_path : dict
+  - log : Logger
+
+  + ObsBuilder(mapping_path: Union[str, dict], config: dict=None, log_name: str='obs_builder')
+  + make_obs(comm, input: Union[str, dict]): bufr.DataContainer
+  + create_obs_file(input, output, type='netcdf', append=False)
+  + create_obs_group(input, env, category: list=None, cache_categories: list=None): ioda.ObsGroup
+  # _make_description()
+}
+
+class SatWndAmvObsBuilder
+{
+  + SatWndAmvObsBuilder(mapping_path:str)
+  + make_obs(comm, input)
+  # _make_description()
+  # _compute_wind_components(wdir, wspd)
+}
+
+class SatWndAmvAvhrrObsBuilder
+{
+  MAPPING_PATH : str = "satwnd_amv_avhrr.yaml"
+  + SatWndAmvAvhrrObsBuilder()
+  + make_obs(comm, input)
+  # _make_description()
+}
+
+class SatWndAmvAhiObsBuilder
+{
+   MAPPING_PATH : str = "satwnd_amv_ahi.yaml"
+  + SatWndAmvAhiObsBuilder()
+  + make_obs(comm, input)
+  # _make_description()
+}
+
+Logger <--* ObsBuilder
+ObsBuilder <|-- SatWndAmvObsBuilder
+SatWndAmvObsBuilder <|-- SatWndAmvAvhrrObsBuilder
+SatWndAmvObsBuilder <|-- SatWndAmvAhiObsBuilder
+
+
+@enduml

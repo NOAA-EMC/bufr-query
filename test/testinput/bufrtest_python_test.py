@@ -122,8 +122,8 @@ def test_highlevel_replace():
 
     container = bufr.Parser(DATA_PATH, YAML_PATH).parse()
 
-    data = container.get('variables/brightnessTemp')
-    container.replace('variables/brightnessTemp', data * 1.1)
+    data = container.get('brightnessTemp')
+    container.replace('brightnessTemp', data * 1.1)
 
     dataset = next(iter(netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH).values()))
     obs_temp = dataset["ObsValue/brightnessTemperature"][:]
@@ -132,30 +132,80 @@ def test_highlevel_replace():
     assert obs_temp.shape == data.shape
     assert np.allclose(obs_temp[:, :], data * 1.1)
 
-def test_highlevel_add():
+def test_highlevel_modify():
     DATA_PATH = 'testdata/gdas.t00z.1bhrs4.tm00.bufr_d'
     YAML_PATH = 'testinput/bufrtest_hrs_basic_mapping.yaml'
-    OUTPUT_PATH = 'testrun/bufrtest_python_test.nc'
+    OUTPUT_PATH = 'testrun/bufrtest_python_test_modified.nc'
 
     container = bufr.Parser(DATA_PATH, YAML_PATH).parse()
 
-    data = container.get('variables/brightnessTemp')
-    paths = container.get_paths('variables/brightnessTemp')
-    container.add('variables/brightnessTemp_new', data, paths)
+    data = container.get('brightnessTemp')
+    paths = container.get_paths('brightnessTemp')
+    container.add('brightnessTemp_new', data, paths)
+
+    str_data = np.array(["hello"]*data.shape[0])
+    container.add('str_data', str_data, container.get_paths('latitude'))
 
     description = bufr.encoders.Description(YAML_PATH)
     description.add_variable(name='ObsValue/new_brightnessTemperature',
-                             source='variables/brightnessTemp_new',
+                             source='brightnessTemp_new',
                              units='K',
-                             longName='New Brightness Temperature')
+                             longName='New Brightness Temperature',
+                             coordinates='latitude longitude Channel',
+                             chunks=[20, 20],
+                             compressionLevel=9)
+
+    description.add_variable(name='ObsValue/str_data',
+                             source='str_data',
+                             units='strs',
+                             longName='Hello Strings')
+
+    description.add_global(name='title', value='Test Title')
+    description.add_global(name='int_val', value=2100)
+    description.add_global(name='int_vals', value=[3, 6, 12, 25])
+    description.add_global(name='float_vals', value=[3.14, 6.28, 12.0])
 
     dataset = next(iter(netcdf.Encoder(description).encode(container, OUTPUT_PATH).values()))
     obs_orig = dataset["ObsValue/brightnessTemperature"][:]
     obs_temp = dataset["ObsValue/new_brightnessTemperature"][:]
-    dataset.close()
+    obs_strs = dataset["ObsValue/str_data"][:]
 
     assert np.allclose(obs_temp, obs_orig)
     assert obs_temp.shape == data.shape
+    assert np.all(obs_strs == str_data)
+    assert 'title' in dataset.ncattrs()
+    assert dataset.getncattr('title') == 'Test Title'
+    assert 'int_val' in dataset.ncattrs()
+    assert dataset.getncattr('int_val') == 2100
+    assert 'int_vals' in dataset.ncattrs()
+    assert np.all(dataset.getncattr('int_vals') == [3, 6, 12, 25])
+    assert 'float_vals' in dataset.ncattrs()
+    assert np.allclose(dataset.getncattr('float_vals'), np.array([3.14, 6.28, 12.0]))
+
+    dataset.close()
+
+    # Remove previously added variables and recheck output
+    description.remove_variable('ObsValue/new_brightnessTemperature')
+    description.remove_variable('ObsValue/str_data')
+    description.remove_global('title')
+    description.remove_global('int_vals')
+    description.remove_global('float_vals')
+
+    description.remove_dimension('Channel')
+    description.add_dimension(name='New_Channel',
+                              paths=['*/BRITCSTC', '*/BRIT'],
+                              source='channel')
+
+    dataset = next(iter(netcdf.Encoder(description).encode(container, OUTPUT_PATH).values()))
+
+    assert 'ObsValue/new_brightnessTemperature' not in dataset.variables
+    assert 'ObsValue/str_data' not in dataset.variables
+    assert 'title' not in dataset.ncattrs()
+    assert 'int_vals' not in dataset.ncattrs()
+    assert 'float_vals' not in dataset.ncattrs()
+    assert 'New_Channel' in dataset.dimensions
+
+    dataset.close()
 
 def test_highlevel_append():
     DATA_PATH = 'testdata/gdas.t00z.1bhrs4.tm00.bufr_d'
@@ -168,9 +218,9 @@ def test_highlevel_append():
     new_container.append(container)
     new_container.append(container)
 
-    data = new_container.get('variables/brightnessTemp')
+    data = new_container.get('brightnessTemp')
 
-    orig_data = container.get('variables/brightnessTemp')
+    orig_data = container.get('brightnessTemp')
     orig_data = np.concatenate((orig_data, orig_data))
 
     assert orig_data.shape == data.shape
@@ -185,13 +235,13 @@ def test_highlevel_w_category():
 
     categories = container.all_sub_categories()
     for category in categories:  # [metop-a]
-        data = container.get('variables/antennaTemperature', category)
-        paths = container.get_paths('variables/antennaTemperature', category)
-        container.add('variables/antennaTemperature1', data, paths, category)
+        data = container.get('antennaTemperature', category)
+        paths = container.get_paths('antennaTemperature', category)
+        container.add('antennaTemperature1', data, paths, category)
 
     description = bufr.encoders.Description(YAML_PATH)
     description.add_variable(name='ObsValue/brightnessTemperature_new',
-                             source='variables/antennaTemperature1',
+                             source='antennaTemperature1',
                              units='K')
 
     for (key, dataset) in netcdf.Encoder(description).encode(container, OUTPUT_PATH).items():
@@ -219,27 +269,56 @@ def test_highlevel_cache():
     categories = container.all_sub_categories()
     for category in categories:
         cache_dat = bufr.DataCache.get(DATA_PATH, YAML_PATH)
-        assert np.allclose(dat.get('variables/antennaTemperature', category),
-                           cache_dat.get('variables/antennaTemperature', category))
+        assert np.allclose(dat.get('antennaTemperature', category),
+                           cache_dat.get('antennaTemperature', category))
 
         bufr.DataCache.mark_finished(DATA_PATH, YAML_PATH, category)
 
     if bufr.DataCache.has(DATA_PATH, YAML_PATH):
         assert False, "Data Cache still contains entry."
 
-def test_highlevel_mpi():
-    DATA_PATH = 'testdata/gdas.t18z.1bmhs.tm00.bufr_d'
-    YAML_PATH = 'testinput/bufrtest_mhs_basic_mapping.yaml'
-    OUTPUT_PATH = 'testrun/mhs_basic_parallel.nc'
+def test_highlevel_apply_mask():
+    container = bufr.DataContainer()
 
-    bufr.mpi.App(sys.argv) # Don't do this if passing in MPI communicator
-    comm = bufr.mpi.Comm("world")
+    d0 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    d1 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    d2 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    d3 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    d4 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    d5 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
-    container = bufr.Parser(DATA_PATH, YAML_PATH).parse(comm)
-    container.gather(comm)
+    container.add('d0', d0, ['*'])
+    container.add('d1', d1, ['*'])
+    container.add('d2', d2, ['*'])
+    container.add('d3', d3, ['*'])
+    container.add('d4', d4, ['*'])
+    container.add('d5', d5, ['*'])
 
-    if comm.rank() == 0:
-        netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)
+    mask = np.array([1, 0, 0, 1, 1, 0, 0, 1, 0, 1])
+
+    container.apply_mask(mask)
+
+    assert np.all(container.get('d0') == np.array([0, 3, 4, 7, 9]))
+    assert np.all(container.get('d4') == np.array([0, 3, 4, 7, 9]))
+
+def test_add_replace_masked_array():
+    container = bufr.DataContainer()
+
+    arr = np.ma.array([1, 2, 3], mask=[False, True, False], fill_value=-99)
+    container.add('masked', arr, ['*'])
+    assert np.all(container.get('masked') == np.array([1, -99, 3]))
+
+    arr2 = np.ma.array([4, 5, 6], mask=[True, False, False], fill_value=-1)
+    container.replace('masked', arr2)
+    assert np.all(container.get('masked') == np.array([-1, 5, 6]))
+
+
+def test_get_missing_value():
+    assert bufr.get_missing_value(np.int32) == np.iinfo(np.int32).max
+    assert bufr.get_missing_value(np.int64) == np.iinfo(np.int64).max
+    assert bufr.get_missing_value(np.float32) == np.finfo(np.float32).max
+    assert bufr.get_missing_value(np.float64) == np.finfo(np.float64).max
+    assert bufr.get_missing_value(np.dtype('O')) == ""
 
 
 if __name__ == '__main__':
@@ -252,8 +331,10 @@ if __name__ == '__main__':
 
     # High level interface tests
     test_highlevel_replace()
-    test_highlevel_add()
+    test_highlevel_modify()
     test_highlevel_w_category()
     test_highlevel_cache()
     test_highlevel_append()
-    test_highlevel_mpi()
+    test_highlevel_apply_mask()
+    test_add_replace_masked_array()
+    test_get_missing_value()

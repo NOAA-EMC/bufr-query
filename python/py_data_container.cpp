@@ -66,7 +66,14 @@ void setupDataContainer(py::module& m)
             paths[pathIdx] = QueryParser::parse(dimPaths[pathIdx])[0];
           }
 
-          auto dataObj = bufr::makeObject(fieldName, pyData);
+          py::array dataArray = pyData;
+          py::module numpyModule = py::module::import("numpy");
+          if (py::isinstance(pyData, numpyModule.attr("ma").attr("MaskedArray")))
+          {
+            dataArray = pyData.attr("filled")().cast<py::array>();
+          }
+
+          auto dataObj = bufr::makeObject(fieldName, dataArray);
           dataObj->setDimPaths(paths);
           self.add(fieldName, dataObj, categoryId);
         },
@@ -102,20 +109,27 @@ void setupDataContainer(py::module& m)
 
           const auto& data = self.get(fieldName, categoryId);
 
-          if (pyData.ndim() != data->getDims().size())
+          if (static_cast<size_t>(pyData.ndim()) != data->getDims().size())
           {
             throw eckit::BadParameter("ERROR: Dimension mismatch.");
           }
 
-          for (size_t idx = 0; idx < pyData.ndim(); idx++)
+          for (size_t idx = 0; idx < static_cast<size_t>(pyData.ndim()); idx++)
           {
-            if (pyData.shape(idx) != data->getDims()[idx])
+            if (pyData.shape(static_cast<pybind11::ssize_t>(idx)) != data->getDims()[idx])
             {
               throw eckit::BadParameter("ERROR: Dimension mismatch.");
             }
           }
 
-          auto dataObj = bufr::makeObject(fieldName, pyData);
+          py::array dataArray = pyData;
+          py::module numpyModule = py::module::import("numpy");
+          if (py::isinstance(pyData, numpyModule.attr("ma").attr("MaskedArray")))
+          {
+            dataArray = pyData.attr("filled")().cast<py::array>();
+          }
+
+          auto dataObj = bufr::makeObject(fieldName, dataArray);
           dataObj->setDimPaths(data->getDimPaths());
           self.set(dataObj, fieldName, categoryId);
         },
@@ -123,10 +137,19 @@ void setupDataContainer(py::module& m)
         py::arg("data"),
         py::arg("category") = std::vector<std::string>(),
         "Replace the variable with the given name.")
+   .def("remove", &DataContainer::remove,
+        py::arg("name"),
+        "Remove the field with the given name.")
    .def("get_category_map", &DataContainer::getCategoryMap, "Get the map.")
    .def("all_sub_categories", &DataContainer::allSubCategories,
         "Get the sub categories for the satellite.")
+   .def("get_sub_container", &DataContainer::getSubContainer,
+        py::arg("category"),
+        "Get the data container for the sub category.")
    .def("list", &DataContainer::getFieldNames, "Get the field names.")
+   .def("size", &DataContainer::size,
+        py::arg("category") = std::vector<std::string>(),
+        "Get the size of the data container dataset")
    .def("append", &DataContainer::append,
         py::arg("other"),
         "Append contents of another container. Must have the same category map and fields.")
@@ -135,5 +158,20 @@ void setupDataContainer(py::module& m)
           return self.gather(comm.getComm());
         },
         py::arg("comm"),
-        "Gather data from all processes.");
+        "Gather data from all tasks into rank 0 task.")
+   .def("all_gather", [](DataContainer& self, bufr::mpi::Comm& comm)
+        {
+          return self.allGather(comm.getComm());
+        },
+        py::arg("comm"),
+        "Gather data from all tasks into all tasks. Each task will have the complete record.")
+   .def("apply_mask", [](DataContainer& self, const py::array_t<int>& mask, const SubCategory& category)
+        {
+          std::vector<int> maskVec(mask.size());
+          std::copy(mask.data(), mask.data() + mask.size(), maskVec.begin());
+          self.applyMask(maskVec, category);
+        },
+        py::arg("mask"),
+        py::arg("category") = std::vector<std::string>(),
+        "Apply a mask to the data container.");
 }

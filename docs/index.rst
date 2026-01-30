@@ -18,9 +18,11 @@ Contents
 --------
 
 .. toctree::
-    :maxdepth: 2
+  :maxdepth: 2
 
+  quick_start
   query_path
   yaml
   python_api
+  obs_builder
   software_architecture

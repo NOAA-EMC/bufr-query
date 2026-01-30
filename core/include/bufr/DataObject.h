@@ -11,15 +11,13 @@
 #include <type_traits>
 #include <memory>
 #include <iostream>
+#include <numeric>
 #include <vector>
-#include <netcdf>
 
 #include "eckit/mpi/Comm.h"
 
 #include "QueryParser.h"
 #include "Data.h"
-
-namespace nc = netCDF;
 
 
 namespace bufr {
@@ -44,6 +42,10 @@ namespace bufr {
 
   struct DimensionDataBase
   {
+    const std::string name;
+
+    DimensionDataBase() = delete;
+    DimensionDataBase(const std::string& dimName) : name(dimName) {}
     virtual ~DimensionDataBase() = default;
     virtual size_t size() = 0;
 
@@ -53,16 +55,21 @@ namespace bufr {
   template<typename T>
   struct DimensionData : public DimensionDataBase
   {
-    std::string name;
     std::vector<T> data;
 
     DimensionData() = delete;
 
     virtual ~DimensionData() = default;
 
-    explicit DimensionData(const std::string& dimname, size_t size) :
-        name(dimname),
-        data(std::vector<T>(size, _default()))
+    DimensionData(const std::string& dimName, size_t size) :
+      DimensionDataBase(dimName),
+      data(std::vector<T>(size, _default()))
+    {
+    }
+
+    DimensionData(const std::string& dimName, std::vector<T> dimData) :
+      DimensionDataBase(dimName),
+      data(dimData)
     {
     }
 
@@ -115,6 +122,9 @@ namespace bufr {
       /// \brief Print the data object to a output stream.
       virtual void print(std::ostream& out) const = 0;
 
+      /// \brief Get the typename string for the data object.
+      virtual std::string getTypeName() const = 0;
+
       /// \brief Get the data at the location as an integer.
       /// \return Integer data.
       virtual int getAsInt(const Location& loc) const = 0;
@@ -151,6 +161,10 @@ namespace bufr {
       /// \param val Scalar to multiply to the data..
       virtual void multiplyBy(double val) = 0;
 
+      /// \brief Wrap the data values to a given range.
+      /// \param range The range to wrap the data to.
+      virtual void wrap(std::vector<float> range) = 0;
+
       /// \brief Add a scalar to the stored values in this data object.
       /// \param val Scalar to add to the data..
       virtual void offsetBy(double val) = 0;
@@ -162,6 +176,14 @@ namespace bufr {
       /// \brief Do an MPI Gather operation and accumalate the data into the root process.
       /// \param comm The MPI communicator to use.
       virtual void gather(const eckit::mpi::Comm& comm) = 0;
+
+      /// \brief Do an MPI Gather All operation to distribute all the data.
+      /// \param comm The MPI communicator to use.
+      virtual void allGather(const eckit::mpi::Comm& comm) = 0;
+
+      /// \brief Apply mask to data
+      /// \param mask The mask too apply (vector<bool>)
+      virtual void applyMask(const std::vector<int>& mask) = 0;
 
       /// \brief Makes a new dimension scale using this data object as the source
       /// \param name The name of the dimension variable.
@@ -271,6 +293,11 @@ namespace bufr {
         }
       }
 
+      std::string getTypeName() const final
+      {
+        return typeid(T).name();
+      }
+
       /// \brief Get the data at the location as an integer.
       /// \return Integer data.
       int getAsInt(const Location& loc) const final
@@ -357,6 +384,23 @@ namespace bufr {
           str << "Multiplying integer field \"" << fieldName_ << "\" with a non-integer is ";
           str << "illegal. Please convert it to a float or double.";
           throw eckit::BadParameter(str.str());
+        }
+      }
+
+      /// \brief Wrap the data values to a given range.
+      /// \param range The range to wrap the data to.
+      void wrap(std::vector<float> range) final
+      {
+        auto start = static_cast<T>(range[0]);
+        auto stop = static_cast<T>(range[1]);
+
+        auto diff = stop - start;
+        for (size_t i = 0; i < data_.size(); i++)
+        {
+          if (data_[i] != missingValue())
+          {
+            data_[i] = static_cast<T>(start + std::fmod(data_[i] - start, diff));
+          }
         }
       }
 
@@ -544,15 +588,175 @@ namespace bufr {
         }
       }
 
+      /// \brief Do an MPI Gather All operation to distribute all the data.
+      /// \param comm The MPI communicator to use.
+      void allGather(const eckit::mpi::Comm& comm) final
+      {
+        size_t numDims = dims_.size();
+        comm.allReduce(numDims, numDims, eckit::mpi::Operation::MAX);
+
+        // Ensure all ranks have the same number of dimensions
+        if (numDims != dims_.size())
+        {
+          int missingDims = numDims - dims_.size();
+          for (int idx = 0; idx < missingDims; ++idx)
+          {
+            dims_.insert(dims_.end() - 1, 1);
+          }
+        }
+
+        std::vector<int> rcvDims = dims_;
+        comm.allReduce(rcvDims[0], rcvDims[0], eckit::mpi::Operation::SUM);
+
+        for (size_t i = 1; i < numDims; ++i)
+        {
+          comm.allReduce(rcvDims[i], rcvDims[i], eckit::mpi::Operation::MAX);
+        }
+
+        size_t sendSize = dims_[0];
+        for (size_t idx = 1; idx < rcvDims.size(); idx++)
+        {
+          sendSize *= rcvDims[idx];
+        }
+
+        size_t rcvSize = 1;
+        for (size_t idx = 0; idx < rcvDims.size(); idx++)
+        {
+          rcvSize *= rcvDims[idx];
+        }
+
+        // Fix my send buffer if the global extra dimensions (not the first one) differ from my own
+        // (resize and fill with missing values where necessary). This will involve creating a send
+        // array and copying data into the correct indices.
+
+        // Do the extra dimensions from the different ranks match?
+        bool adjustDims = false;
+        for (size_t idx = 1; idx < rcvDims.size(); idx++)
+        {
+          adjustDims = (rcvDims[idx] != getDims()[idx]);
+        }
+
+        // Resize the dimensions to match the global dimensions
+        if (adjustDims)
+        {
+          std::vector<T> sendBuffer(sendSize, missingValue());
+
+          // Map the local data into the sendBuffer using the dimensions
+          for (size_t i = 0; i < data_.size(); ++i)
+          {
+            Location loc;
+
+            // Compute the location coordinate in the old data
+            size_t idx = i;
+            for (size_t dimIdx = 0; dimIdx < dims_.size(); ++dimIdx)
+            {
+              loc.push_back(idx % dims_[dimIdx]);
+              idx /= dims_[dimIdx];
+            }
+
+            // Map that location into the new data (compute the new index)
+            idx = 0;
+            for (size_t dimIdx = 0; dimIdx < rcvDims.size(); ++dimIdx)
+            {
+              idx += loc[dimIdx] * rcvDims[dimIdx];
+            }
+
+            sendBuffer[idx] = data_[i];
+          }
+
+          data_ = std::move(sendBuffer);
+        }
+
+        auto sizeArray = std::vector<int>(comm.size());
+        comm.allGather(static_cast<int>(size()), sizeArray.begin(), sizeArray.end());
+
+        std::vector<T> rcvBuffer(rcvSize, missingValue());
+        auto rcvCounts = std::vector<int>(comm.size());
+
+        std::vector<int> displacement(comm.size(), 0);
+        for (size_t i = 1; i < comm.size(); i++)
+        {
+          displacement[i] =  displacement[i - 1] + sizeArray[i - 1];
+        }
+
+        if constexpr (!std::is_same_v<T, unsigned long long> && !std::is_same_v<T, unsigned int>)
+        {
+          comm.allGatherv(data_.begin(), data_.end(), rcvBuffer.begin(),
+                          sizeArray.data(), displacement.data());
+        }
+        else
+        {
+          // Use unsigned long as the type and use that to gatherv back to the correct type. This is
+          // necessary because eckit MPI does not support unsigned long long or unsigned int
+          std::vector<unsigned long> ulData(data_.begin(), data_.end());
+          std::vector<unsigned long> ulRcvBuffer(rcvSize, DataObject<unsigned long>::missingValue());
+          comm.allGatherv(ulData.begin(), ulData.end(), ulRcvBuffer.begin(),
+                          sizeArray.data(), displacement.data());
+
+          // manually copy preserving missing values
+          for (size_t i = 0; i < rcvSize; i++)
+          {
+            if (ulRcvBuffer[i] != DataObject<unsigned long>::missingValue())
+            {
+              rcvBuffer[i] = static_cast<T>(ulRcvBuffer[i]);
+            }
+          }
+        }
+
+        dims_ = rcvDims;
+        data_ = std::move(rcvBuffer);
+      }
+
+      void applyMask(const std::vector<int>& mask) final
+      {
+        if (mask.size() != static_cast<size_t>(dims_[0]))
+        {
+          std::ostringstream str;
+          str << "Supplied mask does not match the number of rows in the data object.";
+          throw eckit::BadParameter(str.str());
+        }
+
+        const int newNumRows = std::accumulate(mask.begin(), mask.end(), 0, std::plus());
+        const int rowSize = std::accumulate(dims_.begin() + 1,
+                                                  dims_.end(),
+                                                  1,
+                                                  std::multiplies());
+
+        std::vector<T> newData;
+        newData.reserve(newNumRows * rowSize);
+
+        int newIdx = 0;
+        for (int row = 0; row < dims_[0]; ++row)
+        {
+          if (mask[row])
+          {
+            newData.insert(newData.begin() + newIdx * rowSize,
+                           data_.begin() + row * rowSize,
+                           data_.begin() + (row + 1) * rowSize);
+            newIdx++;
+          }
+        }
+
+        dims_[0] = newNumRows;
+        data_ = std::move(newData);
+      }
+
       /// \brief Append the data from another DataObject to this one.
       /// \param data The data object to append.
       void append(const std::shared_ptr<DataObjectBase>& data) final
       {
+        if (data->size() == 0)
+        {
+          return;
+        }
+        
         auto other = std::dynamic_pointer_cast<DataObject<T>>(data);
         if (!other)
         {
           std::ostringstream str;
-          str << "Cannot append data of type " << typeid(data).name();
+          str << "Cannot append data with different types for " << fieldName_ << ". ";
+          str << "This data object is of type " << getTypeName() << " while the other is of ";
+          str << data->getTypeName() << ".";
           throw eckit::BadParameter(str.str());
         }
 
@@ -562,7 +766,30 @@ namespace bufr {
           if (dims_[i] != other->dims_[i])
           {
             std::ostringstream str;
-            str << "Cannot append data with different dimensions.";
+            str << "Cannot append data with different dimensions for " << fieldName_ << ". ";
+            str << "Appending (";
+
+            for (size_t d = 0; d < other->dims_.size(); ++d)
+            {
+              str << other->dims_[d];
+              if (d < other->dims_.size() - 1)
+              {
+                str << ", ";
+              }
+            }
+
+            str << ") to (";
+
+            for (size_t d = 0; d < dims_.size(); ++d)
+            {
+              str << dims_[d];
+              if (d < other->dims_.size() - 1)
+              {
+                str << ", ";
+              }
+            }
+            str << ").";
+
             throw eckit::BadParameter(str.str());
           }
         }
@@ -606,7 +833,7 @@ namespace bufr {
 
       /// \brief Get the raw data associated with this data object.
       /// \return The raw data.
-      std::vector<T> getRawData() const { return data_; }
+      const std::vector<T>& getRawData() const { return data_; }
 
       /// \brief Get the size of the data object.
       /// \return The size of the data object.
@@ -689,6 +916,11 @@ namespace bufr {
         out << "DataObjectImpl";
       }
 
+      std::string getTypeName() const final
+      {
+        return "std::string";
+      }
+
       /// \brief Get the data at the location as an integer.
       /// \return Integer data.
       int getAsInt(const Location& loc) const final
@@ -758,6 +990,13 @@ namespace bufr {
       void multiplyBy(double val) final
       {
         throw eckit::BadParameter("Trying to multiply a string by a number");
+      }
+
+      /// \brief Wrap the stored values into a range of values
+      /// \param range The range to wrap the data into.
+      void wrap(std::vector<float> range) final
+      {
+        throw eckit::BadParameter("Can't wrap a string field.");
       }
 
       /// \brief Add a scalar to the stored values in this data object (string version).
@@ -962,15 +1201,186 @@ namespace bufr {
         }
       }
 
+      /// \brief Do an MPI Gather operation and accumalate the data into the root process.
+      /// \param comm The MPI communicator to use.
+      void allGather(const eckit::mpi::Comm& comm) final
+      {
+        size_t numDims = dims_.size();
+        comm.allReduce(numDims, numDims, eckit::mpi::Operation::MAX);
+
+        // Ensure all ranks have the same number of dimensions
+        if (numDims != dims_.size())
+        {
+          int missingDims = numDims - dims_.size();
+          for (int idx = 0; idx < missingDims; ++idx)
+          {
+            dims_.insert(dims_.end() - 1, 1);
+          }
+        }
+
+        std::vector<int> rcvDims = dims_;
+        comm.allReduce(rcvDims[0], rcvDims[0], eckit::mpi::Operation::SUM);
+
+        for (size_t i = 1; i < numDims; ++i)
+        {
+          comm.allReduce(rcvDims[i], rcvDims[i], eckit::mpi::Operation::MAX);
+        }
+
+        size_t sendSize = dims_[0];
+        for (size_t idx = 1; idx < rcvDims.size(); idx++)
+        {
+          sendSize *= rcvDims[idx];
+        }
+
+        // Fix my send buffer if the global extra dimensions (not the first one) differ from my own
+        // (resize and fill with missing values where necessary). This will involve creating a send
+        // array and copying data into the correct indices.
+
+        // Do the extra dimensions from the different ranks match?
+        bool adjustDims = false;
+        for (size_t idx = 1; idx < rcvDims.size(); idx++)
+        {
+          adjustDims = (rcvDims[idx] != getDims()[idx]);
+        }
+
+        // Resize the dimensions to match the global dimensions
+        if (adjustDims)
+        {
+          std::vector<std::string> sendBuffer(sendSize, missingValue());
+
+          // Map the local data into the sendBuffer using the dimensions
+          for (size_t i = 0; i < data_.size(); ++i)
+          {
+            Location loc;
+
+            // Compute the location coordinate in the old data
+            size_t idx = i;
+            for (size_t dimIdx = 0; dimIdx < dims_.size(); ++dimIdx)
+            {
+              loc.push_back(idx % dims_[dimIdx]);
+              idx /= dims_[dimIdx];
+            }
+
+            // Map that location into the new data (compute the new index)
+            idx = 0;
+            for (size_t dimIdx = 0; dimIdx < rcvDims.size(); ++dimIdx)
+            {
+              idx += loc[dimIdx] * rcvDims[dimIdx];
+            }
+
+            sendBuffer[idx] = data_[i];
+          }
+
+          data_ = std::move(sendBuffer);
+        }
+
+        size_t charsToSend = 0;
+        for (const auto& str : data_)
+        {
+          charsToSend += str.size();
+        }
+
+        size_t charsToReceive = charsToSend;
+        comm.allReduce(charsToReceive, charsToReceive, eckit::mpi::Operation::SUM);
+
+        auto sizeArray = std::vector<int>(comm.size());
+        comm.allGather(static_cast<int>(charsToSend), sizeArray.begin(), sizeArray.end());
+
+        std::vector<char> rcvBuffer(charsToReceive, 0);
+        auto rcvCounts = std::vector<int>(comm.size());
+
+        std::vector<int> displacement(comm.size(), 0);
+        for (size_t i = 1; i < comm.size(); i++)
+        {
+          displacement[i] =  displacement[i - 1] + sizeArray[i - 1];
+        }
+
+        std::vector<char> charSendBuffer;
+        for (const auto& str : data_)
+        {
+          charSendBuffer.insert(charSendBuffer.end(), str.begin(), str.end());
+        }
+
+        comm.allGatherv(charSendBuffer.begin(), charSendBuffer.end(), rcvBuffer.begin(),
+                        sizeArray.data(), displacement.data());
+
+        std::vector<int> myStrSizes(data_.size());
+        for (size_t idx=0; idx < data_.size(); ++idx)
+        {
+          myStrSizes[idx] = data_[idx].size();
+        }
+
+        comm.allGather(static_cast<int>(myStrSizes.size()), sizeArray.begin(), sizeArray.end());
+
+        for (size_t i = 1; i < comm.size(); i++)
+        {
+          displacement[i] =  displacement[i - 1] + sizeArray[i - 1];
+        }
+
+        size_t numStrs = data_.size();
+        comm.allReduce(numStrs, numStrs, eckit::mpi::Operation::SUM);
+        std::vector<int> strSizes(numStrs);
+        comm.allGatherv(myStrSizes.begin(), myStrSizes.end(), strSizes.begin(),
+                        sizeArray.data(), displacement.data());
+
+        dims_ = rcvDims;
+
+        // write rcvBuffer back to data
+        data_.resize(numStrs);
+        size_t offset = 0;
+        for (size_t idx = 0; idx < numStrs; ++idx)
+        {
+          std::string str(rcvBuffer.begin() + offset, rcvBuffer.begin() + offset + strSizes[idx]);
+          data_[idx] = str;
+          offset += strSizes[idx];
+        }
+      }
+
+      /// \brief Apply a mask to the data object.
+      /// \param mask The mask to apply.
+      void applyMask(const std::vector<int>& mask) final
+      {
+        if (mask.size() != static_cast<size_t>(dims_[0]))
+        {
+          std::ostringstream str;
+          str << "Supplied mask does not match the number of rows in the data object.";
+          throw eckit::BadParameter(str.str());
+        }
+
+        const int newNumRows = std::accumulate(mask.begin(), mask.end(), 0);
+        
+        std::vector<std::string> newData(newNumRows);
+
+        size_t newIdx = 0;
+        for (int row = 0; row < dims_[0]; ++row)
+        {
+          if (mask[row])
+          {
+            newData[newIdx] = std::move(data_[row]);
+            newIdx++;
+          }
+        }
+
+        dims_[0] = newNumRows;
+        data_ = std::move(newData);
+      }
+
       /// \brief Append the data from another DataObject to this one.
       /// \param data The data object to append.
       void append(const std::shared_ptr<DataObjectBase>& data) final
       {
+        if (data->size() == 0)
+        {
+          return;
+        }
+
         auto other = std::dynamic_pointer_cast<DataObject<std::string>>(data);
         if (!other)
         {
           std::ostringstream str;
-          str << "Cannot append data of type " << typeid(data).name();
+          str << "Cannot append data with different types for " << fieldName_ << ". ";
+          str << "This data object is of type std::string while the other is of ";
+          str << data->getTypeName() << ".";
           throw eckit::BadParameter(str.str());
         }
 
@@ -980,7 +1390,30 @@ namespace bufr {
           if (dims_[i] != other->dims_[i])
           {
             std::ostringstream str;
-            str << "Cannot append data with different dimensions.";
+            str << "Cannot append data with different dimensions for " << fieldName_ << ". ";
+            str << "Appending (";
+
+            for (size_t d = 0; d < other->dims_.size(); ++d)
+            {
+              str << other->dims_[d];
+              if (d < other->dims_.size() - 1)
+              {
+                str << ", ";
+              }
+            }
+
+            str << ") to (";
+
+            for (size_t d = 0; d < dims_.size(); ++d)
+            {
+              str << dims_[d];
+              if (d < other->dims_.size() - 1)
+              {
+                str << ", ";
+              }
+            }
+            str << ").";
+
             throw eckit::BadParameter(str.str());
           }
         }
@@ -1056,7 +1489,7 @@ namespace bufr {
 
       /// \brief Get the raw data associated with this data object.
       /// \return The raw data.
-      std::vector<std::string> getRawData() const { return data_; }
+      const std::vector<std::string>& getRawData() const { return data_; }
 
       /// \brief Get the size of the data object.
       /// \return The size of the data object.

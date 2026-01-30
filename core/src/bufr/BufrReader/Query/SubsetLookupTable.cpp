@@ -10,13 +10,12 @@ namespace bufr {
     SubsetLookupTable::SubsetLookupTable(const std::shared_ptr<DataProvider>& dataProvider,
                                          const std::shared_ptr<Targets>& targets) :
         targets_(targets),
-        lookupTable_(makeLookupTable(dataProvider, *targets))
+        lookupTable_(makeLookupTable(dataProvider))
     {
     }
 
     SubsetLookupTable::LookupTable
-    SubsetLookupTable::makeLookupTable(const std::shared_ptr<DataProvider>& dataProvider,
-                                       const Targets& targets) const
+    SubsetLookupTable::makeLookupTable(const std::shared_ptr<DataProvider>& dataProvider) const
     {
         auto lookupTable = LookupTable(dataProvider->getInode(),
                                        dataProvider->getIsc(dataProvider->getInode()));
@@ -26,20 +25,19 @@ namespace bufr {
 
         // Populate the lookup table with the counts and data corresponding to each BUFR node
         // we care about.
-        addCounts(dataProvider, targets, lookupTable, lookupMetaTable);
-        addData(dataProvider, targets, lookupTable, lookupMetaTable);
+        addCounts(dataProvider, lookupTable, lookupMetaTable);
+        addData(dataProvider, lookupTable, lookupMetaTable);
 
         return lookupTable;
     }
 
     void SubsetLookupTable::addCounts(const std::shared_ptr<DataProvider>& dataProvider,
-                                      const Targets &targets,
                                       LookupTable& lookup,
                                       LookupMetaTable& lookupMeta) const
     {
         // Add entries for all the path nodes in the targets that are containers (can contain)
         // children. Uses merged data from the Subset metadata and Query strings.
-        for (const auto& target : targets)
+        for (const auto& target : *targets_)
         {
             for (const auto& path : target->path)
             {
@@ -79,12 +77,11 @@ namespace bufr {
     }
 
     void SubsetLookupTable::addData(const std::shared_ptr<DataProvider>& dataProvider,
-                                    const Targets &targets,
                                     LookupTable& lookup,
                                     LookupMetaTable& lookupMeta) const
     {
         // Reserve space for the data in the lookup table by summing the counts for each node.
-        for (const auto& target : targets)
+        for (const auto& target : *targets_)
         {
             if (target->nodeIdx == 0) { continue; }
             const auto &path = target->path.back();

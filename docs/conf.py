@@ -6,6 +6,11 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import os, sys
+
+docs_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.abspath(os.path.join(docs_path, '../python/bufr')))
+
 project = 'bufr-query'
 copyright = '2024 NOAA/NWS/NCEP/EMC'
 author = ''
@@ -16,12 +21,15 @@ author = ''
 extensions = ['sphinx.ext.mathjax',
               'sphinx.ext.todo',
               'sphinx.ext.autodoc',
-              'sphinx.ext.autosectionlabel']
+              'sphinx.ext.autosectionlabel',
+              'sphinxcontrib.plantuml']
 
 templates_path = ['_templates']
 exclude_patterns = ['.DS_Store']
+plantuml = 'plantuml'
 
 root_doc = 'index'
+add_module_names = False
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

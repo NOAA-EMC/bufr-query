@@ -21,7 +21,6 @@ bufr:
       query: "*/BORG"
 
 encoder:
-  type: netcdf
 
   variables:
 

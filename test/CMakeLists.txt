@@ -1,43 +1,45 @@
 # (C) Copyright 2024 NOAA/NCEP/EMC.
 
-# Download the test data if we don't have it.
-# Code borrowed from NCEPLIB-bufr project...
+if(NOT SKIP_DOWNLOAD_TEST_DATA)
 
-set(DOWNLOAD_URL "https://ftp.emc.ncep.noaa.gov/static_files/public/bufr-query")
-set(FILE_COLLECTION "bufr_query-0.0.1.tgz")
+  # Download the test data if we don't have it.
+  # Code borrowed from NCEPLIB-bufr project...
 
-# Get the test data if we don't have it.
-if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION}")
-  message(STATUS "Downloading: " ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
-  file(DOWNLOAD
-    ${DOWNLOAD_URL}/${FILE_COLLECTION}
-    ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION}
-    SHOW_PROGRESS
-    STATUS download_status
-    INACTIVITY_TIMEOUT 30
-  )
+  set(DOWNLOAD_URL "https://ftp.emc.ncep.noaa.gov/static_files/public/bufr-query")
+  set(FILE_COLLECTION "bufr_query-0.0.2.tgz")
 
-  list(GET download_status 0 download_status_num)
+  # Get the test data if we don't have it.
+  if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION}")
+    message(STATUS "Downloading: " ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
+    file(DOWNLOAD
+      ${DOWNLOAD_URL}/${FILE_COLLECTION}
+      ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION}
+      SHOW_PROGRESS
+      STATUS download_status
+      INACTIVITY_TIMEOUT 30
+    )
 
-  if(NOT download_status_num EQUAL 0 OR NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
-    # Remove empty file if download doesn't complete
-    file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/${BUFR_TAR})
-    message(STATUS "Could not download test files, not building tests")
-    return()
+    list(GET download_status 0 download_status_num)
+
+    if(NOT download_status_num EQUAL 0 OR NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
+      # Remove empty file if download doesn't complete
+      file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/${BUFR_TAR})
+      message(STATUS "Could not download test files, not building tests")
+      return()
+    endif()
+
+    add_custom_target(get_bufr_test_data ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
+    add_custom_command(
+      TARGET get_bufr_test_data
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} tar xzf ${FILE_COLLECTION}
+      COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} rm -rf testdata
+      COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} rm -rf testoutput
+      COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} mv remote_data/testdata testdata
+      COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} mv remote_data/testoutput testoutput
+      COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} rm -rf remote_data)
   endif()
-
-  add_custom_target(get_bufr_test_data ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
-  add_custom_command(
-    TARGET get_bufr_test_data
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} tar xzf ${FILE_COLLECTION}
-    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} rm -rf testdata
-    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} rm -rf testoutput
-    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} mv remote_data/testdata testdata
-    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} mv remote_data/testoutput testoutput
-    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} rm -rf remote_data)
 endif()
-
 
 # Function definitions
 
@@ -86,8 +88,14 @@ list( APPEND test_input
   testinput/bufrtest_rtma_aircft_mapping.yaml
   testinput/bufrtest_rtma_aircft_NC004103_mapping.yaml
   testinput/bufrtest_wmo_amdar_multi_mapping.yaml
+  testinput/bufrtest_dim_labels_mapping.yaml
   testinput/bufrtest_fieldname_validation.py
   testinput/bufrtest_python_test.py
+  testinput/bufrtest_python_geometry_test.py
+  testinput/bufrtest_python_mpi_test.py
+  testinput/bufrtest_python_obsbuilder.py
+  testinput/bufrtest_python_obsbuilder_mod_sig.py
+  testinput/bufrtest_missing_subset_mapping.yaml
 )
 
 # create test directories and make links to the input files
@@ -513,6 +521,23 @@ ecbuild_add_test( TARGET  test_bufr_wmo_amdar_multi
                                                                  -t testdata/bufr_tables"
                           bufrtest_wmo_amdar_multi.nc)
 
+ecbuild_add_test( TARGET  test_bufr_dim_labels
+                  TYPE    SCRIPT
+                  COMMAND bash
+                  ARGS    ${CMAKE_BINARY_DIR}/bin/bufr_comp.sh
+                          netcdf
+                          "${CMAKE_BINARY_DIR}/bin/bufr2netcdf.x testdata/gdas.t00z.1bhrs4.tm00.bufr_d
+                                                                 testinput/bufrtest_dim_labels_mapping.yaml
+                                                                 testrun/bufrtest_hrs_basic.nc"
+  bufrtest_hrs_basic.nc)
+
+ecbuild_add_test( TARGET  test_missing_subset_data
+                  TYPE    SCRIPT
+                  COMMAND ${CMAKE_BINARY_DIR}/bin/bufr2netcdf.x
+                  ARGS    " testdata/gdas.t00z.1bhrs4.tm00.bufr_d
+                            testinput/bufrtest_missing_subset_mapping.yaml
+                            testrun/empty.nc")
+
 ecbuild_add_test( TARGET  test_bufr_show_queries_ncep
                   TYPE    SCRIPT
                   COMMAND ${CMAKE_BINARY_DIR}/bin/show_queries.x
@@ -536,12 +561,37 @@ if (${BUILD_PYTHON_BINDINGS})
                     TYPE    SCRIPT
                     COMMAND python3
                     ARGS    testinput/bufrtest_fieldname_validation.py
-                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}:$ENV{PYTHONPATH})
+                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
 
   ecbuild_add_test( TARGET  test_bufr_python_test
                     TYPE    SCRIPT
                     COMMAND python3
                     ARGS    testinput/bufrtest_python_test.py
-                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}:$ENV{PYTHONPATH})
+                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
+
+  ecbuild_add_test( TARGET  test_bufr_python_geometry_test
+                    TYPE    SCRIPT
+                    COMMAND python3
+                    ARGS    testinput/bufrtest_python_geometry_test.py
+                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
+
+  ecbuild_add_test( TARGET  test_bufr_python_mpi_test
+                    MPI 2
+                    TYPE    SCRIPT
+                    COMMAND python3
+                    ARGS    testinput/bufrtest_python_mpi_test.py
+                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
+
+  ecbuild_add_test( TARGET  test_bufr_python_obsbuilder
+                    TYPE    SCRIPT
+                    COMMAND python3
+                    ARGS    testinput/bufrtest_python_obsbuilder.py
+                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
+
+  ecbuild_add_test( TARGET  test_bufr_python_obsbuilder_mod_signature
+                    TYPE    SCRIPT
+                    COMMAND python3
+                    ARGS    testinput/bufrtest_python_obsbuilder_mod_sig.py
+                    ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages:$ENV{PYTHONPATH})
 
 endif()

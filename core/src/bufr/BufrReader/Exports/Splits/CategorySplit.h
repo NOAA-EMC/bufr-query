@@ -58,5 +58,10 @@ namespace bufr {
         /// \brief Adds values to nameMap_ using the data if nameMap_ is empty.
         /// \param dataMap Data to be split
         void updateNameMap(const BufrDataMap& dataMap);
+
+        /// \brief Validates that the category variable exists in the data map.
+        /// \param dataMap Data map to check
+        /// \throws eckit::BadParameter if the variable is not found
+        void validateVariableExists(const BufrDataMap& dataMap) const;
     };
 }  // namespace bufr

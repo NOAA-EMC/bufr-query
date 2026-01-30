@@ -9,8 +9,8 @@
 set -eu
 
 file_type=$1
-cmd=$2
-file_name=$3
+cmd=$2  
+file_name=($3)     # convert space-separated strings into an array
 tol=${4:-"0.0"}
 verbose=${5:-${VERBOSE:-"N"}}
 
@@ -19,11 +19,28 @@ verbose=${5:-${VERBOSE:-"N"}}
    $verbose == [Tt][Rr][Uu][Ee] ]] && set -x
 
 rc="-1"
+
 case $file_type in
   netcdf)
+	echo "======================"
+	echo "executing..."
     $cmd && \
-    nccmp testrun/$file_name testoutput/$file_name -d -m -g -f -S -T ${tol}
-    rc=${?}
+	echo "======================"
+	echo "command: "
+	echo $cmd
+	echo testrun/file_name:
+	echo testrun/$file_name
+	echo testoutput/file_name
+	echo testoutput/$file_name
+	echo "======================"
+    for i in "${!file_name[@]}"; do
+        file_name=${file_name[$i]}
+        nccmp testrun/$file_name testoutput/$file_name -d -m -g -f -s -S -B -T ${tol}
+        rc=${?}
+        if [[ $rc -ne 0 ]]; then
+           echo "Files testrun/$file_name and testoutput/$file_name are not identical."
+        fi
+    done
     ;;
    odb)
     $cmd && \
@@ -40,5 +57,9 @@ case $file_type in
     rc="-2"
     ;;
 esac
+# If any comparison fails, exit with an error
+if [[ $rc -ne 0 ]]; then
+    exit $rc
+fi
 
 exit $rc

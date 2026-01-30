@@ -38,7 +38,6 @@ bufr:
         variable: timestamp_minute
 
 encoder:
-  type: netcdf
 
   dimensions:
     - name: Channel

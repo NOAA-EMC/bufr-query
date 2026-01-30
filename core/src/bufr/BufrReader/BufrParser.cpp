@@ -106,7 +106,16 @@ namespace bufr {
         }
       }
 
-      auto msgsInFile = file_.size(querySet);
+      // Only rank 0 counts messages to avoid redundant file scans on all ranks
+      size_t msgsInFile = 0;
+      if (comm.rank() == 0)
+      {
+        msgsInFile = file_.size(querySet);
+      }
+      // Broadcast message count from rank 0 to all ranks using allReduce MAX
+      // (rank 0 has the count, others have 0, so MAX broadcasts to all)
+      comm.allReduce(msgsInFile, msgsInFile,
+                     eckit::mpi::Operation::MAX);
 
       // Distribute the messages to the tasks
       auto msgsToParse = std::floor(msgsInFile / comm.size());
@@ -139,8 +148,14 @@ namespace bufr {
       {
         for (const auto& queryInfo : var->getQueryList())
         {
+          auto typeStr = queryInfo.type;
+          if (typeStr.empty())
+          {
+            typeStr =  resultSet.resolveType(comm, queryInfo.name);
+          }
+
           srcData[queryInfo.name] = resultSet.get(
-            queryInfo.name, queryInfo.groupByField, queryInfo.type);
+            queryInfo.name, queryInfo.groupByField, typeStr);
         }
       }
 
@@ -193,14 +208,9 @@ namespace bufr {
         {
             for (const auto &var : vars)
             {
-                std::ostringstream pathStr;
-                pathStr << "variables/" << var->getExportName();
+                log::debug() << "Exporting variable = " << var->getExportName() << std::endl;
 
-                std::string ovar;
-                ovar = var->getExportName();
-                log::debug() << "Exporting variable = " << ovar << std::endl;
-
-                exportData->add(pathStr.str(),
+                exportData->add(var->getExportName(),
                                 var->exportData(dataPair.second),
                                 dataPair.first);
             }

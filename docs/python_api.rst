@@ -1,5 +1,5 @@
 .. _bufr-python-api:
-:tocdepth: 3
+   :tocdepth: 3
 
 Python
 ======
@@ -76,6 +76,12 @@ Here is what the DataContainer looks like:
 
           Replace the variable with the given name.
 
+      .. note::
+
+          ``add`` and ``replace`` automatically detect ``numpy.ma.MaskedArray``
+          inputs and use the filled version of the array, so calling
+          ``filled()`` beforehand is unnecessary.
+
       .. method:: get_category_map()
 
           Get the map of categories.
@@ -110,8 +116,8 @@ So to replace a value in the DataContainer you would do something like this (ass
 
     container = bufr.Parser(input_path, YAML_PATH).parse()
 
-    data = container.get('variables/brightnessTemp')
-    container.replace('variables/brightnessTemp', data * 1.1)
+    data = container.get('brightnessTemp')
+    container.replace('brightnessTemp', data * 1.1)
 
     datasets = netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH).values()
     obs_temp = dataset["ObsValue/brightnessTemperature"][:]
@@ -131,6 +137,26 @@ that the Encoder writes it out to the ObsGroup.
 
           Add a new variable object to the output description
 
+      .. method:: remove_variable(field_name)
+
+          Remove a variable object from the output description
+
+      .. method:: add_dimension(dim_name, paths, source='')
+
+          Add a new dimension object to the output description
+
+      .. method:: remove_dimension(dim_name)
+
+            Remove a dimension object from the output description
+
+      .. method:: add_global(global_name, value)
+
+          Add a new global object to the output description
+
+      .. method:: remove_global(global_name)
+
+            Remove a global object from the output description
+
 
 So the code looks more like this:
 
@@ -145,13 +171,13 @@ So the code looks more like this:
 
       container = bufr.Parser(input_path, YAML_PATH).parse()
 
-      data = container.get('variables/brightnessTemp')
-      paths = container.get_paths('variables/brightnessTemp')
-      container.add('variables/brightnessTemp_new', data*.01, paths)
+      data = container.get('brightnessTemp')
+      paths = container.get_paths('brightnessTemp')
+      container.add('brightnessTemp_new', data*.01, paths)
 
       description = netcdf.Description(YAML_PATH)
       description.add_variable(name='ObsValue/new_brightnessTemperature',
-                               source='variables/brightnessTemp_new',
+                               source='brightnessTemp_new',
                                units='K',
                                longName='New Brightness Temperature')
 
@@ -183,6 +209,7 @@ to make this easy. Please see the following example:
       comm = bufr.mpi.Comm("world")  # Get the MPI communicator
       container = bufr.Parser(DATA_PATH, YAML_PATH).parse(comm)  # Parse the BUFR file with mpi
       container.gather(comm)  # (OPTIONAL) Gather the DataContainer data from all the ranks
+      comm.barrier()          # Synchronize all ranks before continuing
 
       if comm.rank() == 0:
           netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH) # Encode the DataContainer object
@@ -234,11 +261,25 @@ Example:
         container = bufr.DataCache.get(input_path, YAML_PATH)
       bufr.DataCache.mark_finished(input_path, YAML_PATH, category)
 
-      data = container.get('variables/brightnessTemp', category)
-      container.replace('variables/brightnessTemp', data*.01, category)
+      data = container.get('brightnessTemp', category)
+      container.replace('brightnessTemp', data*.01, category)
 
       dataset = netcdf.Encoder(YAML_PATH).encode(container, OUTPUT_PATH)[category]
       return dataset
+
+
+Helper Functions
+----------------
+
+When creating new ``numpy.ma.MaskedArray`` objects you can obtain the
+appropriate missing value using :func:`get_missing_value`.
+
+.. code-block:: python
+
+   import bufr
+   import numpy as np
+
+   mv = bufr.get_missing_value(np.int64)
 
 
 

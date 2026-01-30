@@ -6,11 +6,13 @@
 
 #include "ScalingTransform.h"
 #include "OffsetTransform.h"
+#include "WrapTransform.h"
 
 
 static const char* TRANSFORMS_SECTION = "transforms";
 static const char* OFFSET_KEY = "offset";
 static const char* SCALE_KEY = "scale";
+static const char* WRAP_KEY = "wrap";
 
 namespace bufr {
     std::shared_ptr<Transform> TransformBuilder::makeTransform(const eckit::Configuration& conf)
@@ -23,6 +25,10 @@ namespace bufr {
         else if (conf.has(SCALE_KEY))
         {
             transform = std::make_shared<ScalingTransform>(conf.getFloat(SCALE_KEY));
+        }
+        else if (conf.has(WRAP_KEY))
+        {
+            transform = std::make_shared<WrapTransform>(conf.getFloatVector(WRAP_KEY));
         }
         else
         {

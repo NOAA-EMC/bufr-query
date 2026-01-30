@@ -10,6 +10,7 @@
 #include <string>
 #include <netcdf>
 #include <ostream>
+#include <type_traits>
 
 #include "eckit/exception/Exceptions.h"
 
@@ -20,10 +21,19 @@ namespace bufr {
 namespace encoders {
 namespace netcdf {
 
+    /// \brief Name of the attribute used to store fill values.
+    ///
+    /// NetCDF C++ 4.9 removed the global `_FillValue` symbol that earlier
+    /// versions exposed.  Define it locally so that the helper functions can
+    /// reference the attribute name without depending on the library to
+    /// provide it.
+    static const char* FillValueStr = "_FillValue";
+
     template<typename T>
     inline nc::NcType getNcType()
     {
         static_assert(!std::is_same<T, T>::value, "Unsupported type for NetCDF.");
+        return nc::NcType::nc_INT;  // return something to make compiler happy
     }
 
     template<> inline nc::NcType getNcType<float>() { return nc::NcType::nc_FLOAT; }
@@ -53,7 +63,7 @@ namespace netcdf {
                                           const std::string& name,
                                           const std::string& value)
     {
-      if (name != _FillValue)
+      if (name != FillValueStr)
       {
         var.putAtt(name, value);
       }
