@@ -481,7 +481,7 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            dims_.insert(dims_.end() - 1, 1);
+            dims_.insert(dims_.end() - 1, 0);
           }
         }
 
@@ -1078,7 +1078,7 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            dims_.insert(dims_.end() - 1, 1);
+            dims_.insert(dims_.end() - 1, 0);
           }
         }
 
