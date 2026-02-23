@@ -241,6 +241,8 @@ namespace bufr {
 
 
     protected:
+      void syncDimPaths(const eckit::mpi::Comm& comm, size_t numDims);
+
       std::string fieldName_;
       std::string groupByFieldName_;
       std::vector<int> dims_;
@@ -504,6 +506,8 @@ namespace bufr {
         {
           rcvSize *= rcvDims[idx];
         }
+
+        syncDimPaths(comm, numDims);
 
         // Fix my send buffer if the global extra dimensions (not the first one) differ from my own
         // (resize and fill with missing values where necessary). This will involve creating a send
@@ -1089,6 +1093,8 @@ namespace bufr {
         {
           comm.allReduce(rcvDims[i], rcvDims[i], eckit::mpi::Operation::MAX);
         }
+
+        syncDimPaths(comm, numDims);
 
         size_t sendSize = dims_[0];
         for (size_t idx = 1; idx < rcvDims.size(); idx++)
