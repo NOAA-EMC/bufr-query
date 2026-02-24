@@ -242,6 +242,7 @@ namespace bufr {
 
     protected:
       void syncDimPaths(const eckit::mpi::Comm& comm, size_t numDims);
+      void syncDimPathsAllGather(const eckit::mpi::Comm& comm, size_t numDims);
 
       std::string fieldName_;
       std::string groupByFieldName_;
@@ -616,6 +617,8 @@ namespace bufr {
         {
           comm.allReduce(rcvDims[i], rcvDims[i], eckit::mpi::Operation::MAX);
         }
+
+        syncDimPathsAllGather(comm, numDims);
 
         size_t sendSize = dims_[0];
         for (size_t idx = 1; idx < rcvDims.size(); idx++)
@@ -1231,6 +1234,8 @@ namespace bufr {
         {
           comm.allReduce(rcvDims[i], rcvDims[i], eckit::mpi::Operation::MAX);
         }
+
+        syncDimPathsAllGather(comm, numDims);
 
         size_t sendSize = dims_[0];
         for (size_t idx = 1; idx < rcvDims.size(); idx++)
