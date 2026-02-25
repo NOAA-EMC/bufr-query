@@ -1,6 +1,9 @@
 // (C) Copyright 2024 NOAA/NWS/NCEP/EMC
 
 #include "bufr/DataObject.h"
+
+#include <sstream>
+
 #include "bufr/Data.h"
 
 namespace bufr {
