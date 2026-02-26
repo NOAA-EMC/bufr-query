@@ -241,6 +241,9 @@ namespace bufr {
 
 
     protected:
+      void syncDimPaths(const eckit::mpi::Comm& comm, size_t numDims);
+      void syncDimPathsAllGather(const eckit::mpi::Comm& comm, size_t numDims);
+
       std::string fieldName_;
       std::string groupByFieldName_;
       std::vector<int> dims_;
@@ -481,7 +484,16 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            dims_.insert(dims_.end() - 1, 1);
+            if (dims_.empty())
+            {
+              // 0 if its the row (dim_[0]) dimension
+              dims_.insert(dims_.end() - 1, 0);
+            }
+            else
+            {
+              // Always add 1 for extra dimensions.
+              dims_.insert(dims_.end() - 1, 1);
+            }
           }
         }
 
@@ -504,6 +516,8 @@ namespace bufr {
         {
           rcvSize *= rcvDims[idx];
         }
+
+        syncDimPaths(comm, numDims);
 
         // Fix my send buffer if the global extra dimensions (not the first one) differ from my own
         // (resize and fill with missing values where necessary). This will involve creating a send
@@ -601,7 +615,16 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            dims_.insert(dims_.end() - 1, 1);
+            if (dims_.empty())
+            {
+              // 0 if its the row (dim_[0]) dimension
+              dims_.insert(dims_.end() - 1, 0);
+            }
+            else
+            {
+              // Always add 1 for extra dimensions.
+              dims_.insert(dims_.end() - 1, 1);
+            }
           }
         }
 
@@ -612,6 +635,8 @@ namespace bufr {
         {
           comm.allReduce(rcvDims[i], rcvDims[i], eckit::mpi::Operation::MAX);
         }
+
+        syncDimPathsAllGather(comm, numDims);
 
         size_t sendSize = dims_[0];
         for (size_t idx = 1; idx < rcvDims.size(); idx++)
@@ -1078,7 +1103,16 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            dims_.insert(dims_.end() - 1, 1);
+            if (dims_.empty())
+            {
+              // 0 if its the row (dim_[0]) dimension
+              dims_.insert(dims_.end() - 1, 0);
+            }
+            else
+            {
+              // Always add 1 for extra dimensions.
+              dims_.insert(dims_.end() - 1, 1);
+            }
           }
         }
 
@@ -1089,6 +1123,8 @@ namespace bufr {
         {
           comm.allReduce(rcvDims[i], rcvDims[i], eckit::mpi::Operation::MAX);
         }
+
+        syncDimPaths(comm, numDims);
 
         size_t sendSize = dims_[0];
         for (size_t idx = 1; idx < rcvDims.size(); idx++)
@@ -1214,7 +1250,16 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            dims_.insert(dims_.end() - 1, 1);
+            if (dims_.empty())
+            {
+              // 0 if its the row (dim_[0]) dimension
+              dims_.insert(dims_.end() - 1, 0);
+            }
+            else
+            {
+              // Always add 1 for extra dimensions.
+              dims_.insert(dims_.end() - 1, 1);
+            }
           }
         }
 
@@ -1225,6 +1270,8 @@ namespace bufr {
         {
           comm.allReduce(rcvDims[i], rcvDims[i], eckit::mpi::Operation::MAX);
         }
+
+        syncDimPathsAllGather(comm, numDims);
 
         size_t sendSize = dims_[0];
         for (size_t idx = 1; idx < rcvDims.size(); idx++)
