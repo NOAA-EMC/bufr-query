@@ -484,7 +484,16 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            dims_.insert(dims_.end() - 1, 0);
+            if (dims_.empty())
+            {
+              // 0 if its the row (dim_[0]) dimension
+              dims_.insert(dims_.end() - 1, 0);
+            }
+            else
+            {
+              // Always add 1 for extra dimensions.
+              dims_.insert(dims_.end() - 1, 1);
+            }
           }
         }
 
@@ -606,7 +615,16 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            dims_.insert(dims_.end() - 1, 0);
+            if (dims_.empty())
+            {
+              // 0 if its the row (dim_[0]) dimension
+              dims_.insert(dims_.end() - 1, 0);
+            }
+            else
+            {
+              // Always add 1 for extra dimensions.
+              dims_.insert(dims_.end() - 1, 1);
+            }
           }
         }
 
@@ -1085,7 +1103,16 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            dims_.insert(dims_.end() - 1, 0);
+            if (dims_.empty())
+            {
+              // 0 if its the row (dim_[0]) dimension
+              dims_.insert(dims_.end() - 1, 0);
+            }
+            else
+            {
+              // Always add 1 for extra dimensions.
+              dims_.insert(dims_.end() - 1, 1);
+            }
           }
         }
 
@@ -1223,7 +1250,16 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            dims_.insert(dims_.end() - 1, 0);
+            if (dims_.empty())
+            {
+              // 0 if its the row (dim_[0]) dimension
+              dims_.insert(dims_.end() - 1, 0);
+            }
+            else
+            {
+              // Always add 1 for extra dimensions.
+              dims_.insert(dims_.end() - 1, 1);
+            }
           }
         }
 
