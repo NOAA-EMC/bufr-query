@@ -484,16 +484,7 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            if (dims_.empty())
-            {
-              // 0 if its the row (dim_[0]) dimension
-              dims_.insert(dims_.end() - 1, 0);
-            }
-            else
-            {
-              // Always add 1 for extra dimensions.
-              dims_.insert(dims_.end() - 1, 1);
-            }
+            dims_.push_back((dims_.size() > 0) ? 1 : 0);  // Never append 1 to the first dimension
           }
         }
 
@@ -615,16 +606,7 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            if (dims_.empty())
-            {
-              // 0 if its the row (dim_[0]) dimension
-              dims_.insert(dims_.end() - 1, 0);
-            }
-            else
-            {
-              // Always add 1 for extra dimensions.
-              dims_.insert(dims_.end() - 1, 1);
-            }
+            dims_.push_back((dims_.size() > 0) ? 1 : 0);  // Never append 1 to the first dimension
           }
         }
 
@@ -1103,16 +1085,7 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            if (dims_.empty())
-            {
-              // 0 if its the row (dim_[0]) dimension
-              dims_.insert(dims_.end() - 1, 0);
-            }
-            else
-            {
-              // Always add 1 for extra dimensions.
-              dims_.insert(dims_.end() - 1, 1);
-            }
+            dims_.push_back((dims_.size() > 0) ? 1 : 0);  // Never append 1 to the first dimension
           }
         }
 
@@ -1250,16 +1223,7 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            if (dims_.empty())
-            {
-              // 0 if its the row (dim_[0]) dimension
-              dims_.insert(dims_.end() - 1, 0);
-            }
-            else
-            {
-              // Always add 1 for extra dimensions.
-              dims_.insert(dims_.end() - 1, 1);
-            }
+            dims_.push_back((dims_.size() > 0) ? 1 : 0);  // Never append 1 to the first dimension
           }
         }
 
