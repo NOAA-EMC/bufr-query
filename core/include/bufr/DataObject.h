@@ -484,7 +484,16 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            dims_.push_back((dims_.size() > 0) ? 1 : 0);  // Never append 1 to the first dimension
+            if (dims_.size() > 0)
+            {
+              // Insert a dummy dimension 
+              dims_.insert(dims_.begin() + 1, 1);
+            }
+            else
+            {
+              // Never append 1 to the first dimension
+              dims_.push_back(0);
+            }
           }
         }
 
@@ -606,7 +615,16 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            dims_.push_back((dims_.size() > 0) ? 1 : 0);  // Never append 1 to the first dimension
+            if (dims_.size() > 0)
+            {
+              // Insert a dummy dimension 
+              dims_.insert(dims_.begin() + 1, 1);
+            }
+            else
+            {
+              // Never append 1 to the first dimension
+              dims_.push_back(0);
+            }
           }
         }
 
@@ -1085,7 +1103,16 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            dims_.push_back((dims_.size() > 0) ? 1 : 0);  // Never append 1 to the first dimension
+            if (dims_.size() > 0)
+            {
+              // Insert a dummy dimension 
+              dims_.insert(dims_.begin() + 1, 1);
+            }
+            else
+            {
+              // Never append 1 to the first dimension
+              dims_.push_back(0);
+            }
           }
         }
 
@@ -1223,7 +1250,16 @@ namespace bufr {
           int missingDims = numDims - dims_.size();
           for (int idx = 0; idx < missingDims; ++idx)
           {
-            dims_.push_back((dims_.size() > 0) ? 1 : 0);  // Never append 1 to the first dimension
+            if (dims_.size() > 0)
+            {
+              // Insert a dummy dimension 
+              dims_.insert(dims_.begin() + 1, 1);
+            }
+            else
+            {
+              // Never append 1 to the first dimension
+              dims_.push_back(0);
+            }
           }
         }
 
