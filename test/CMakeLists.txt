@@ -23,7 +23,7 @@ if(NOT SKIP_DOWNLOAD_TEST_DATA)
 
     if(NOT download_status_num EQUAL 0 OR NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
       # Remove empty file if download doesn't complete
-      file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/${BUFR_TAR})
+      file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/${FILE_COLLECTION})
       message(STATUS "Could not download test files, not building tests")
       return()
     endif()
