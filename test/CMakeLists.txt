@@ -530,7 +530,8 @@ ecbuild_add_test( TARGET  test_bufr_dim_labels
                           "${CMAKE_BINARY_DIR}/bin/bufr2netcdf.x testdata/gdas.t00z.1bhrs4.tm00.bufr_d
                                                                  testinput/bufrtest_dim_labels_mapping.yaml
                                                                  testrun/bufrtest_hrs_basic.nc"
-  bufrtest_hrs_basic.nc)
+                          bufrtest_hrs_basic.nc
+                  TEST_DEPENDS test_bufr_hrs_basic)
 
 ecbuild_add_test( TARGET  test_missing_subset_data
                   TYPE    SCRIPT
