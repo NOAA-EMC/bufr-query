@@ -1,14 +1,14 @@
 Module Spatial_Average_Mod
 !
 !
-! abstract:  This routine reads BUFR format radiance data 
-!            (brightness temperature) files, spatially 
+! abstract:  This routine reads BUFR format radiance data
+!            (brightness temperature) files, spatially
 !            averages the data using the AAPP averaging routines
 !            and writes the data back into BUFR format
 !
 !
 ! Program history log:
-!    2011-12-20   eliu      - Originally from Banghua Yan with modifications 
+!    2011-12-20   eliu      - Originally from Banghua Yan with modifications
 !    2016-03-03   ejones    - Add option for spatial averaging of GMI
 !    2016-03-24   ejones    - Add option for spatial averaging of AMSR2
 !
@@ -16,7 +16,7 @@ Module Spatial_Average_Mod
   use kinds, only: r_kind,r_double,i_kind,i_llong
   use m_distance
 
-  implicit none     
+  implicit none
 
 ! Declare module level parameters
   real(r_double), parameter    :: Missing_Value=1.e11_r_double
@@ -24,21 +24,21 @@ Module Spatial_Average_Mod
   private
   public :: Spatial_Average
 
-CONTAINS 
+CONTAINS
 
   SUBROUTINE Spatial_Average(bufrsat, method, num_obs, nchanl, missingval,  &
                              fov, rflg, time, lat, lon, bt_inout, error_status)
 
     IMPLICIT NONE
-    
+
     ! Declare passed variables
-    integer(i_kind) ,intent(in   ) :: bufrsat  
-    integer(i_kind) ,intent(in   ) :: method ! 1=SSMIS, 2=GMI, 3=AMSR2  
+    integer(i_kind) ,intent(in   ) :: bufrsat
+    integer(i_kind) ,intent(in   ) :: method ! 1=SSMIS, 2=GMI, 3=AMSR2
     integer(i_kind) ,intent(in   ) :: num_obs, nchanl
     integer(i_kind) ,intent(in   ) :: fov(num_obs)
     integer(i_kind) ,intent(in   ) :: rflg(num_obs)
     integer(i_llong),intent(in   ) :: time(num_obs)
-    real(r_kind)    ,intent(in   ) :: missingval 
+    real(r_kind)    ,intent(in   ) :: missingval
     real(r_kind)    ,intent(in   ) :: lat(num_obs)
     real(r_kind)    ,intent(in   ) :: lon(num_obs)
     real(r_kind)    ,intent(inout) :: bt_inout(nchanl*num_obs)
@@ -53,20 +53,20 @@ CONTAINS
     integer(i_kind), parameter :: ds_node=-1_i_kind
     real(r_kind),    parameter :: btmin=70.0_r_kind
     real(r_kind),    parameter :: btmax=320.0_r_kind
-    real(r_kind),    parameter :: sigma = 1.0_r_kind/25.0_r_kind    
+    real(r_kind),    parameter :: sigma = 1.0_r_kind/25.0_r_kind
     real(r_kind),    parameter :: scan_interval = 60.0_r_kind/31.6_r_kind ! SSMIS: 31.6 RPM ~ 1.9 s
 
     ! Declare local variables
-    character(100) :: infile 
+    character(100) :: infile
 
     integer(i_kind) :: i,iscan,ifov,ichan,nchannels,wmosatid,version
-    integer(i_kind) :: is,ip,ic 
-    integer(i_kind) :: iobs   
+    integer(i_kind) :: is,ip,ic
+    integer(i_kind) :: iobs
     integer(i_kind) :: ios,max_scan,min_scan
-    integer(i_kind) :: ns1,ns2,np1,np2 
-    integer(i_kind) :: nscan       
-    integer(i_llong):: mintime 
-    integer(i_llong) :: t1,t2  
+    integer(i_kind) :: ns1,ns2,np1,np2
+    integer(i_kind) :: nscan
+    integer(i_llong):: mintime
+    integer(i_llong) :: t1,t2
     integer(i_kind), allocatable ::  nodeinfo(:,:)
     integer(i_kind), allocatable ::  rainflag(:,:)
     integer(i_kind), allocatable ::  scanline_back(:,:)
@@ -74,12 +74,15 @@ CONTAINS
     real(r_kind), allocatable ::  latitude(:,:), longitude(:,:)
     real(r_kind), allocatable :: bt_image(:,:,:)
     real(r_kind), dimension(nchanl, num_obs) :: bt_obs
-    real(r_kind) :: tdiff 
-    real(r_kind) :: lat1,lat2,lon1,lon2,dist,wgt 
-    real(r_kind) :: xnum,mta   
+    real(r_kind) :: tdiff
+    real(r_kind) :: lat1,lat2,lon1,lon2,dist,wgt
+    real(r_kind) :: xnum,mta
     real(r_kind) :: dlat
     logical      :: gaussian_wgt
-    logical      :: below_50, above_500 
+    logical      :: below_50, above_500
+    integer(i_llong), allocatable :: sorted_time(:)
+    integer(i_kind), allocatable :: perm(:)
+    integer(i_kind) :: fov_wg, scanline_wg,rainflgnum
 
     error_status=0
     bt_obs = reshape(bt_inout, (/nchanl, num_obs/))
@@ -91,45 +94,56 @@ CONTAINS
        above_500 = any(bt_obs > 500)
        write(*,*) 'Spatial_Average: input infomration ...'
        write(*,*) 'Spatial_Average: bufrsat = ', bufrsat
-       write(*,*) 'Spatial_Average: method  = ', method 
-       write(*,*) 'Spatial_Average: nchanl  = ', nchanl 
-       write(*,*) 'Spatial_Average: num_obs = ', num_obs 
-       write(*,*) 'Spatial_Average: Gaussian Weighted Averaging = ', gaussian_wgt 
-       write(*,*) 'Spatial_Average: time min/max     = ', minval(time), maxval(time) 
-       write(*,*) 'Spatial_Average: lat min/max      = ', minval(lat), maxval(lat) 
-       write(*,*) 'Spatial_Average: lon min/max      = ', minval(lon), maxval(lon) 
-       write(*,*) 'Spatial_Average: fov min/max      = ', minval(fov), maxval(fov) 
-       write(*,*) 'Spatial_Average: rflg min/max     = ', minval(rflg), maxval(rflg) 
-       write(*,*) 'Spatial_Average: bt_inout min/max = ', minval(bt_inout), maxval(bt_inout) 
-       write(*,*) 'Spatial_Average: bt_obs min/max   = ', minval(bt_obs), maxval(bt_obs) 
+       write(*,*) 'Spatial_Average: method  = ', method
+       write(*,*) 'Spatial_Average: nchanl  = ', nchanl
+       write(*,*) 'Spatial_Average: num_obs = ', num_obs
+       write(*,*) 'Spatial_Average: Gaussian Weighted Averaging = ', gaussian_wgt
+       write(*,*) 'Spatial_Average: time min/max     = ', minval(time), maxval(time)
+       write(*,*) 'Spatial_Average: lat min/max      = ', minval(lat), maxval(lat)
+       write(*,*) 'Spatial_Average: lon min/max      = ', minval(lon), maxval(lon)
+       write(*,*) 'Spatial_Average: fov min/max      = ', minval(fov), maxval(fov)
+       write(*,*) 'Spatial_Average: rflg min/max     = ', minval(rflg), maxval(rflg)
+       write(*,*) 'Spatial_Average: bt_inout min/max = ', minval(bt_inout), maxval(bt_inout)
+       write(*,*) 'Spatial_Average: bt_obs min/max   = ', minval(bt_obs), maxval(bt_obs)
        write(*,*) 'Spatial_Average: there are values below 50K in bt_obs  ', below_50
        write(*,*) 'Spatial_Average: there are values above 500K in bt_obs ', above_500
 
        ! Determine scanline from time
        !==============================
        write(*,*) 'Spatial_Average: determine scanline from time ...'
+       allocate(sorted_time(num_obs))
+       allocate(perm(num_obs))
        allocate(scanline(num_obs))
-       t1          = time(1)  ! time for first scanline
-       nscan       = 1        ! first scanline
-       scanline(1) = nscan
+
+       do iobs = 1, num_obs
+         perm(iobs) = iobs
+         sorted_time(iobs) = time(iobs)
+       end do
+
+       call quicksort_int_idx(sorted_time, perm, 1, num_obs)
+
+       nscan = 1
+       scanline(perm(1)) = nscan
+       t1 = time(perm(1))
+
        do iobs = 2, num_obs
-          t2    = time(iobs) 
-          tdiff = t2-t1
-!         if (tdiff >= 0.00001_r_kind) then  ! tdiff unit: hour 
-          if (tdiff >= 1_r_kind) then        ! tdiff unit: second 
-             nscan = nscan+1 
-             t1    = t2
-          endif
-          scanline(iobs) = nscan
-       enddo
+          t2 = time(perm(iobs))
+          tdiff = t2 - t1
+          if (tdiff >= 0.9_r_kind) then
+            nscan = nscan + 1
+            t1 = t2
+          end if
+          scanline(perm(iobs)) = nscan
+       end do
+
        max_scan = maxval(scanline)
        write(*,*) 'Spatial_Average: max_scan,max_fov,nchanl = ', &
                  max_scan,max_fov,nchanl
-       write(*,*) 'Spatial_Average: scanline min/max = ', minval(scanline), maxval(scanline) 
+       write(*,*) 'Spatial_Average: scanline min/max = ', minval(scanline), maxval(scanline)
 
 !       ! Determine scanline from time
-!       ! This approach should also 
-!       ! work if the precision in 
+!       ! This approach should also
+!       ! work if the precision in
 !       ! time includes miliseonds
 !       !==============================
 !       allocate(scanline(num_obs))
@@ -144,7 +158,7 @@ CONTAINS
 !       write(*,*) 'Spatial_Average: max_scan         = ', max_scan
 !       write(*,*) 'Spatial_Average: max_fov          = ', max_fov
 
-       ! Index between 1D and 2D data arrays 
+       ! Index between 1D and 2D data arrays
        allocate(scanline_back(max_fov,max_scan))
        scanline_back(:,:) = -1_i_kind
        do iobs=1,num_obs
@@ -159,22 +173,22 @@ CONTAINS
        allocate(latitude(max_fov,max_scan))
        allocate(longitude(max_fov,max_scan))
        allocate(rainflag(max_fov,max_scan))
-       bt_image(:,:,:) = missingval 
-       latitude(:,:)   = missingval 
-       longitude(:,:)  = missingval 
-       rainflag(:,:)   = missingval 
+       bt_image(:,:,:) = missingval
+       latitude(:,:)   = missingval
+       longitude(:,:)  = missingval
+       rainflag(:,:)   = -1_i_kind
 
 !      Put data into 2D (fov vs. scanline) array
        write(*,*) 'Spatial_Average: put data into 2D ...'
        do iobs = 1, num_obs
-          latitude(fov(iobs),scanline(iobs))      = lat(iobs) 
-          longitude(fov(iobs),scanline(iobs))     = lon(iobs) 
-          rainflag(fov(iobs),scanline(iobs))      = rflg(iobs) 
-          if (rainflag(fov(iobs),scanline(iobs)) < 1_i_kind) bt_image(fov(iobs),scanline(iobs),:) = bt_obs(:,iobs)
+          latitude(fov(iobs),scanline(iobs))      = lat(iobs)
+          longitude(fov(iobs),scanline(iobs))     = lon(iobs)
+          rainflag(fov(iobs),scanline(iobs))      = rflg(iobs)
+          bt_image(fov(iobs),scanline(iobs),:) = bt_obs(:,iobs)
           scanline_back(fov(iobs),scanline(iobs)) = iobs
        enddo
-       write(*,*) 'Spatial_Average: latitude min/max      = ', minval(latitude), maxval(latitude) 
-       write(*,*) 'Spatial_Average: longitude min/max     = ', minval(longitude), maxval(longitude) 
+       write(*,*) 'Spatial_Average: latitude min/max      = ', minval(latitude), maxval(latitude)
+       write(*,*) 'Spatial_Average: longitude min/max     = ', minval(longitude), maxval(longitude)
        write(*,*) 'Spatial_Average: scanline_back min/max = ', minval(scanline_back), maxval(scanline_back)
        write(*,*) 'Spatial_Average: bt_image min/max      = ', minval(bt_image), maxval(bt_image)
        write(*,*) 'Spatial_Average: rainflag min/max      = ', minval(rainflag), maxval(rainflag)
@@ -182,37 +196,39 @@ CONTAINS
        write(*,*) 'Spatial_Average: do spatial averaging ... '
 !      Do spatial averaging in the box centered on each fov for each channel
 !$omp parallel do  schedule(dynamic,1)private(ic,iobs,iscan,ifov,ns1,ns2,np1,np2,xnum,mta,is,ip,lat1,lon1,lat2,lon2,dist,wgt)
-       scan_loop: do iscan = 1, max_scan 
-          fov_loop: do ifov = 1, max_fov 
+       scan_loop: do iscan = 1, max_scan
+          fov_loop: do ifov = 1, max_fov
 
-             iobs = scanline_back(ifov,iscan) 
-             if (iobs >0) then 
+             iobs = scanline_back(ifov,iscan)
+             if (iobs >0 .and. rainflag(ifov,iscan) == 0_i_kind) then
 !               Define grid box (3 (scan direction) x 7 (satellite track dir))
-                ns1 = iscan-3          
-                ns2 = iscan+3          
+                ns1 = iscan-3
+                ns2 = iscan+3
                 if (ns1 < 1) ns1=1
                 if (ns2 > max_scan) ns2=max_scan
-                np1 = ifov-1          
-                np2 = ifov+1          
+                np1 = ifov-1
+                np2 = ifov+1
                 if (np1 < 1) np1=1
                 if (np2 > max_fov) np2=max_fov
 
-                channel_loop: do ic = 1, nchanl  
+                channel_loop: do ic = 1, nchanl
                    xnum   = 0.0_r_kind
                    mta    = 0.0_r_kind
+
                    if (any(bt_image(np1:np2,ns1:ns2,ic) < btmin .or. &
-                           bt_image(np1:np2,ns1:ns2,ic) > btmax)) then 
-                      bt_obs(ic,iobs) = missingval 
+                           bt_image(np1:np2,ns1:ns2,ic) > btmax)) then
+                      bt_obs(ic,iobs) = missingval
                    else
-!                     ! Calculate distance of each fov to the center fov 
-                      box_y1: do is = ns1, ns2 
-                      box_x1: do ip = np1, np2 
+!                     ! Calculate distance of each fov to the center fov
+                      box_y1: do is = ns1, ns2
+                      box_x1: do ip = np1, np2
+                      if(rainflag(ip,is) == 0_i_kind)then
                          lat1 = latitude(ifov,iscan)    ! lat of the center fov
                          lon1 = longitude(ifov,iscan)   ! lon of the center fov
-                         lat2 = latitude(ip,is)          
+                         lat2 = latitude(ip,is)
                          lon2 = longitude(ip,is)
-                         dist = distance(lat1,lon1,lat2,lon2) 
-                         if (dist > 100.0_r_kind) cycle box_x1  ! outside the box 
+                         dist = distance(lat1,lon1,lat2,lon2)
+                         if (dist > 100.0_r_kind) cycle box_x1  ! outside the box
                          if (gaussian_wgt) then
                             wgt = exp(-0.5_r_kind*(dist*sigma)*(dist*sigma))
                          else
@@ -220,11 +236,12 @@ CONTAINS
                          endif
                          xnum   = xnum+wgt
                          mta    = mta +wgt*bt_image(ip,is,ic)
+                      endif
                       enddo box_x1
                       enddo box_y1
                       bt_obs(ic,iobs) = mta/xnum
                    endif
-                enddo channel_loop 
+                enddo channel_loop
              endif
           enddo fov_loop
        enddo scan_loop
@@ -237,6 +254,7 @@ CONTAINS
        deallocate(scanline)
        deallocate(latitude,longitude)
        deallocate(bt_image)
+       deallocate(sorted_time, perm)
     endif ! Method=1
 
 !============================================================================================================
@@ -255,8 +273,7 @@ CONTAINS
           t2    = time(iobs)
           tdiff = t2-t1
           if (tdiff >= 1_r_kind) then        ! tdiff unit: second
-
-                  nscan = nscan+1
+             nscan = nscan+1
              t1    = t2
           endif
           scanline(iobs) = nscan
@@ -303,7 +320,7 @@ CONTAINS
 
 !      Do spatial averaging in the box centered on each fov for each channel
        gmi_scan_loop: do iscan = 1, max_scan
-          gmi_fov_loop: do ifov = 1, max_fov_gmi    
+          gmi_fov_loop: do ifov = 1, max_fov_gmi
              iobs = scanline_back(ifov,iscan)
              if (iobs >0) then
 !               node_inout(iobs) = nodeinfo(ifov,iscan)
@@ -491,6 +508,54 @@ CONTAINS
        deallocate(bt_image)
     endif ! Method=3
 
+
+  contains
+
+   recursive subroutine quicksort_int_idx(arr, perm, left, right)
+      implicit none
+      integer(i_llong), intent(inout) :: arr(:)
+      integer(i_kind), intent(inout) :: perm(:)
+      integer(i_kind), intent(in) :: left, right
+
+      integer(i_llong) :: temp_p, pivot, temp_a
+      integer(i_kind) :: i, j
+
+      if (left < right) then
+         pivot = arr((left + right) / 2)
+         i = left
+         j = right
+
+         do
+            do while (arr(i) < pivot)
+               i = i + 1
+            end do
+            do while (arr(j) > pivot)
+               j = j - 1
+            end do
+
+            if (i <= j) then
+               ! Swap values in integer array
+               temp_a = arr(i)
+               arr(i) = arr(j)
+               arr(j) = temp_a
+
+               ! Swap corresponding permutation indices
+               temp_p = perm(i)
+               perm(i) = perm(j)
+               perm(j) = temp_p
+
+               i = i + 1
+               j = j - 1
+            end if
+
+            if (i > j) exit
+         end do
+
+         if (left < j)  call quicksort_int_idx(arr, perm, left, j)
+         if (i < right) call quicksort_int_idx(arr, perm, i, right)
+      end if
+
+   end subroutine quicksort_int_idx
 
   END SUBROUTINE Spatial_Average
 
