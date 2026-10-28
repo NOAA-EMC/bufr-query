@@ -6,6 +6,7 @@
 /CMakeSettings.json
 *~
 build
+install
 __pycache__
 .bufr
 .bufr_d
