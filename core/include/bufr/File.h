@@ -3,6 +3,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "ResultSet.h"
 #include "QuerySet.h"
@@ -27,6 +28,10 @@ namespace bufr {
         ResultSet execute(const QuerySet& query_set,
                           size_t offset = 0,
                           size_t numMessages = 0);
+
+        /// \brief Get the ordered, formatted subset variant identifiers present in the file.
+        /// \returns Vector of identifiers, formatted as subset or subset[variant].
+        std::vector<std::string> getSubsetVariants();
 
         /// \brief Number of messages in the currently open file..
         size_t size(const QuerySet& querySet = QuerySet());
