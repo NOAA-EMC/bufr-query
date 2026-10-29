@@ -3,6 +3,7 @@
 #include "bufr/File.h"
 
 #include <algorithm>
+#include <set>
 
 #include "QueryRunner.h"
 #include "bufr/QuerySet.h"
@@ -29,6 +30,37 @@ namespace bufr {
     size_t File::size(const QuerySet& querySet)
     {
       return dataProvider_->numMessages(querySet);
+    }
+
+    std::vector<std::string> File::getSubsetVariants()
+    {
+        std::set<SubsetVariant> variants;
+        auto processMsg = [this, &variants]()
+        {
+            variants.insert(dataProvider_->getSubsetVariant());
+        };
+
+        dataProvider_->run(QuerySet(),
+                           [](){},
+                           processMsg);
+
+        std::set<std::string> subsetsWithVariants;
+        for (const auto& variant : variants)
+        {
+            if (variant.otherVariantsExist)
+            {
+                subsetsWithVariants.insert(variant.subset);
+            }
+        }
+
+        std::set<std::string> subsetVariants;
+        for (auto variant : variants)
+        {
+            variant.otherVariantsExist = subsetsWithVariants.count(variant.subset) > 0;
+            subsetVariants.insert(variant.str());
+        }
+
+        return std::vector<std::string>(subsetVariants.begin(), subsetVariants.end());
     }
 
     void File::close()

@@ -24,6 +24,11 @@ def test_basic_query():
 
     # Open the BUFR file and execute the QuerySet
     with bufr.File(DATA_PATH) as f:
+        subset_variants = f.get_subset_variants()
+        print(f"Subset variants: {subset_variants}")
+        assert subset_variants
+        assert all(isinstance(variant, str) for variant in subset_variants)
+        assert subset_variants == sorted(set(subset_variants))
         r = f.execute(q)
 
 

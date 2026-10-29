@@ -6,6 +6,7 @@
 */
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <memory>
 #include <string>
@@ -27,6 +28,8 @@ void setupFile(py::module& m)
         py::arg("offset") = static_cast<int>(0),
         py::arg("numMsgs") = static_cast<int>(0),
         "Execute a query set on the file. Returns a ResultSet object.")
+   .def("get_subset_variants", &File::getSubsetVariants,
+        "Get sorted, unique subset variant identifiers as strings (subset or subset[variant]).")
    .def("rewind", &File::rewind, "Rewind the file to the beginning.")
    .def("close", &File::close, "Close the file.")
    .def("__enter__", [](File &f) { return &f; })
