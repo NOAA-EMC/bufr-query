@@ -44,14 +44,23 @@ namespace bufr {
                            [](){},
                            processMsg);
 
-        std::vector<std::string> subsetVariants;
-        subsetVariants.reserve(variants.size());
+        std::set<std::string> subsetsWithVariants;
         for (const auto& variant : variants)
         {
-            subsetVariants.push_back(variant.str());
+            if (variant.otherVariantsExist)
+            {
+                subsetsWithVariants.insert(variant.subset);
+            }
         }
 
-        return subsetVariants;
+        std::set<std::string> subsetVariants;
+        for (auto variant : variants)
+        {
+            variant.otherVariantsExist = subsetsWithVariants.count(variant.subset) > 0;
+            subsetVariants.insert(variant.str());
+        }
+
+        return std::vector<std::string>(subsetVariants.begin(), subsetVariants.end());
     }
 
     void File::close()
